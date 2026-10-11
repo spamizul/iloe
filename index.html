@@ -150,18 +150,23 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tb[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .tb:disabled{opacity:.4;cursor:default}
 @media (prefers-reduced-motion: reduce){.giftbtn{animation:none}}
-.toolsbtn,.sheet-head{display:none}
-/* téléphone : les outils s'ouvrent dans un panneau au-dessus de la barre du bas, la page n'a plus besoin de défiler */
+#menuTimeSlot:empty{display:none}
 @media (max-width:859px){
-  .toolsbtn{display:flex;border-color:var(--line);background:var(--bg)}
-  .toolsbtn[aria-expanded="true"]{background:var(--accent-soft);border-color:var(--accent)}
-  .panel{position:fixed;left:0;right:0;bottom:calc(67px + env(safe-area-inset-bottom, 0px));z-index:24;max-height:42svh;overflow-y:auto;overscroll-behavior:contain;
-    border-radius:16px 16px 0 0;border-bottom:none;box-shadow:0 -10px 30px rgba(10,20,30,.18);transform:translateY(calc(100% + 80px));transition:transform .22s ease;visibility:hidden;touch-action:pan-y}
-  .panel.open{transform:none;visibility:visible}
-  .sheet-head{display:flex;align-items:center;justify-content:space-between;margin:-4px 0 -6px}
-  .sheet-head::before{content:"";position:absolute;left:50%;top:6px;width:36px;height:4px;border-radius:2px;background:var(--line);transform:translateX(-50%)}
+  body{padding-block:12px calc(80px + env(safe-area-inset-bottom, 0px))}
+  .wrap,.app{gap:10px}
+  header{gap:4px}
+  .meta{font-size:13px}
+  .req,.storycard{padding:6px 10px}
+  .board-frame{width:min(100%, max(240px, calc(100svh - 415px)));margin-inline:auto}
+  .panel{padding:8px;gap:8px}
+  .tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;touch-action:pan-x pan-y;padding-bottom:2px}
+  .tabs::-webkit-scrollbar,.tgroup .tools::-webkit-scrollbar{display:none}
+  .tabs button{flex:none}
+  .tgroup .tools{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;touch-action:pan-x pan-y;gap:6px;padding-bottom:2px}
+  .tgroup .tool{flex:none;width:68px;min-height:62px;flex-direction:column;justify-content:center;gap:3px;padding:5px 3px;text-align:center}
+  .tgroup .tool canvas{width:22px;height:28px}
+  .tgroup .tool span{font-size:11px;line-height:1.1;-webkit-line-clamp:2}
 }
-@media (max-width:859px) and (prefers-reduced-motion: reduce){.panel{transition:none}}
 .photo{position:fixed;inset:0;z-index:30;background:rgba(10,16,22,.72);display:flex;align-items:center;justify-content:center;padding:16px}
 .photo-card{background:var(--surface);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;align-items:center;max-width:min(560px,100%)}
 .photo-card img{width:100%;image-rendering:pixelated;border-radius:4px}
@@ -177,6 +182,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <button class="gear" id="photoBtn" type="button" aria-label="Prendre une photo">📷</button>
       <button class="gear" id="gearBtn" type="button" aria-expanded="false" aria-controls="gearMenu" aria-label="Réglages">⚙</button>
       <div class="menu" id="gearMenu" hidden>
+        <div class="group" id="menuTimeSlot"></div>
         <div class="label">L'histoire</div>
         <button class="btn" id="storyBtn" type="button">📖 Commencer l'histoire</button>
         <div class="label">Mes terrains</div>
@@ -233,16 +239,15 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <div class="board-frame"><canvas id="board" aria-label="Terrain de 24 cases sur 24 à construire"></canvas></div>
     </div>
 
-    <aside class="panel" id="toolPanel">
-      <div class="sheet-head"><span class="label">Outils</span><button class="btn sm" id="sheetClose" type="button">Fermer</button></div>
+    <aside class="panel">
       <div id="toolGroups"></div>
 
-      <div class="group">
+      <div class="group" id="seasonGroup">
         <div class="label">Saison</div>
         <div class="seg" id="seasons"></div>
       </div>
 
-      <div class="group">
+      <div class="group" id="timeGroup">
         <div class="label">Heure</div>
         <div class="seg" id="times"></div>
         <div class="seg"><button id="autoTime" aria-pressed="true">Le temps passe</button></div>
@@ -252,7 +257,6 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 </div>
 <nav class="thumb" aria-label="Outils rapides">
   <div class="thumb-in">
-    <button class="tb toolsbtn" id="toolsBtn" type="button" aria-expanded="false" aria-controls="toolPanel"><b class="glyph">🧰</b><span>Outils</span></button>
     <div class="recent" id="recent"></div>
     <div class="acts">
       <button class="tb" id="pipBtn" type="button" aria-pressed="false" title="Pipette : reprendre un objet du terrain">
@@ -2049,13 +2053,7 @@ function renderRecent(){
   }
 }
 let prevTool = 'h';
-const toolPanel = document.getElementById('toolPanel'), toolsBtn = document.getElementById('toolsBtn');
-const narrow = () => matchMedia('(max-width: 859px)').matches;
-function setSheet(open){ toolPanel.classList.toggle('open', open); toolsBtn.setAttribute('aria-expanded', open); }
-toolsBtn.onclick = () => setSheet(!toolPanel.classList.contains('open'));
-document.getElementById('sheetClose').onclick = () => setSheet(false);
 function selectTool(id, fromBar){
-  if (!fromBar && narrow() && id !== 'x') setSheet(false);
   if (id !== 'x') prevTool = id;
   tool = id;
   if (pipMode){ pipMode = false; document.getElementById('pipBtn').setAttribute('aria-pressed', 'false'); }
@@ -2150,7 +2148,6 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
 let lastTouchEnd = 0;
 document.addEventListener('touchend', e => { const t = Date.now(); if (e.target.closest && e.target.closest('button,input,textarea,select,label')){ lastTouchEnd = 0; return; } if (t - lastTouchEnd < 300) e.preventDefault(); lastTouchEnd = t; }, {passive:false});
 board.addEventListener('pointerdown', e => {
-  if (toolPanel.classList.contains('open') && narrow()){ setSheet(false); lockUntilUp = true; return; }
   try { board.setPointerCapture(e.pointerId); } catch(err){}
   pts.set(e.pointerId, {x:e.clientX, y:e.clientY});
   if (pts.size === 2){
@@ -2803,7 +2800,7 @@ function startStory(){
   makeIsland(); save();
   Object.assign(glob.story, {started:true, asked:true, terrain:id, chapter:0, pendingOutro:null, introSeen:-1, moments:{}, events:{}, debris:0}); saveGlob();
   afterTerrainChange(); setMenu(false);
-  setTimeout(() => openChapter('intro', 0), 300);
+  if (storyBox.hidden) openChapter('intro', 0);
 }
 function completeChapter(){
   const i = glob.story.chapter, ch = CHAPTERS[i];
@@ -2892,6 +2889,16 @@ function setEco(on){
   ecoBtn.textContent = eco ? '🔋 Mode économie : activé' : '🔋 Mode économie : désactivé';
 }
 ecoBtn.onclick = () => { setEco(!eco); toast(eco ? 'Mode économie activé' : 'Mode économie désactivé'); };
+
+/* ---------- disposition téléphone : saison et heure rangées dans la ⚙ ---------- */
+const mqNarrow = matchMedia('(max-width: 859px)');
+function placeTimeControls(){
+  const sg = document.getElementById('seasonGroup'), tg = document.getElementById('timeGroup');
+  if (mqNarrow.matches){ const slot = document.getElementById('menuTimeSlot'); slot.append(sg, tg); }
+  else { const panel = document.querySelector('.panel'); panel.append(sg, tg); }
+}
+mqNarrow.addEventListener ? mqNarrow.addEventListener('change', placeTimeControls) : mqNarrow.addListener(placeTimeControls);
+placeTimeControls();
 
 /* ---------- démarrage ---------- */
 const ecv = document.createElement('canvas'); ecv.width = 16; ecv.height = 20;
