@@ -66,10 +66,10 @@ canvas#board{display:block;width:100%;max-width:100%;aspect-ratio:1;image-render
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:16px}
 .group{display:flex;flex-direction:column;gap:8px}
 .label{font-family:var(--f-display);font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px}
-.tool{display:flex;align-items:center;gap:6px;padding:5px 6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;font:inherit;font-size:13px;cursor:pointer;text-align:left;min-width:0}
-.tool canvas{width:24px;height:30px;image-rendering:pixelated;flex:none}
-.tool span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
+.tool{display:flex;align-items:center;gap:5px;padding:4px 5px;min-height:40px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;font:inherit;font-size:13px;cursor:pointer;text-align:left;min-width:0}
+.tool canvas{width:20px;height:25px;image-rendering:pixelated;flex:none}
+.tool span{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.15;font-size:12px}
 .tool:hover{border-color:var(--accent)}
 .tool[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
 .seg{display:flex;flex-wrap:wrap;gap:6px}
@@ -112,6 +112,29 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 #giftCv{width:112px;height:140px;image-rendering:pixelated}
 .gift-text{margin:0;font-size:15px}
 .tool.isgift span::after{content:" ✨"}
+.storycard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.sc-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sc-title{font-family:var(--f-display);font-size:15px;min-width:0}
+.sc-head button{flex:none;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:13px;border-radius:6px;padding:6px 10px;cursor:pointer}
+.sc-goals{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.sc-goals li::before{content:"○ "}
+.sc-goals li.ok{color:var(--ink)}
+.sc-goals li.ok::before{content:"✓ ";color:#3f8f5a;font-weight:700}
+.sc-goals li.free::before{content:""}
+.story-card{width:min(440px,100%);max-height:calc(100svh - 32px);overflow-y:auto;align-items:stretch;text-align:left;gap:12px;padding:16px}
+.story-top{display:flex;gap:12px;align-items:center}
+#storyFace{width:64px;height:64px;image-rendering:pixelated;background:var(--accent-soft);border-radius:12px;flex:none}
+.story-head{min-width:0}
+.story-top h2{font-family:var(--f-display);font-size:22px;line-height:1.15;margin:2px 0 0;font-weight:700;text-wrap:balance}
+.story-who{color:var(--muted);font-size:13px;margin-top:2px}
+.story-body p{margin:0 0 10px;font-size:15px;line-height:1.55}
+.story-body p.outro{font-style:italic;color:var(--muted)}
+.story-body h3{font-family:var(--f-display);font-size:16px;margin:14px 0 6px}
+.story-body h3:first-child{margin-top:0}
+.story-goals{margin:0;padding:10px 12px 10px 30px;background:var(--bg);border-radius:8px;font-size:14px;display:flex;flex-direction:column;gap:2px}
+.story-rewards{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:4px 0}
+.rw{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;font-weight:700}
+.rw canvas{width:48px;height:60px;image-rendering:pixelated}
 .thumb{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(10,20,30,.08);padding:6px 10px calc(6px + env(safe-area-inset-bottom, 0px))}
 .thumb-in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:8px}
 .recent{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-content:flex-start;gap:3px;height:54px;overflow:hidden}
@@ -131,7 +154,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (prefers-reduced-motion: reduce){.toast{transition:none}}
 </style>
 
-<div class="wrap">
+<div class="wrap" lang="fr">
   <header>
     <div class="hdr-top">
       <h1>iloe</h1>
@@ -140,6 +163,8 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <button class="gear" id="photoBtn" type="button" aria-label="Prendre une photo">📷</button>
       <button class="gear" id="gearBtn" type="button" aria-expanded="false" aria-controls="gearMenu" aria-label="Réglages">⚙</button>
       <div class="menu" id="gearMenu" hidden>
+        <div class="label">L'histoire</div>
+        <button class="btn" id="storyBtn" type="button">📖 Commencer l'histoire</button>
         <div class="label">Mes terrains</div>
         <div class="tlist" id="tlist"></div>
         <div class="row">
@@ -155,15 +180,17 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         </div>
         <input type="file" id="importFile" accept=".json,application/json,text/plain" hidden>
         <p class="hint">La copie contient tous tes terrains et tes cadeaux. Range-la dans Fichiers : tu pourras tout récupérer, même sur un autre appareil.</p>
-        <div class="label">Recommencer ce terrain</div>
-        <div class="row" id="resetRow">
-          <button class="btn" id="askClear">Tout effacer</button>
-          <button class="btn" id="askSample">Village d'exemple</button>
-        </div>
-        <div class="confirm" id="confirmRow" hidden>
-          <span id="confirmText">Tout effacer ?</span>
-          <button class="btn danger" id="confirmYes">Oui</button>
-          <button class="btn" id="confirmNo">Annuler</button>
+        <div class="group" id="resetSection">
+          <div class="label">Recommencer ce terrain</div>
+          <div class="row" id="resetRow">
+            <button class="btn" id="askClear">Tout effacer</button>
+            <button class="btn" id="askSample">Village d'exemple</button>
+          </div>
+          <div class="confirm" id="confirmRow" hidden>
+            <span id="confirmText">Tout effacer ?</span>
+            <button class="btn danger" id="confirmYes">Oui</button>
+            <button class="btn" id="confirmNo">Annuler</button>
+          </div>
         </div>
       </div>
     </div>
@@ -177,6 +204,10 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <span aria-hidden="true">💬</span>
       <p id="reqText"></p>
       <button type="button" id="reqSkip">Autre idée</button>
+    </div>
+    <div class="storycard" id="storyCard" hidden>
+      <div class="sc-head"><span class="sc-title" id="scTitle"></span><button type="button" id="scBook">📖 Carnet</button></div>
+      <ul class="sc-goals" id="scGoals"></ul>
     </div>
   </header>
 
@@ -223,6 +254,24 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="row center">
       <button class="btn" id="giftLater" type="button">Plus tard</button>
       <button class="btn primary" id="giftOpen" type="button">Ouvrir</button>
+    </div>
+  </div>
+</div>
+<div class="photo" id="storyBox" hidden>
+  <div class="photo-card story-card" role="dialog" aria-labelledby="storyTitle">
+    <div class="story-top">
+      <canvas id="storyFace" width="16" height="16"></canvas>
+      <div class="story-head">
+        <div class="label" id="storyKicker"></div>
+        <h2 id="storyTitle"></h2>
+        <div class="story-who" id="storyWho"></div>
+      </div>
+    </div>
+    <div class="story-body" id="storyBody"></div>
+    <div class="story-rewards" id="storyRewards" hidden></div>
+    <div class="row center">
+      <button class="btn" id="storyAlt" type="button" hidden></button>
+      <button class="btn primary" id="storyGo" type="button"></button>
     </div>
   </div>
 </div>
@@ -304,7 +353,7 @@ function expand(g, o, n0, OFF, extras){
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++){
     const sx = Math.max(0, Math.min(n0-1, x - OFF)), sy = Math.max(0, Math.min(n0-1, y - OFF));
     const inside = x - OFF === sx && y - OFF === sy;
-    let gr = g[sy*n0 + sx]; if (!inside && (gr === 'c' || gr === 'p' || gr === 'R')) gr = 'g'; if (!inside && (gr === 'n' || gr === 'q')) gr = 'w';
+    let gr = g[sy*n0 + sx]; if (!inside && 'cpR#*~+%&X'.includes(gr)) gr = 'g'; if (!inside && (gr === 'n' || gr === 'q')) gr = 'w';
     G.push(gr);
     let ob = inside ? o[sy*n0 + sx] : null;
     if (!inside && extras){
@@ -335,6 +384,7 @@ if (!terrains || !Array.isArray(terrains.list) || !terrains.list.length){
 if (!terrains.list.some(t => t.id === terrains.cur)) terrains.cur = terrains.list[0].id;
 let glob = {gifts:[], lastGift:null, hearts:0, recent:['h','t','c','f','R','w'], req:null};
 Object.assign(glob, readJSON(GKEY) || {});
+glob.story = Object.assign({asked:false, started:false, terrain:null, chapter:0, unlocked:[], pendingOutro:null}, glob.story || {});
 function saveGlob(){ writeJSON(GKEY, glob); }
 function terrainData(){ return {n:N, g:G.join(''), o:O.map(c => c || '.').join(''), season}; }
 function save(){ writeJSON(tKey(terrains.cur), terrainData()); }
@@ -364,8 +414,8 @@ let saveTimer = null;
 function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(save, 300); }
 
 const gAt = (x, y) => (x < 0 || y < 0 || x >= N || y >= N) ? null : G[y*N + x];
-const walkable = c => c === 'c' || c === 'p' || c === 'q' || c === 'n';
-const isRoad = c => c === 'R' || c === 'n';
+const walkable = c => c === 'c' || c === 'p' || c === 'q' || c === 'n' || c === '#' || c === '*' || c === '~' || c === '+';
+const isRoad = c => c === 'R' || c === 'n' || c === '+';
 
 /* ---------- dessin du sol ---------- */
 function drawGround(t, ox, oy, x, y, nb){
@@ -449,6 +499,52 @@ function drawGround(t, ox, oy, x, y, nb){
     }
     return;
   }
+  if (t === '#'){ // dalles
+    const a = season === 'hiver' ? '#dcdad4' : '#c9c6bf', b = '#b0aca3';
+    R(ox, oy, T, T, a);
+    for (let k = 0; k < 4; k++){ R(ox, oy + k*4, T, 1, b); R(ox + k*4, oy, 1, T, b); }
+    R(ox + 1 + ((hs(x,y,1)*3|0))*4, oy + 1 + ((hs(x,y,2)*3|0))*4, 3, 3, 'rgba(255,255,255,.18)');
+    return;
+  }
+  if (t === '*'){ // briques
+    R(ox, oy, T, T, season === 'hiver' ? '#c27e66' : '#b5654a');
+    for (let r = 0; r < 6; r++){
+      R(ox, oy + r*3 + 2, T, 1, '#d8c2b0');
+      const off = r % 2 ? 2 : 5;
+      for (let c = off; c < T; c += 6) R(ox + c, oy + r*3 - 1, 1, 3, '#d8c2b0');
+    }
+    return;
+  }
+  if (t === '~'){ // gravier
+    R(ox, oy, T, T, season === 'hiver' ? '#e2dccb' : '#d8cdb0');
+    for (let k = 0; k < 14; k++) R(ox + (hs(x,y,k+300)*16|0), oy + (hs(x,y,k+320)*16|0), 1, 1, k % 2 ? '#b8ab8a' : '#efe6cf');
+    return;
+  }
+  if (t === '&'){ // pelouse tondue
+    for (let k = 0; k < 4; k++) R(ox + k*4, oy, 4, T, k % 2 ? S.grass[0] : S.grass[2]);
+    return;
+  }
+  if (t === '%'){ // parking
+    R(ox, oy, T, T, season === 'hiver' ? '#6f757c' : '#5b6168');
+    R(ox, oy+1, 1, 10, '#f2efe0'); R(ox+15, oy+1, 1, 10, '#f2efe0'); R(ox, oy+15, T, 1, '#4b5157');
+    if (hs(x,y,330) < 0.6){
+      const c = ['#cf453a','#2e6fa8','#f2b134','#f4f4f4','#3f8f5a','#2b2b30'][(hs(x,y,331)*6)|0];
+      R(ox+4, oy+2, 8, 11, 'rgba(0,0,0,.2)'); R(ox+4, oy+1, 8, 11, c); R(ox+5, oy+3, 6, 3, '#9cc8e8'); R(ox+5, oy+9, 6, 1, 'rgba(0,0,0,.2)');
+    } else { R(ox+6, oy+5, 1, 5, '#f2efe0'); R(ox+7, oy+5, 2, 1, '#f2efe0'); R(ox+9, oy+6, 1, 1, '#f2efe0'); R(ox+7, oy+7, 2, 1, '#f2efe0'); }
+    return;
+  }
+  if (t === '^'){ // terre labourée
+    R(ox, oy, T, T, season === 'hiver' ? '#9a8068' : '#8a6440');
+    for (let r = 0; r < 5; r++) R(ox, oy + 1 + r*3, T, 1, '#6e4e30');
+    if (season === 'printemps') for (let k = 0; k < 8; k++) R(ox + (hs(x,y,k+340)*16|0), oy + 2 + (hs(x,y,k+350)*5|0)*3, 1, 1, '#7ab055');
+    if (season === 'hiver') for (let k = 0; k < 6; k++) R(ox + (hs(x,y,k+360)*15|0), oy + (hs(x,y,k+370)*5|0)*3, 2, 1, '#eef3f6');
+    return;
+  }
+  if (t === '!'){ // galets
+    R(ox, oy, T, T, '#cfcabe');
+    for (let k = 0; k < 10; k++){ const px = hs(x,y,k+380)*14|0, py = hs(x,y,k+390)*14|0; R(ox+px, oy+py, 2, 2, ['#9a958c','#b5b0a6','#e2ddd2','#8a8f94'][k % 4]); }
+    return;
+  }
   // herbe sous chemin, route, pavés et herbe
   R(ox, oy, T, T, S.grass[0]);
   for (let k = 0; k < 5; k++){
@@ -457,14 +553,14 @@ function drawGround(t, ox, oy, x, y, nb){
   }
   if (t === 'c'){
     const pc = season === 'hiver' ? '#c9bfae' : '#cdac7c', pd = season === 'hiver' ? '#b3a894' : '#b38f5c';
-    const con = c => c === 'c' || c === 'p' || c === 'q' || c === 'n';
+    const con = walkable;
     R(ox+4, oy+4, 8, 8, pc);
     if (con(nb(x, y-1))) R(ox+4, oy, 8, 4, pc);
     if (con(nb(x, y+1))) R(ox+4, oy+12, 8, 4, pc);
     if (con(nb(x-1, y))) R(ox, oy+4, 4, 8, pc);
     if (con(nb(x+1, y))) R(ox+12, oy+4, 4, 8, pc);
     for (let k = 0; k < 3; k++) R(ox+5+(hs(x,y,k+20)*6|0), oy+5+(hs(x,y,k+30)*6|0), 1, 1, pd);
-  } else if (t === 'R'){
+  } else if (t === 'R' || t === '+'){
     const as = season === 'hiver' ? '#6f757c' : '#5b6168', edge = '#4b5157', line = '#f2efe0';
     const isR = isRoad;
     const l = isR(nb(x-1, y)), r = isR(nb(x+1, y)), u = isR(nb(x, y-1)), d = isR(nb(x, y+1));
@@ -474,10 +570,23 @@ function drawGround(t, ox, oy, x, y, nb){
     if (!u) R(ox+1, oy+1, 14, 1, edge); if (!d) R(ox+1, oy+14, 14, 1, edge);
     if (!l) R(ox+1, oy+1, 1, 14, edge); if (!r) R(ox+14, oy+1, 1, 14, edge);
     const horiz = l || r, vert = u || d;
-    if (horiz && !vert){ R(ox+2, oy+7, 4, 1, line); R(ox+10, oy+7, 4, 1, line); }
+    if (t === '+'){
+      if (vert && !horiz) for (let k = 0; k < 5; k++) R(ox+2 + k*3, oy+2, 2, 12, '#f4f2ec');
+      else for (let k = 0; k < 5; k++) R(ox+2, oy+2 + k*3, 12, 2, '#f4f2ec');
+    }
+    else if (horiz && !vert){ R(ox+2, oy+7, 4, 1, line); R(ox+10, oy+7, 4, 1, line); }
     else if (vert && !horiz){ R(ox+7, oy+2, 1, 4, line); R(ox+7, oy+10, 1, 4, line); }
     else if (!horiz && !vert){ R(ox+6, oy+7, 4, 1, line); }
     if (season === 'hiver'){ R(ox+1, oy+1, 2, 1, '#fff'); R(ox+13, oy+14, 2, 1, '#fff'); }
+  } else if (t === 'X'){ // rails
+    const isX = c => c === 'X';
+    const l = isX(nb(x-1, y)), r = isX(nb(x+1, y)), u = isX(nb(x, y-1)), d = isX(nb(x, y+1));
+    const bal = season === 'hiver' ? '#c4c1b9' : '#9a958c', sl = '#6b4a2e', rail = '#5b6168';
+    const H = (x0, len) => { R(ox+x0, oy+5, len, 6, bal); for (let k = x0 + 1; k < x0 + len; k += 3) R(ox+k, oy+4, 1, 8, sl); R(ox+x0, oy+6, len, 1, rail); R(ox+x0, oy+9, len, 1, rail); };
+    const V = (y0, len) => { R(ox+5, oy+y0, 6, len, bal); for (let k = y0 + 1; k < y0 + len; k += 3) R(ox+4, oy+k, 8, 1, sl); R(ox+6, oy+y0, 1, len, rail); R(ox+9, oy+y0, 1, len, rail); };
+    R(ox+5, oy+5, 6, 6, bal);
+    if (!(l || r || u || d)) H(0, 16);
+    else { if (l) H(0, 8); if (r) H(8, 8); if (u) V(0, 8); if (d) V(8, 8); }
   } else if (t === 'p'){
     const a = season === 'hiver' ? '#d2d0cb' : '#bbb6ad', b = season === 'hiver' ? '#bcb9b2' : '#a29c92';
     R(ox, oy, T, T, a);
@@ -911,6 +1020,255 @@ function drawObject(o, ox, oy, x, y, withLights){
     if (!reduce && Math.sin(now/300 + x) > 0.2) R(ox+7, by+8, 2, 1, '#f2b134');
     L(ox+8, by+8, 10, 'win');
     break; }
+  case 'i': { // gare
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.16)');
+    R(ox+1, oy+4, 14, 10, '#e3d5c0'); R(ox+14, oy+4, 1, 10, 'rgba(0,0,0,.08)');
+    R(ox, oy+2, 16, 2, '#8a3f25'); R(ox+2, oy, 12, 2, '#8a3f25'); R(ox+5, oy-2, 6, 2, '#8a3f25');
+    if (season === 'hiver'){ R(ox+2, oy, 12, 1, '#fff'); R(ox+5, oy-2, 6, 1, '#fff'); }
+    R(ox+6, oy+1, 4, 3, '#f8f6f0'); R(ox+7, oy+2, 1, 1, '#2b2b30'); R(ox+8, oy+2, 1, 1, '#2b2b30');
+    R(ox+4, oy+5, 8, 1, '#2e6fa8');
+    R(ox+2, oy+7, 3, 3, '#9cc8e8'); R(ox+11, oy+7, 3, 3, '#9cc8e8');
+    R(ox+6, oy+8, 4, 6, '#2e6fa8'); R(ox+8, oy+8, 1, 6, '#245a8a');
+    R(ox, oy+14, 16, 1, '#b5b0a6');
+    if (withLights) lights.push({x:ox+2, y:oy+7, w:3, h:3, kind:'pane'}, {x:ox+11, y:oy+7, w:3, h:3, kind:'pane'});
+    L(ox+8, oy+10, 16, 'win');
+    break; }
+  case '1': { // boulangerie
+    R(ox+1, oy+14, 14, 2, 'rgba(0,0,0,.15)');
+    R(ox+2, oy+3, 12, 12, '#f0e2c4'); R(ox+1, oy+2, 14, 2, '#7a5434');
+    if (season === 'hiver') R(ox+1, oy+2, 14, 1, '#fff');
+    R(ox+3, oy+4, 10, 2, '#7a5434'); R(ox+4, oy+4, 8, 1, '#f2c14e');
+    for (let i = 0; i < 6; i++) R(ox+2+i*2, oy+7, 2, 2, i % 2 ? '#f0e2c4' : '#b8742e');
+    R(ox+3, oy+10, 6, 4, '#9cc8e8'); R(ox+4, oy+12, 4, 1, '#d9a052'); R(ox+4, oy+11, 3, 1, '#c98a3a');
+    R(ox+10, oy+10, 3, 5, '#7a5434');
+    if (!reduce && season !== 'hiver') for (let k = 0; k < 2; k++){ const t = (now/1500 + k/2) % 1; R(ox+12 + Math.round(Math.sin(t*5 + k)), oy+1 - Math.round(t*6), 1, 1, `rgba(255,236,200,${(0.8*(1-t)).toFixed(2)})`); }
+    if (withLights) lights.push({x:ox+3, y:oy+10, w:6, h:4, kind:'pane'});
+    L(ox+6, oy+12, 16, 'win');
+    break; }
+  case '2': { // café en terrasse
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.14)');
+    R(ox+1, oy+3, 8, 12, '#c97a5a'); R(ox, oy+2, 10, 2, '#46525e');
+    if (season === 'hiver') R(ox, oy+2, 10, 1, '#fff');
+    for (let i = 0; i < 5; i++) R(ox+i*2, oy+5, 2, 2, i % 2 ? '#ffffff' : '#cf453a');
+    R(ox+2, oy+8, 3, 3, '#9cc8e8'); R(ox+6, oy+9, 2, 6, '#3b434b');
+    if (season !== 'hiver'){ R(ox+9, oy+5, 7, 2, '#f2b134'); R(ox+10, oy+4, 5, 1, '#f2b134'); R(ox+12, oy+7, 1, 4, '#5a4632'); }
+    R(ox+10, oy+11, 5, 1, '#5a4632'); R(ox+10, oy+12, 1, 2, '#5a4632'); R(ox+14, oy+12, 1, 2, '#5a4632');
+    R(ox+9, oy+11, 1, 3, '#2e6fa8'); R(ox+15, oy+11, 1, 3, '#2e6fa8');
+    R(ox+11, oy+10, 1, 1, '#f4f2ec'); R(ox+13, oy+10, 1, 1, '#f4f2ec');
+    if (withLights) lights.push({x:ox+2, y:oy+8, w:3, h:3, kind:'pane'});
+    L(ox+11, oy+11, 14, 'win');
+    break; }
+  case '3': { // aire de jeux
+    R(ox+1, oy+11, 14, 4, season === 'hiver' ? '#e6e3d8' : '#e8d29a');
+    R(ox+1, oy+3, 1, 11, '#cf453a'); R(ox+7, oy+3, 1, 11, '#cf453a'); R(ox+1, oy+3, 7, 1, '#cf453a');
+    const sw = reduce ? 0 : Math.sin(now/500)*2.5;
+    for (let k = 1; k < 8; k++) R(Math.round(ox+4 + sw*k/8), oy+3+k, 1, 1, '#8a8f94');
+    R(Math.round(ox+4 + sw) - 1, oy+11, 3, 1, '#5a4632');
+    R(ox+10, oy+5, 1, 9, '#2e6fa8'); R(ox+12, oy+5, 1, 9, '#2e6fa8');
+    for (let k = 0; k < 4; k++) R(ox+10, oy+6+k*2, 3, 1, '#2e6fa8');
+    R(ox+10, oy+4, 3, 1, '#2e6fa8');
+    for (let k = 0; k < 7; k++) R(ox+12 + Math.round(k*0.45), oy+5+k, 2, 1, '#f2c14e');
+    if (season === 'hiver') R(ox+1, oy+3, 7, 1, '#fff');
+    break; }
+  case '4': { // feu de camp
+    for (const [a, b] of [[3,12],[4,10],[11,10],[12,12],[4,14],[11,14],[7,15]]) R(ox+a, oy+b, 2, 1, '#8a8f94');
+    R(ox+4, oy+12, 8, 2, '#6b4a2e'); R(ox+6, oy+11, 4, 1, '#5a3c22');
+    const fl = reduce ? 0 : Math.round(Math.sin(now/90));
+    R(ox+5, oy+10, 6, 2, '#e05a2a'); R(ox+6, oy+8 + fl, 4, 3, '#f08a30'); R(ox+7, oy+6 + fl, 2, 3, '#f2c14e'); R(ox+7, oy+9, 2, 2, '#ffe28a');
+    if (!reduce) for (let k = 0; k < 2; k++){ const t = (now/1100 + k/2) % 1; R(ox+8 + Math.round(Math.sin(t*6 + k)), oy+5 - Math.round(t*8), 1, 1, `rgba(255,190,90,${(1-t).toFixed(2)})`); }
+    L(ox+8, oy+9, 24, 'win');
+    break; }
+  case '5': { // ajoncs
+    shadow(ox, oy, 12);
+    R(ox+2, oy+8, 12, 6, '#3f6b3a'); R(ox+3, oy+6, 10, 2, '#3f6b3a'); R(ox+5, oy+5, 6, 1, '#3f6b3a');
+    for (let k = 0; k < 8; k++) R(ox+2 + (hs(x,y,k+600)*12|0), oy+5 + (hs(x,y,k+610)*8|0), 1, 2, '#527f44');
+    const bloom = season === 'hiver' ? 2 : season === 'ete' ? 5 : 9;
+    for (let k = 0; k < bloom; k++) R(ox+2 + (hs(x,y,k+620)*12|0), oy+5 + (hs(x,y,k+630)*8|0), 1, 1, '#f6d33a');
+    if (season === 'hiver') R(ox+3, oy+6, 10, 1, '#fff');
+    break; }
+  case '6': { // parcs à huîtres
+    for (let r = 0; r < 3; r++){
+      const yy = oy + 3 + r*4;
+      R(ox+1, yy+2, 14, 1, 'rgba(255,255,255,.3)');
+      R(ox+2, yy, 12, 2, '#4a5a4a'); R(ox+2, yy, 12, 1, '#6b7a62');
+      R(ox+2, yy+2, 1, 1, '#3b2e22'); R(ox+13, yy+2, 1, 1, '#3b2e22');
+    }
+    break; }
+  case '8': { // guirlandes
+    R(ox+1, oy+2, 1, 13, '#5a4632'); R(ox+14, oy+2, 1, 13, '#5a4632');
+    const cols = ['#cf453a','#f2b134','#3f8f5a','#2e6fa8','#e48fbf'];
+    for (let k = 0; k <= 12; k++){
+      const yy = oy + 3 + Math.round(Math.sin(k/12*Math.PI)*4);
+      R(ox+2+k, yy, 1, 1, '#3b434b');
+      if (k % 2 === 0){ R(ox+2+k, yy+1, 1, 1, cols[(k/2) % 5]); if (withLights) lights.push({x:ox+2+k, y:yy+1, w:1, h:1, kind:'pane'}); }
+    }
+    L(ox+8, oy+7, 14, 'win');
+    break; }
+  case '9': { // marché
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.14)');
+    const stall = (sx, c) => {
+      R(sx, oy+5, 7, 2, c); for (let i = 0; i < 7; i += 2) R(sx+i, oy+5, 1, 2, '#ffffff'); R(sx+1, oy+4, 5, 1, c);
+      R(sx, oy+7, 1, 7, '#7a5434'); R(sx+6, oy+7, 1, 7, '#7a5434'); R(sx, oy+10, 7, 2, '#9a6b3f');
+    };
+    stall(ox+1, '#3f8f5a'); stall(ox+8, '#cf453a');
+    R(ox+2, oy+9, 1, 1, '#e04848'); R(ox+3, oy+9, 1, 1, '#f2b134'); R(ox+5, oy+9, 1, 1, '#5aa04a');
+    R(ox+9, oy+9, 2, 1, '#e8862e'); R(ox+12, oy+9, 2, 1, '#9a7fe0');
+    if (season === 'hiver') R(ox+1, oy+4, 14, 1, '#fff');
+    break; }
+  case '0': { // char à voile
+    R(ox+2, oy+14, 12, 1, 'rgba(0,0,0,.14)');
+    R(ox+3, oy+12, 10, 1, '#5a4632'); R(ox+6, oy+11, 4, 1, '#2e6fa8');
+    R(ox+3, oy+13, 2, 2, '#2b2b30'); R(ox+11, oy+13, 2, 2, '#2b2b30'); R(ox+7, oy+13, 2, 2, '#2b2b30');
+    R(ox+8, oy+1, 1, 11, '#c9c4b8');
+    for (let k = 0; k < 9; k++){ const w = Math.min(k + 1, 6); R(ox+9, oy+2+k, w, 1, k % 3 === 2 ? '#cf453a' : '#f2b134'); }
+    break; }
+  case 'é': { // hôpital
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.18)');
+    R(ox+1, oy-2, 14, 17, '#f1f1ee'); R(ox+13, oy-2, 2, 17, 'rgba(0,0,0,.07)'); R(ox, oy-3, 16, 1, '#8a8f94');
+    if (season === 'hiver') R(ox, oy-3, 16, 1, '#fff');
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++){
+      const wx = ox+2 + c*4 + (c === 2 ? 1 : 0), wy = oy+2 + r*3;
+      R(wx, wy, 3, 2, '#9cc8e8');
+      if (withLights && hs(x*3 + c, y*5 + r, 700) < 0.6) lights.push({x:wx, y:wy, w:3, h:2, kind:'pane'});
+    }
+    R(ox+7, oy-2, 2, 3, '#d93b30'); R(ox+6, oy-1, 4, 1, '#d93b30');
+    R(ox+5, oy+10, 6, 1, '#d93b30'); R(ox+6, oy+11, 4, 4, '#9cc8e8'); R(ox+8, oy+11, 1, 4, '#cfe3ee');
+    L(ox+8, oy+12, 16, 'win');
+    break; }
+  case 'ü': { // pharmacie
+    R(ox+1, oy+14, 14, 2, 'rgba(0,0,0,.15)');
+    R(ox+2, oy+4, 12, 11, '#ece6da'); R(ox+1, oy+3, 14, 2, '#5b6168');
+    if (season === 'hiver') R(ox+1, oy+3, 14, 1, '#fff');
+    R(ox+3, oy+9, 6, 4, '#9cc8e8'); R(ox+4, oy+11, 1, 2, '#2fa84f'); R(ox+6, oy+10, 2, 3, '#f4f2ec');
+    R(ox+10, oy+9, 3, 6, '#3b434b');
+    const on = reduce || Math.floor(now/600) % 2;
+    R(ox+12, oy+5, 1, 3, on ? '#2fe06a' : '#2fa84f'); R(ox+11, oy+6, 3, 1, on ? '#2fe06a' : '#2fa84f');
+    R(ox+3, oy+6, 6, 1, '#2fa84f');
+    if (withLights){ lights.push({x:ox+3, y:oy+9, w:6, h:4, kind:'pane'}); if (on) lights.push({x:ox+12, y:oy+6, r:8, kind:'win'}); }
+    break; }
+  case 'è': { // poste
+    R(ox+1, oy+14, 14, 2, 'rgba(0,0,0,.15)');
+    R(ox+2, oy+4, 12, 11, '#e9e2cf'); R(ox+1, oy+2, 14, 2, '#2e5aa8'); R(ox+3, oy+1, 10, 1, '#2e5aa8');
+    if (season === 'hiver') R(ox+3, oy+1, 10, 1, '#fff');
+    R(ox+4, oy+5, 8, 2, '#f2c14e'); R(ox+7, oy+5, 2, 1, '#2e5aa8');
+    R(ox+3, oy+9, 3, 3, '#9cc8e8'); R(ox+7, oy+9, 3, 6, '#2e5aa8');
+    R(ox+11, oy+10, 3, 4, '#f2c14e'); R(ox+11, oy+11, 3, 1, '#2b2b30'); R(ox+12, oy+14, 1, 1, '#5b6168');
+    if (withLights) lights.push({x:ox+3, y:oy+9, w:3, h:3, kind:'pane'});
+    break; }
+  case 'à': { // bibliothèque
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.15)');
+    R(ox+1, oy+5, 14, 9, '#d6cfbf');
+    R(ox, oy+4, 16, 1, '#bdb4a2'); R(ox+2, oy+3, 12, 1, '#d6cfbf'); R(ox+4, oy+2, 8, 1, '#d6cfbf'); R(ox+6, oy+1, 4, 1, '#d6cfbf');
+    if (season === 'hiver'){ R(ox+4, oy+2, 8, 1, '#fff'); R(ox+6, oy+1, 4, 1, '#fff'); }
+    for (const cx of [2, 5, 10, 13]) R(ox+cx, oy+5, 1, 8, '#efe9dc');
+    R(ox+6, oy+7, 4, 6, '#6b4a2e'); for (let k = 0; k < 4; k++) R(ox+6+k, oy+8, 1, 2, ['#cf453a','#2e6fa8','#f2b134','#3f8f5a'][k]);
+    R(ox, oy+13, 16, 1, '#bdb4a2'); R(ox+1, oy+14, 14, 1, '#cfc8b8');
+    if (withLights) lights.push({x:ox+6, y:oy+7, w:4, h:3, kind:'pane'});
+    break; }
+  case 'ù': { // cinéma
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.18)');
+    R(ox+1, oy+1, 14, 14, '#3b2e40'); R(ox+1, oy+1, 14, 1, '#5a4660');
+    R(ox+2, oy+4, 12, 3, '#f2e6c8'); R(ox+4, oy+5, 8, 1, '#cf453a');
+    for (let k = 0; k < 7; k++){ const on = reduce || (Math.floor(now/250) + k) % 3; R(ox+2 + k*2, oy+3, 1, 1, on ? '#ffe28a' : '#8a7a50'); R(ox+2 + k*2, oy+7, 1, 1, on ? '#ffe28a' : '#8a7a50'); if (withLights && on) lights.push({x:ox+2 + k*2, y:oy+3, w:1, h:1, kind:'pane'}); }
+    R(ox+2, oy+9, 3, 5, '#2e6fa8'); R(ox+11, oy+9, 3, 5, '#e48fbf');
+    R(ox+6, oy+10, 4, 5, '#1e1e24'); R(ox+6, oy+14, 4, 1, '#cf453a');
+    if (season === 'hiver') R(ox+1, oy+1, 14, 1, '#fff');
+    L(ox+8, oy+6, 18, 'win');
+    break; }
+  case 'œ': { // caserne de pompiers
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.16)');
+    R(ox+1, oy+4, 14, 11, '#c9473a'); R(ox, oy+3, 16, 1, '#8a2f26');
+    R(ox+11, oy-2, 4, 6, '#c9473a'); R(ox+11, oy-3, 4, 1, '#8a2f26'); R(ox+12, oy, 2, 2, '#9cc8e8');
+    if (season === 'hiver'){ R(ox, oy+3, 16, 1, '#fff'); R(ox+11, oy-3, 4, 1, '#fff'); }
+    R(ox+2, oy+7, 8, 8, '#e8e2d4'); for (let k = 0; k < 4; k++) R(ox+2, oy+8 + k*2, 8, 1, '#c9c2b2');
+    R(ox+3, oy+12, 6, 3, '#d93b30'); R(ox+4, oy+11, 2, 1, '#9cc8e8');
+    R(ox+11, oy+8, 3, 3, '#9cc8e8'); R(ox+4, oy+5, 4, 1, '#f2c14e');
+    if (withLights) lights.push({x:ox+11, y:oy+8, w:3, h:3, kind:'pane'});
+    break; }
+  case 'ç': { // arrêt de bus
+    R(ox+1, oy+14, 13, 1, 'rgba(0,0,0,.15)');
+    R(ox+2, oy+5, 10, 1, '#3b434b'); R(ox+2, oy+6, 1, 8, '#3b434b'); R(ox+11, oy+6, 1, 8, '#3b434b');
+    R(ox+3, oy+6, 8, 6, 'rgba(180,215,230,.55)'); R(ox+4, oy+11, 6, 1, '#5a4632');
+    R(ox+13, oy+3, 1, 12, '#8a8f94'); R(ox+12, oy+2, 3, 3, '#2fa84f'); R(ox+13, oy+3, 1, 1, '#f4f2ec');
+    if (season === 'hiver') R(ox+2, oy+5, 10, 1, '#fff');
+    L(ox+7, oy+8, 10, 'win');
+    break; }
+  case 'â': { // feu tricolore
+    R(ox+6, oy+14, 4, 1, 'rgba(0,0,0,.18)');
+    R(ox+7, oy+5, 2, 10, '#3b434b');
+    R(ox+6, oy-2, 4, 8, '#2b2b30');
+    const ph = reduce ? 0 : Math.floor(now/1000 + x + y) % 6, st = ph < 3 ? 2 : ph < 4 ? 1 : 0;
+    const cols = [['#d93b30','#5a2020'], ['#f2a530','#5a4020'], ['#3fd06a','#204a2a']];
+    for (let k = 0; k < 3; k++){ R(ox+7, oy-1 + k*2, 2, 2, cols[k][st === k ? 0 : 1]); if (st === k) lights.push({x:ox+8, y:oy + k*2, r:6, kind:'win'}); }
+    break; }
+  case 'ê': { // statue
+    R(ox+3, oy+14, 10, 2, 'rgba(0,0,0,.15)');
+    R(ox+4, oy+10, 8, 5, '#b5b0a6'); R(ox+3, oy+9, 10, 1, '#cfc8b8'); R(ox+3, oy+14, 10, 1, '#9a958c');
+    const br = '#5e8a7a';
+    R(ox+7, oy+1, 2, 2, br); R(ox+6, oy+3, 4, 4, br); R(ox+6, oy+7, 1, 2, br); R(ox+9, oy+7, 1, 2, br); R(ox+10, oy+1, 1, 3, br); R(ox+9, oy+3, 2, 1, br);
+    if (season === 'hiver'){ R(ox+7, oy+1, 2, 1, '#fff'); R(ox+3, oy+9, 10, 1, '#fff'); }
+    break; }
+  case 'î': { // jardinière
+    R(ox+2, oy+14, 12, 1, 'rgba(0,0,0,.15)');
+    R(ox+2, oy+10, 12, 4, '#9a6b3f'); R(ox+2, oy+10, 12, 1, '#b88a5a');
+    R(ox+3, oy+8, 10, 2, season === 'hiver' ? '#8fa88a' : '#4f8d3e');
+    if (season !== 'hiver') for (let k = 0; k < 5; k++) R(ox+3 + k*2, oy+7 + (k % 2), 2, 1, S.flowers[k % 4]);
+    break; }
+  case 'ô': { // vélos
+    R(ox+1, oy+14, 14, 1, 'rgba(0,0,0,.12)');
+    const bike = (bx, col) => {
+      for (const wx of [bx, bx+5]){ R(wx, oy+10, 3, 1, '#2b2b30'); R(wx, oy+13, 3, 1, '#2b2b30'); R(wx-1, oy+11, 1, 2, '#2b2b30'); R(wx+3, oy+11, 1, 2, '#2b2b30'); }
+      R(bx+2, oy+9, 5, 1, col); R(bx+4, oy+9, 1, 3, col); R(bx+1, oy+8, 2, 1, '#2b2b30'); R(bx+6, oy+7, 1, 2, col);
+    };
+    R(ox+1, oy+12, 14, 1, '#8a8f94');
+    bike(ox+1, '#cf453a'); bike(ox+7, '#2e6fa8');
+    break; }
+  case 'û': { // terrain de foot
+    R(ox, oy, 16, 16, season === 'hiver' ? '#d9e6dc' : '#5aa04a');
+    for (let k = 0; k < 4; k++) R(ox + k*4, oy, 2, 16, 'rgba(255,255,255,.07)');
+    R(ox, oy, 16, 1, '#f4f2ec'); R(ox, oy+15, 16, 1, '#f4f2ec'); R(ox, oy, 1, 16, '#f4f2ec'); R(ox+15, oy, 1, 16, '#f4f2ec');
+    R(ox+8, oy, 1, 16, '#f4f2ec'); R(ox+7, oy+7, 3, 2, '#f4f2ec');
+    R(ox+1, oy+5, 2, 6, '#f4f2ec'); R(ox+13, oy+5, 2, 6, '#f4f2ec');
+    if (!reduce){ const t = now/900 + x; R(ox+8 + Math.round(Math.sin(t)*5), oy+8 + Math.round(Math.sin(t*1.7)*4), 1, 1, '#ffffff'); }
+    break; }
+  case 'ë': { // piscine
+    R(ox, oy, 16, 16, '#e8e4dc'); R(ox+1, oy+1, 14, 14, '#d6d1c6');
+    R(ox+2, oy+2, 12, 12, season === 'hiver' ? '#a7cfe4' : '#4fb3e0');
+    R(ox+2, oy+6, 12, 1, '#f4f2ec'); R(ox+2, oy+10, 12, 1, '#f4f2ec');
+    if (!reduce && season !== 'hiver') for (let k = 0; k < 2; k++) R(ox+3 + ((now/120 + k*7) % 9 | 0), oy+3 + k*4, 2, 1, 'rgba(255,255,255,.6)');
+    R(ox+12, oy+1, 1, 3, '#b5b0a6'); R(ox+14, oy+1, 1, 3, '#b5b0a6');
+    break; }
+  case 'ï': { // tente
+    R(ox+2, oy+14, 12, 1, 'rgba(0,0,0,.15)');
+    for (let k = 0; k < 8; k++) R(ox+8 - k, oy+6 + k, 1 + k*2, 1, k < 2 ? '#f2a530' : '#e8862e');
+    R(ox+7, oy+9, 2, 5, '#5a3c22'); R(ox+8, oy+5, 1, 2, '#5a4632');
+    if (season === 'hiver') R(ox+7, oy+6, 3, 1, '#fff');
+    break; }
+  case 'Ç': { // grange
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.16)');
+    R(ox+1, oy+5, 14, 10, '#a83a2c');
+    R(ox, oy+4, 16, 1, '#5b6168'); R(ox+2, oy+2, 12, 2, '#5b6168'); R(ox+5, oy, 6, 2, '#5b6168');
+    if (season === 'hiver'){ R(ox+2, oy+2, 12, 1, '#fff'); R(ox+5, oy, 6, 1, '#fff'); }
+    R(ox+5, oy+8, 6, 7, '#f4f2ec'); R(ox+6, oy+9, 4, 5, '#a83a2c');
+    for (let k = 0; k < 4; k++){ R(ox+6 + k, oy+9 + k, 1, 1, '#f4f2ec'); R(ox+9 - k, oy+9 + k, 1, 1, '#f4f2ec'); }
+    R(ox+7, oy+5, 2, 2, '#f4f2ec');
+    break; }
+  case 'É': { // tracteur
+    R(ox+2, oy+14, 12, 1, 'rgba(0,0,0,.18)');
+    R(ox+3, oy+8, 9, 3, '#3f8f3b'); R(ox+3, oy+4, 5, 4, '#3f8f3b'); R(ox+4, oy+5, 3, 2, '#9cc8e8'); R(ox+3, oy+3, 5, 1, '#2f6f2c');
+    R(ox+10, oy+6, 1, 2, '#2b2b30');
+    R(ox+2, oy+9, 5, 5, '#2b2b30'); R(ox+3, oy+10, 3, 3, '#f2c14e'); R(ox+4, oy+11, 1, 1, '#2b2b30');
+    R(ox+10, oy+11, 3, 3, '#2b2b30'); R(ox+11, oy+12, 1, 1, '#f2c14e');
+    break; }
+  case 'À': { // palmier
+    R(ox+4, oy+14, 8, 1, 'rgba(0,0,0,.15)');
+    for (let k = 0; k < 10; k++) R(ox+7 + (k < 4 ? 1 : 0), oy+4 + k, 2, 1, k % 2 ? '#8a6a48' : '#a8845c');
+    const fr = season === 'hiver' ? '#5f8a5a' : '#3f9a4a';
+    for (let k = 0; k < 6; k++){ R(ox+8 + k, oy+2 + Math.round(k*0.6), 1, 1, fr); R(ox+7 - k, oy+2 + Math.round(k*0.6), 1, 1, fr); R(ox+8 + k, oy+3 + Math.round(k*0.6), 1, 1, fr); R(ox+7 - k, oy+3 + Math.round(k*0.6), 1, 1, fr); }
+    R(ox+6, oy-1, 4, 3, fr); R(ox+8, oy-2, 4, 1, fr); R(ox+4, oy, 2, 1, fr);
+    R(ox+7, oy+3, 2, 2, '#7a5434');
+    if (season === 'hiver') R(ox+6, oy-1, 4, 1, '#fff');
+    break; }
   }
 }
 let iconMode = false;
@@ -936,7 +1294,7 @@ function syncWalkers(){
   walkers = walkers.filter(w => walkable(gAt(w.cx, w.cy)) && walkable(gAt(w.tx, w.ty)));
   while (walkers.length > want) walkers.pop();
   while (walkers.length < want) walkers.push(makeWalker(cells, walkers.length));
-  syncCars(); syncBoats(); syncAnimals();
+  syncCars(); syncBoats(); syncTrains(); syncAnimals();
 }
 const RES = {h:1, K:1, I:3, T:6};
 function residents(){ let n = 0; for (const o of O) if (o && RES[o]) n += RES[o]; return n; }
@@ -1064,6 +1422,73 @@ function drawBoat(b){
   lights.push({x, y:y-2, r:6, kind:'win'});
 }
 
+/* ---------- petit train ---------- */
+let trains = [];
+function syncTrains(){
+  const cells = []; for (let i = 0; i < N*N; i++) if (G[i] === 'X') cells.push(i);
+  const want = cells.length >= 6 ? (cells.length >= 40 ? 2 : 1) : 0;
+  trains = trains.filter(t => gAt(t.cx, t.cy) === 'X' && gAt(t.tx, t.ty) === 'X');
+  while (trains.length > want) trains.pop();
+  while (trains.length < want){
+    const i = cells[(Math.random()*cells.length)|0], x = i % N, y = (i / N)|0, k = trains.length % 2;
+    trains.push({cx:x, cy:y, tx:x, ty:y, px:x*T+8, py:y*T+8, dx:1, dy:0, prev:null, trail:[{x:x*T+8, y:y*T+8}], pause:0, stopped:false,
+      col:['#2e6f5a','#1f3550'][k], wag:[['#cf453a','#f2b134'],['#2e6fa8','#e8dcc8']][k]});
+  }
+}
+function updateTrains(dt){
+  for (const t of trains){
+    if (t.pause > 0){ t.pause -= dt; continue; }
+    const gx = t.tx*T + 8, gy = t.ty*T + 8, dx = gx - t.px, dy = gy - t.py, d = Math.hypot(dx, dy), sp = 15*dt;
+    if (d <= sp){
+      t.px = gx; t.py = gy; t.prev = [t.cx, t.cy]; t.cx = t.tx; t.cy = t.ty;
+      const atGare = near8(t.cy*N + t.cx, j => O[j] === 'i');
+      let opts = [[1,0],[-1,0],[0,1],[0,-1]].filter(([a,b]) => gAt(t.cx+a, t.cy+b) === 'X' && !(t.cx+a === t.prev[0] && t.cy+b === t.prev[1]));
+      if (!opts.length && gAt(t.prev[0], t.prev[1]) === 'X' && (t.prev[0] !== t.cx || t.prev[1] !== t.cy)) opts = [[t.prev[0]-t.cx, t.prev[1]-t.cy]];
+      const straight = opts.find(([a,b]) => a === t.dx && b === t.dy);
+      const n = (straight && Math.random() < 0.6) ? straight : opts[(Math.random()*opts.length)|0];
+      if (n){ t.dx = n[0]; t.dy = n[1]; t.tx = t.cx + n[0]; t.ty = t.cy + n[1]; }
+      if (atGare && !t.stopped){ t.stopped = true; t.pause = 2.5; } else if (!atGare) t.stopped = false;
+    } else {
+      t.px += dx/d*sp; t.py += dy/d*sp;
+      const last = t.trail[t.trail.length-1];
+      if (Math.hypot(t.px - last.x, t.py - last.y) >= 1){ t.trail.push({x:t.px, y:t.py}); if (t.trail.length > 60) t.trail.shift(); }
+    }
+  }
+}
+function along(trail, dist){
+  let acc = 0;
+  for (let k = trail.length - 1; k > 0; k--){
+    const a = trail[k], b = trail[k-1], seg = Math.hypot(a.x - b.x, a.y - b.y);
+    if (seg && acc + seg >= dist){ const r = (dist - acc)/seg; return {x:a.x + (b.x - a.x)*r, y:a.y + (b.y - a.y)*r, h:Math.abs(a.x - b.x) >= Math.abs(a.y - b.y)}; }
+    acc += seg;
+  }
+  return {x:trail[0].x, y:trail[0].y, h:true};
+}
+function drawCarriage(px, py, horiz, col, loco, f){
+  const x = Math.round(px), y = Math.round(py);
+  if (horiz){
+    R(x-4, y+2, 9, 1, 'rgba(0,0,0,.2)'); R(x-4, y-3, 9, 4, col); R(x-4, y-3, 9, 1, 'rgba(255,255,255,.25)');
+    R(x-3, y+1, 2, 1, '#1e1e24'); R(x+2, y+1, 2, 1, '#1e1e24');
+    if (loco){ const cb = f > 0 ? x-4 : x+2; R(cb, y-6, 3, 3, col); R(cb+1, y-5, 1, 1, '#9cc8e8'); R(f > 0 ? x+2 : x-3, y-5, 1, 2, '#2b2b30'); R(f > 0 ? x+5 : x-5, y-1, 1, 1, '#f2c14e'); }
+    else { R(x-3, y-2, 2, 1, '#9cc8e8'); R(x+1, y-2, 2, 1, '#9cc8e8'); }
+  } else {
+    R(x-2, y-3, 5, 8, 'rgba(0,0,0,.2)'); R(x-2, y-5, 5, 8, col); R(x-2, y-5, 5, 1, 'rgba(255,255,255,.25)');
+    if (loco){ R(x-1, y + (f > 0 ? -4 : 0), 3, 2, '#9cc8e8'); R(x, f > 0 ? y+1 : y-4, 1, 1, '#2b2b30'); }
+    else R(x-1, y-3, 3, 4, '#9cc8e8');
+  }
+}
+function drawTrain(t){
+  const w2 = along(t.trail, 20), w1 = along(t.trail, 10);
+  drawCarriage(w2.x, w2.y, w2.h, t.wag[1]); drawCarriage(w1.x, w1.y, w1.h, t.wag[0]);
+  const horiz = t.dx !== 0, f = horiz ? t.dx : t.dy;
+  drawCarriage(t.px, t.py, horiz, t.col, true, f);
+  if (!reduce) for (let k = 0; k < 3; k++){
+    const tt = (now/700 + k/3) % 1, sx = Math.round(t.px) + (horiz ? (f > 0 ? 2 : -3) : 0);
+    R(sx + Math.round(Math.sin(tt*5)), Math.round(t.py) - 7 - Math.round(tt*8), 2, 1, `rgba(240,240,240,${(0.75*(1 - tt)).toFixed(2)})`);
+  }
+  lights.push({x:t.px + (horiz ? f*6 : 0), y:t.py + (horiz ? -1 : f*5), r:9, kind:'win'});
+}
+
 /* ---------- animaux ---------- */
 let animals = [], gulls = [], gullSpots = [];
 const cellAtPx = (px, py) => gAt(Math.floor(px / T), Math.floor(py / T));
@@ -1077,7 +1502,7 @@ function near8(i, fn){
   }
   return false;
 }
-const landOK = c => c === 'g' || c === 'k' || c === 'z' || c === 's' || c === 'c';
+const landOK = c => c === 'g' || c === 'k' || c === 'z' || c === 's' || c === 'c' || c === '^' || c === '&' || c === '~';
 const grassOK = c => c === 'g' || c === 'k' || c === 'z';
 const SPECIES = {
   hen:  {anchor:i => O[i] === 'o' || O[i] === 'V' || O[i] === 'y' || O[i] === 'm', want:n => Math.min(10, n*2), rad:20, ok:landOK, sp:7, rest:[0.4, 2]},
@@ -1215,6 +1640,7 @@ function render(){
     for (const w of walkers) if (Math.round((w.py - 10)/T) === y) drawWalker(w);
     for (const c of cars) if (Math.floor(c.py / T) === y) drawCar(c);
     for (const b of boats) if (Math.floor(b.py / T) === y) drawBoat(b);
+    for (const t of trains) if (Math.floor(t.py / T) === y) drawTrain(t);
     for (const a of animals) if (Math.floor((a.y - 2) / T) === y) drawAnimal(a);
   }
   for (const g of gulls) drawGull(g);
@@ -1266,7 +1692,7 @@ function frame(ts){
   const dt = Math.min(0.1, (ts - last)/1000); last = ts;
   now = reduce ? 0 : ts;
   if (autoTime && !reduce) tday = (tday + dt/240) % 1;
-  if (!reduce){ updateWalkers(dt); updateCars(dt); updateBoats(dt); updateAnimals(dt); updateParticles(dt); }
+  if (!reduce){ updateWalkers(dt); updateCars(dt); updateBoats(dt); updateTrains(dt); updateAnimals(dt); updateParticles(dt); }
   render(); updateClock();
   requestAnimationFrame(frame);
 }
@@ -1276,15 +1702,25 @@ const TOOLS = [
   {id:'g', kind:'ground', name:'Herbe', group:'Sol'},
   {id:'c', kind:'ground', name:'Chemin', group:'Sol'},
   {id:'R', kind:'ground', name:'Route', group:'Sol'},
+  {id:'+', kind:'ground', name:'Passage piéton', group:'Sol'},
   {id:'p', kind:'ground', name:'Pavés', group:'Sol'},
+  {id:'#', kind:'ground', name:'Dalles', group:'Sol'},
+  {id:'*', kind:'ground', name:'Briques', group:'Sol'},
+  {id:'~', kind:'ground', name:'Gravier', group:'Sol'},
+  {id:'&', kind:'ground', name:'Pelouse', group:'Sol'},
+  {id:'%', kind:'ground', name:'Parking', group:'Sol'},
   {id:'s', kind:'ground', name:'Sable', group:'Sol'},
   {id:'w', kind:'ground', name:'Eau', group:'Sol'},
+  {id:'X', kind:'ground', name:'Rails', group:'Sol', story:true},
   {id:'k', kind:'ground', name:'Blé', group:'Campagne'},
   {id:'z', kind:'ground', name:'Colza', group:'Campagne'},
+  {id:'^', kind:'ground', name:'Terre labourée', group:'Campagne'},
   {id:'v', kind:'obj', name:'Vache', group:'Campagne'},
   {id:'o', kind:'obj', name:'Foin', group:'Campagne'},
   {id:'V', kind:'obj', name:'Potager', group:'Campagne'},
   {id:'m', kind:'obj', name:'Moulin', group:'Campagne'},
+  {id:'Ç', kind:'obj', name:'Grange', group:'Campagne'},
+  {id:'É', kind:'obj', name:'Tracteur', group:'Campagne'},
   {id:'u', kind:'obj', name:'Ruches', group:'Campagne', gift:true},
   {id:'e', kind:'obj', name:'Éolienne', group:'Campagne', gift:true},
   {id:'y', kind:'obj', name:'Serre', group:'Campagne', gift:true},
@@ -1293,22 +1729,44 @@ const TOOLS = [
   {id:'S', kind:'obj', name:'Magasin', group:'Ville'},
   {id:'A', kind:'obj', name:'Mairie', group:'Ville'},
   {id:'E', kind:'obj', name:'École', group:'Ville'},
-  {id:'Q', kind:'obj', name:'Fontaine', group:'Ville'},
-  {id:'O', kind:'obj', name:'Kiosque', group:'Ville', gift:true},
-  {id:'j', kind:'obj', name:'Manège', group:'Ville', gift:true},
+  {id:'é', kind:'obj', name:'Hôpital', group:'Ville'},
+  {id:'ü', kind:'obj', name:'Pharmacie', group:'Ville'},
+  {id:'è', kind:'obj', name:'Poste', group:'Ville'},
+  {id:'à', kind:'obj', name:'Bibliothèque', group:'Ville'},
+  {id:'ù', kind:'obj', name:'Cinéma', group:'Ville'},
+  {id:'œ', kind:'obj', name:'Pompiers', group:'Ville'},
+  {id:'i', kind:'obj', name:'Gare', group:'Ville', story:true},
+  {id:'Q', kind:'obj', name:'Fontaine', group:'Rue'},
+  {id:'ç', kind:'obj', name:'Arrêt de bus', group:'Rue'},
+  {id:'â', kind:'obj', name:'Feu tricolore', group:'Rue'},
+  {id:'ê', kind:'obj', name:'Statue', group:'Rue'},
+  {id:'î', kind:'obj', name:'Bac à fleurs', group:'Rue'},
+  {id:'ô', kind:'obj', name:'Vélos', group:'Rue'},
+  {id:'û', kind:'obj', name:'Terrain de foot', group:'Loisirs'},
+  {id:'ë', kind:'obj', name:'Piscine', group:'Loisirs'},
+  {id:'ï', kind:'obj', name:'Tente', group:'Loisirs'},
+  {id:'3', kind:'obj', name:'Aire de jeux', group:'Loisirs', story:true},
+  {id:'O', kind:'obj', name:'Kiosque', group:'Loisirs', gift:true},
+  {id:'j', kind:'obj', name:'Manège', group:'Loisirs', gift:true},
   {id:'t', kind:'obj', name:'Arbre', group:'Nature'},
   {id:'P', kind:'obj', name:'Sapin', group:'Nature'},
+  {id:'À', kind:'obj', name:'Palmier', group:'Nature'},
   {id:'f', kind:'obj', name:'Fleurs', group:'Nature'},
   {id:'H', kind:'obj', name:'Hortensias', group:'Nature'},
   {id:'r', kind:'obj', name:'Rocher', group:'Nature'},
   {id:'M', kind:'obj', name:'Menhir', group:'Nature'},
+  {id:'5', kind:'obj', name:'Ajoncs', group:'Nature', story:true},
   {id:'h', kind:'obj', name:'Maison', group:'Village'},
   {id:'K', kind:'obj', name:'Crêperie', group:'Village'},
+  {id:'9', kind:'obj', name:'Marché', group:'Village'},
   {id:'W', kind:'obj', name:'Puits', group:'Village'},
   {id:'b', kind:'obj', name:'Banc', group:'Village'},
   {id:'l', kind:'obj', name:'Lampadaire', group:'Village'},
   {id:'F', kind:'obj', name:'Clôture', group:'Village'},
   {id:'C', kind:'obj', name:'Chat', group:'Village'},
+  {id:'1', kind:'obj', name:'Boulangerie', group:'Village', story:true},
+  {id:'2', kind:'obj', name:'Café', group:'Village', story:true},
+  {id:'8', kind:'obj', name:'Guirlandes', group:'Village', story:true},
   {id:'a', kind:'obj', name:'Chapelle', group:'Village', gift:true},
   {id:'D', kind:'obj', name:'Calvaire', group:'Village', gift:true},
   {id:'d', kind:'obj', name:'Montgolfière', group:'Village', gift:true},
@@ -1318,24 +1776,28 @@ const TOOLS = [
   {id:'B', kind:'obj', name:'Barque', group:'Port'},
   {id:'J', kind:'obj', name:'Bouée', group:'Port'},
   {id:'N', kind:'obj', name:'Casiers', group:'Port'},
+  {id:'6', kind:'obj', name:'Parc à huîtres', group:'Port', story:true},
   {id:'L', kind:'obj', name:'Phare', group:'Port'},
+  {id:'!', kind:'ground', name:'Galets', group:'Plage'},
   {id:'Y', kind:'obj', name:'Cabine', group:'Plage'},
   {id:'U', kind:'obj', name:'Parasol', group:'Plage'},
   {id:'Z', kind:'obj', name:'Château', group:'Plage'},
+  {id:'0', kind:'obj', name:'Char à voile', group:'Plage', story:true},
+  {id:'4', kind:'obj', name:'Feu de camp', group:'Plage', story:true},
   {id:'x', kind:'erase', name:'Gomme', group:'Outils'}
 ];
-const WATER_OBJ = new Set(['B','G','J']);
+const WATER_OBJ = new Set(['B','G','J','6']);
 let tool = 'h', pipMode = false;
 let iconCanvases = {};
-const ICON_OY = {I:7, T:20, A:5, a:13, e:12, d:16};
+const ICON_OY = {I:7, T:20, A:5, a:13, e:12, d:16, 'é':7, 'À':6, 'œ':6, 'â':6};
 function drawIconTo(t, cv){
   const c = cv.getContext('2d'), prevC = C; C = c; c.clearRect(0, 0, 16, 20);
   if (t.kind === 'erase'){
     R(3, 9, 10, 6, '#e8a0a8'); R(3, 9, 4, 6, '#5a7fb0'); R(3, 15, 10, 1, 'rgba(0,0,0,.25)');
     C = prevC; return;
   }
-  const ground = t.kind === 'ground' ? t.id : WATER_OBJ.has(t.id) ? 'w' : t.id === 'N' ? 'q' : 'g';
-  const nb = t.id === 'n' ? ((x, y) => y === 0 ? 'g' : 'w') : ((x, y) => ((t.id === 'c' || t.id === 'R') && y === 0) ? t.id : (ground === 'w' ? 'w' : 'g'));
+  const ground = t.kind === 'ground' ? t.id : WATER_OBJ.has(t.id) ? 'w' : t.id === 'N' ? 'q' : (t.id === '0' || t.id === '4') ? 's' : 'g';
+  const nb = t.id === 'n' ? ((x, y) => y === 0 ? 'g' : 'w') : ((x, y) => ('cRX+'.includes(t.id) && y === 0) ? (t.id === '+' ? 'R' : t.id) : (ground === 'w' ? 'w' : 'g'));
   const oy = ICON_OY[t.id] ?? 4;
   drawGround(ground, 0, oy, 0, 0, nb);
   if (oy > 4) drawGround(ground, 0, oy - 16, 0, 0, nb);
@@ -1366,7 +1828,7 @@ function buildTools(){
     const wrap = document.createElement('div'); wrap.className = 'group tgroup'; wrap.dataset.g = g; wrap.hidden = g !== activeGroup;
     const grid = document.createElement('div'); grid.className = 'tools';
     for (const t of avail.filter(t => t.group === g)){
-      const b = document.createElement('button'); b.className = 'tool' + (t.gift ? ' isgift' : ''); b.id = 'tool-' + t.id; b.type = 'button';
+      const b = document.createElement('button'); b.className = 'tool' + (t.gift || t.story ? ' isgift' : ''); b.id = 'tool-' + t.id; b.type = 'button';
       b.setAttribute('aria-pressed', t.id === tool);
       const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; iconCanvases[t.id] = cv;
       const sp = document.createElement('span'); sp.textContent = t.name;
@@ -1431,7 +1893,7 @@ undoBtn.onclick = () => {
 /* ---------- pose ---------- */
 const toastEl = document.getElementById('toast'); let toastT;
 function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), 1800); }
-const TALL1 = new Set(['t','P','L','I','T','A','m','K','h','a','e','d']), TALL2 = new Set(['T','d']);
+const TALL1 = new Set(['t','P','L','I','T','A','m','K','h','a','e','d','é','œ','À','â']), TALL2 = new Set(['T','d']);
 function place(x, y, forceErase){
   const i = y*N + x, t = TOOLS.find(t => t.id === (forceErase ? 'x' : tool));
   if (t.kind === 'erase'){
@@ -1450,12 +1912,13 @@ function place(x, y, forceErase){
     G[i] = t.id;
     if (t.id === 'w' && O[i] && !WATER_OBJ.has(O[i])) O[i] = null;
     if (t.id !== 'w' && WATER_OBJ.has(O[i])) O[i] = null;
-    if (t.id === 'c' || t.id === 'R' || t.id === 'n') O[i] = null;
+    if ('cRnX+'.includes(t.id)) O[i] = null;
   } else {
     if (WATER_OBJ.has(t.id)){ if (G[i] !== 'w'){ toast(`${t.name} : à poser sur l'eau`); return; } }
     else if (G[i] === 'w' || G[i] === 'n'){ toast('Pose-le sur la terre ferme'); return; }
     else if (G[i] === 'c'){ toast('Les chemins restent libres pour les promeneurs'); return; }
-    else if (G[i] === 'R'){ toast('Les routes restent libres pour les voitures'); return; }
+    else if (G[i] === 'R' || G[i] === '+'){ toast('Les routes restent libres pour les voitures'); return; }
+    else if (G[i] === 'X'){ toast('Les rails restent libres pour le train'); return; }
     O[i] = t.id;
   }
   syncWalkers(); updateStats(); queueSave();
@@ -1564,8 +2027,8 @@ function updateStats(){
   const hab = residents(), p = walkers.length, v = cars.length;
   const an = animals.length + animals.reduce((s, a) => s + (a.babies ? a.babies.length : 0), 0) + gulls.length + walkers.filter(w => w.dog).length + cnt('v') + cnt('C');
   const pl = (n, w, ws) => `${n} ${n > 1 ? (ws || w + 's') : w}`;
-  document.getElementById('stats').textContent = `${N}×${N} · ${pl(hab, 'foyer')} · ${pl(p, 'promeneur')} · ${pl(v, 'voiture')} · ${pl(boats.length, 'voilier')} · ${pl(an, 'animal', 'animaux')}`;
-  checkRequest();
+  document.getElementById('stats').textContent = `${N}×${N} · ${pl(hab, 'foyer')} · ${pl(p, 'promeneur')} · ${pl(v, 'voiture')} · ${pl(boats.length, 'voilier')}${trains.length ? ' · ' + pl(trains.length, 'train') : ''} · ${pl(an, 'animal', 'animaux')}`;
+  checkRequest(); checkStory();
 }
 let pending = null;
 const confirmRow = document.getElementById('confirmRow'), resetRow = document.getElementById('resetRow');
@@ -1589,7 +2052,7 @@ growBtn.onclick = () => {
   applySize();
   for (const w of walkers){ w.px += sh; w.py += sh; w.cx += off; w.cy += off; w.tx += off; w.ty += off; if (w.prev){ w.prev[0] += off; w.prev[1] += off; } if (w.dog){ w.dog.x += sh; w.dog.y += sh; } }
   for (const c of cars){ c.px += sh; c.py += sh; c.cx += off; c.cy += off; c.tx += off; c.ty += off; c.prev = null; }
-  boats = []; animals = []; gulls = [];
+  boats = []; animals = []; gulls = []; trains = [];
   history = []; undoBtn.disabled = true;
   resetParticles(); syncWalkers(); updateStats(); updateGrowBtn(); save();
   toast(`Ton terrain fait maintenant ${N}×${N}`);
@@ -1652,7 +2115,11 @@ document.getElementById('confirmYes').onclick = () => {
 const GIFTS = ['u','e','O','a','y','j','D','d'];
 const GIFT_TXT = {u:'Des ruches', e:'Une éolienne', O:'Un kiosque à musique', a:'Une chapelle', y:'Une serre', j:'Un manège', D:'Un calvaire breton', d:'Une montgolfière'};
 function today(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
-function unlocked(id){ return !GIFTS.includes(id) || glob.gifts.includes(id); }
+function unlocked(id){
+  if (GIFTS.includes(id) && !glob.gifts.includes(id)) return false;
+  if (STORY_LOCK.includes(id) && !glob.story.unlocked.includes(id)) return false;
+  return true;
+}
 const giftBox = document.getElementById('giftBox'), giftBtn = document.getElementById('giftBtn'), giftCv = document.getElementById('giftCv');
 const giftText = document.getElementById('giftText'), giftOpen = document.getElementById('giftOpen'), giftLater = document.getElementById('giftLater');
 let giftShown = null;
@@ -1723,6 +2190,17 @@ const REQS = [
   {id:'bouee', txt:'une bouée pour guider les bateaux', base:() => cnt('J'), done:b => cnt('J') > b, avail:hasWater},
   {id:'menhir', txt:'un menhir, comme dans les légendes', base:() => cnt('M'), done:b => cnt('M') > b},
   {id:'phare', txt:'un phare de plus pour veiller sur la côte', base:() => cnt('L'), done:b => cnt('L') > b, avail:hasWater},
+  {id:'marche', txt:'un marché sur une place pavée', done:() => cntOn('9', 'p') > 0},
+  {id:'hopital', txt:'un hôpital pour soigner tout le monde', base:() => cnt('é'), done:b => cnt('é') > b},
+  {id:'bus', txt:'un arrêt de bus au bord d’une route', done:() => nearG('ç', 'R')},
+  {id:'feu', txt:'un feu tricolore au bord d’une route', done:() => nearG('â', 'R'), avail:() => cntG('R') > 0},
+  {id:'pieton', txt:'un passage piéton pour traverser la route', base:() => cntG('+'), done:b => cntG('+') > b, avail:() => cntG('R') > 0},
+  {id:'dalles', txt:'un trottoir en dalles d’au moins cinq cases', base:() => cntG('#'), done:b => cntG('#') >= b + 5},
+  {id:'foot', txt:'un terrain de foot pour les enfants', base:() => cnt('û'), done:b => cnt('û') > b},
+  {id:'piscine', txt:'une piscine pour les jours de pluie… ou de soleil', base:() => cnt('ë'), done:b => cnt('ë') > b},
+  {id:'palmier', txt:'un palmier, comme à Roscoff', base:() => cnt('À'), done:b => cnt('À') > b},
+  {id:'ferme', txt:'une grange au milieu des champs', done:() => O.some((o, i) => o === 'Ç' && near8(i, j => G[j] === 'k' || G[j] === 'z' || G[j] === '^'))},
+  {id:'velos', txt:'des vélos garés près de l’école', done:() => adjO('ô', 'E')},
 ];
 const reqCard = document.getElementById('reqCard'), reqText = document.getElementById('reqText'), reqSkip = document.getElementById('reqSkip');
 let reqThanks = false, reqTimer = null;
@@ -1738,7 +2216,7 @@ function newRequest(){
 function renderReq(){
   const r = reqDef();
   if (!r){ reqCard.hidden = true; return; }
-  reqCard.hidden = false; reqCard.classList.toggle('thanks', reqThanks);
+  reqCard.hidden = isStory(); reqCard.classList.toggle('thanks', reqThanks);
   reqText.textContent = '';
   const b = document.createElement('b'); b.textContent = glob.req.name;
   reqText.append(b, reqThanks ? ' te dit merci ! 💛' : ` aimerait ${r.txt}.`);
@@ -1748,7 +2226,7 @@ function renderReq(){
 }
 function checkRequest(){
   const r = reqDef();
-  if (!r || reqThanks) return;
+  if (!r || reqThanks || isStory()) return;
   if (glob.req.terrain !== terrains.cur){ glob.req.terrain = terrains.cur; glob.req.base = r.base ? r.base() : null; saveGlob(); return; }
   if (r.done(glob.req.base)){
     reqThanks = true; glob.hearts = (glob.hearts || 0) + 1; saveGlob(); renderReq();
@@ -1762,8 +2240,8 @@ reqSkip.onclick = newRequest;
 const tlist = document.getElementById('tlist');
 function afterTerrainChange(){
   zoom = (innerWidth < 700 ? 2 : 1) * N / 24; camX = camY = (W - vw())/2; applySize();
-  walkers = []; cars = []; boats = []; animals = []; gulls = []; history = []; undoBtn.disabled = true;
-  setSeason(season); syncWalkers(); updateStats(); updateGrowBtn(); renderTerrains();
+  walkers = []; cars = []; boats = []; animals = []; gulls = []; trains = []; history = []; undoBtn.disabled = true;
+  setSeason(season); syncWalkers(); renderReq(); updateStats(); updateGrowBtn(); renderTerrains();
 }
 function switchTerrain(id){
   if (id === terrains.cur) return;
@@ -1786,11 +2264,12 @@ function renderTerrains(){
   for (const t of terrains.list){
     const isCur = t.id === terrains.cur;
     const row = document.createElement('div'); row.className = 'trow' + (isCur ? ' cur' : '');
-    const name = document.createElement('span'); name.className = 'tname'; name.textContent = t.name;
+    const name = document.createElement('span'); name.className = 'tname'; name.textContent = (t.story ? '📖 ' : '') + t.name;
     const d = isCur ? {n:N} : readJSON(tKey(t.id));
     const size = document.createElement('span'); size.className = 'tsize'; size.textContent = d && d.n ? `${d.n}×${d.n}` : '';
     row.append(name, size);
     if (isCur) row.append(mkBtn('Renommer', () => startRename(row, t)));
+    else if (t.story) row.append(mkBtn('Ouvrir', () => switchTerrain(t.id)));
     else {
       row.append(mkBtn('Ouvrir', () => switchTerrain(t.id)));
       const del = mkBtn('×', () => {
@@ -1802,6 +2281,8 @@ function renderTerrains(){
     }
     tlist.append(row);
   }
+  document.getElementById('resetSection').hidden = isStory();
+  updateStoryBtn();
 }
 function startRename(row, t){
   const inp = document.createElement('input'); inp.type = 'text'; inp.value = t.name; inp.maxLength = 30; inp.className = 'tinput'; inp.id = 'rename-' + t.id;
@@ -1816,8 +2297,8 @@ document.getElementById('newSample').onclick = () => newTerrain('sample');
 /* ---------- sauvegarde de secours ---------- */
 document.getElementById('exportBtn').onclick = async () => {
   save();
-  const data = {app:'iloe', version:1, date:new Date().toISOString(), glob:{gifts:glob.gifts, hearts:glob.hearts},
-    terrains: terrains.list.map(t => ({name:t.name, data: t.id === terrains.cur ? terrainData() : readJSON(tKey(t.id))})).filter(t => t.data)};
+  const data = {app:'iloe', version:2, date:new Date().toISOString(), glob:{gifts:glob.gifts, hearts:glob.hearts, story:glob.story},
+    terrains: terrains.list.map(t => ({name:t.name, story:!!t.story, data: t.id === terrains.cur ? terrainData() : readJSON(tKey(t.id))})).filter(t => t.data)};
   const blob = new Blob([JSON.stringify(data)], {type:'application/json'});
   const res = await offerFile(blob, `iloe-sauvegarde-${today()}.json`, false);
   if (res === 'saved' || res === 'shared') toast('Copie de sauvegarde prête');
@@ -1838,12 +2319,21 @@ importFile.onchange = async () => {
     const id = newId() + n;
     let name = String(t.name || 'Terrain').slice(0, 30);
     if (terrains.list.some(x => x.name === name)) name = (name + ' (copie)').slice(0, 30);
-    terrains.list.push({id, name}); writeJSON(tKey(id), t.data);
+    const hasStory = glob.story.started && terrains.list.some(x => x.id === glob.story.terrain);
+    const asStory = !!t.story && !hasStory && d.glob && d.glob.story;
+    terrains.list.push(asStory ? {id, name, story:true} : {id, name}); writeJSON(tKey(id), t.data);
+    if (asStory){
+      const s = d.glob.story;
+      glob.story = Object.assign(glob.story, {started:true, asked:true, terrain:id, chapter:Math.max(0, Math.min(CHAPTERS.length, +s.chapter || 0)), pendingOutro:null});
+    }
     if (!first) first = id; n++;
   }
   if (d.glob){
     glob.gifts = [...new Set([...glob.gifts, ...(Array.isArray(d.glob.gifts) ? d.glob.gifts : [])])].filter(g => GIFTS.includes(g));
-    glob.hearts = Math.max(glob.hearts || 0, +d.glob.hearts || 0); saveGlob(); buildTools(); renderRecent();
+    glob.hearts = Math.max(glob.hearts || 0, +d.glob.hearts || 0);
+    const su = d.glob.story && Array.isArray(d.glob.story.unlocked) ? d.glob.story.unlocked : [];
+    glob.story.unlocked = [...new Set([...glob.story.unlocked, ...su])].filter(g => STORY_LOCK.includes(g));
+    saveGlob(); buildTools(); renderRecent();
   }
   if (!n){ toast('Aucun terrain trouvé dans ce fichier'); return; }
   terrains.cur = first; writeJSON(IDX, terrains);
@@ -1851,14 +2341,215 @@ importFile.onchange = async () => {
   toast(n > 1 ? `${n} terrains récupérés` : 'Terrain récupéré');
 };
 
+/* ---------- l'histoire ---------- */
+const STORY_LOCK = ['4','5','1','6','0','8','2','X','i','3'];
+const PEOPLE = {
+  job:   {name:'Job', role:'gardien du phare', skin:'#f1c9a5', hair:'#d9d4cc', clothes:'#1f3550', hat:'cap', beard:'#eeeeee'},
+  maelle:{name:'Maëlle', role:'jardinière', skin:'#f1c9a5', hair:'#c0582a', clothes:'#5a9e5a', long:true},
+  yann:  {name:'Yann', role:'pêcheur', skin:'#d8a07a', hair:'#5a3c22', clothes:'#f2c14e', hat:'cire', beard:'#7a5434'},
+  soizic:{name:'Soizic', role:'doyenne de l’île', skin:'#f1c9a5', hair:'#b8b4ac', clothes:'#1e1e24', hat:'coiffe'},
+  erwan: {name:'Erwan', role:'ingénieur du continent', skin:'#a86f4b', hair:'#1e1e24', clothes:'#2e6fa8', glasses:true},
+  anaig: {name:'Anaïg', role:'cheffe de gare', skin:'#f1c9a5', hair:'#3a2a1e', clothes:'#1f3550', hat:'chef', long:true},
+  rozenn:{name:'Rozenn', role:'maire de l’île', skin:'#d8a07a', hair:'#2b2b30', clothes:'#3b434b', sash:true, long:true},
+};
+const CHAPTERS = [
+  {title:'L’arrivée', who:'job',
+   intro:['Te voilà enfin ! Ça fait des années que plus personne ne débarque sur l’île. Il n’y a que moi, mon phare et les mouettes…', 'Si tu veux rester, il te faudra un toit : une maison, un chemin pour la rejoindre et un potager pour te nourrir. Je compte sur toi !'],
+   outro:['Une maison, un chemin, un potager… L’île respire à nouveau !', 'Ce soir, on fera un feu sur la plage. Je t’ai mis de côté de quoi l’allumer, et quelques ajoncs pour fleurir la lande.'],
+   goals:[['Maison', () => cnt('h'), 1], ['Cases de chemin', () => cntG('c'), 5], ['Potager', () => cnt('V'), 1]], reward:['4','5']},
+  {title:'Les premiers voisins', who:'maelle',
+   intro:['Bonjour ! J’ai vu la fumée de ton feu depuis le continent.', 'Ma famille et moi, on aimerait s’installer ici. Il nous faudrait trois maisons en tout, un puits pour l’eau et quelques massifs de fleurs, pour que ce soit joli.'],
+   outro:['On est chez nous ! Les enfants courent déjà sur la plage.', 'Pour fêter ça, mon cousin ouvre une boulangerie : rien de tel que le pain chaud pour attirer du monde.'],
+   goals:[['Maisons', () => cnt('h'), 3], ['Puits', () => cnt('W'), 1], ['Massifs de fleurs', () => cnt('f') + cnt('H'), 4]], reward:['1']},
+  {title:'Le port', who:'yann',
+   intro:['Salut ! Je suis pêcheur, comme mon père et son père avant lui.', 'Si l’île avait un vrai port, je pourrais y amarrer mon bateau. Il faudrait un quai d’au moins trois cases, une barque et un chalutier.'],
+   outro:['Les bateaux sont rentrés, et les mouettes ont suivi !', 'Avec ce port, on va pouvoir élever des huîtres. Et regarde ce que les gamins ont bricolé avec une vieille voile : un char à voile !'],
+   goals:[['Cases de quai', () => cntG('q'), 3], ['Barque', () => cnt('B'), 1], ['Chalutier', () => cnt('G'), 1]], reward:['6','0']},
+  {title:'La fête du village', who:'soizic',
+   intro:['Oh, à mon âge, j’en ai vu, des fêtes ! Mais ici, jamais.', 'Un fest-noz, voilà ce qu’il nous faut. Une crêperie pour les galettes, une place pavée pour danser, trois lampadaires pour y voir clair et deux bancs pour les anciens comme moi.'],
+   outro:['Quelle soirée ! On a dansé la gavotte jusqu’au bout de la nuit.', 'Je t’offre les guirlandes de la fête, garde-les. Et la petite Nolwenn ouvre un café en terrasse.'],
+   goals:[['Crêperie', () => cnt('K'), 1], ['Cases de pavés', () => cntG('p'), 4], ['Lampadaires', () => cnt('l'), 3], ['Bancs', () => cnt('b'), 2]], reward:['8','2']},
+  {title:'Le pont vers le continent', who:'erwan',
+   intro:['Bonjour ! Je viens du continent. Tout le monde parle de votre île, mais pour venir, il faut prendre le bateau.', 'Construisons un pont d’au moins trois cases et une route de six cases : les voitures pourront enfin passer.'],
+   outro:['Le pont tient bon ! Les premières voitures arrivent déjà.', 'Prochaine étape : le train. Voici des rails et les plans d’une gare.'],
+   goals:[['Cases de pont', () => cntG('n'), 3], ['Cases de route', () => cntG('R'), 6]], reward:['X','i']},
+  {title:'Le petit train', who:'anaig',
+   intro:['Tchou tchou ! Je serai ta cheffe de gare.', 'Pose une gare et au moins dix cases de rails, et le petit train fera le tour de l’île. Il s’arrêtera à chaque fois qu’il passe devant la gare.'],
+   outro:['Le train siffle, tout le monde se met à la fenêtre !', 'Avec tous ces visiteurs, le marché du samedi déborde ! Et pour les enfants, voici une aire de jeux.'],
+   goals:[['Gare', () => cnt('i'), 1], ['Cases de rails', () => cntG('X'), 10]], reward:['3']},
+  {title:'La grande ville', who:'rozenn',
+   intro:['Je m’appelle Rozenn, et les habitants viennent de m’élire maire. L’île grandit si vite !', 'Pour en faire une vraie petite ville, il nous faut une mairie, une école et de quoi loger 30 foyers. Les immeubles et les tours t’aideront, et tu peux agrandir l’île depuis la ⚙.'],
+   outro:['L’île est devenue une ville, et c’est grâce à toi.', 'Le vieux Job a rallumé son phare en ton honneur. Fin de l’histoire… pour l’instant !'],
+   goals:[['Mairie', () => cnt('A'), 1], ['École', () => cnt('E'), 1], ['Foyers', () => residents(), 30]], reward:[]},
+];
+function isStory(){ const t = terrains.list.find(t => t.id === terrains.cur); return !!(t && t.story); }
+function drawPortrait(cv, p){
+  const c = cv.getContext('2d'), prevC = C; C = c; c.clearRect(0, 0, 16, 16);
+  R(3, 12, 10, 4, p.clothes);
+  if (p.sash){ R(4, 12, 2, 1, '#2e5aa8'); R(6, 13, 2, 1, '#ffffff'); R(8, 14, 2, 1, '#cf453a'); R(10, 15, 2, 1, '#cf453a'); }
+  if (p.hat === 'coiffe') R(5, 13, 6, 1, '#e08a30');
+  if (p.long){ R(4, 6, 1, 7, p.hair); R(11, 6, 1, 7, p.hair); }
+  R(5, 5, 6, 7, p.skin);
+  R(5, 4, 6, 2, p.hair); R(4, 5, 1, 3, p.hair); R(11, 5, 1, 3, p.hair);
+  R(6, 8, 1, 1, '#2b2b30'); R(9, 8, 1, 1, '#2b2b30');
+  if (p.beard) R(5, 10, 6, 2, p.beard);
+  R(7, 10, 2, 1, '#b0604a');
+  if (p.glasses){ R(5, 8, 2, 1, '#2b2b30'); R(8, 8, 3, 1, '#2b2b30'); R(6, 8, 1, 1, '#9cc8e8'); R(9, 8, 1, 1, '#9cc8e8'); }
+  if (p.hat === 'cap' || p.hat === 'chef'){ R(4, 3, 8, 2, p.hat === 'cap' ? '#1f3550' : '#cf453a'); R(4, 5, 8, 1, '#1e1e24'); R(7, 3, 2, 1, '#f2c14e'); }
+  if (p.hat === 'cire'){ R(4, 2, 8, 3, '#f2c14e'); R(3, 4, 2, 7, '#f2c14e'); R(11, 4, 2, 7, '#f2c14e'); }
+  if (p.hat === 'coiffe'){ R(6, 0, 4, 4, '#fafafa'); R(5, 3, 6, 2, '#ececec'); R(7, 1, 2, 2, '#e8e0f0'); }
+  C = prevC;
+}
+function makeIsland(){
+  N = 24; W = N*T; G = Array(N*N).fill('w'); O = Array(N*N).fill(null);
+  const cx = 11.5, cy = 11.5, rx = 8.6, ry = 7.4;
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++){
+    const d = ((x - cx)/rx)**2 + ((y - cy)/ry)**2 + (hs(x, y, 7) - 0.5)*0.22;
+    if (d < 0.6) G[y*N + x] = 'g'; else if (d < 1) G[y*N + x] = 's';
+  }
+  let best = -1e9, bi = -1;
+  for (let i = 0; i < N*N; i++){ const x = i % N, y = (i / N)|0; if (G[i] === 's' && x - y*1.1 > best){ best = x - y*1.1; bi = i; } }
+  for (let i = 0; i < N*N; i++){
+    const x = i % N, y = (i / N)|0, r = hs(x, y, 77), dc = Math.hypot(x - cx, y - cy);
+    if (G[i] === 'g' && dc > 3.2) O[i] = r < 0.09 ? 't' : r < 0.13 ? 'P' : r < 0.17 ? 'f' : r < 0.19 ? 'r' : null;
+    else if (G[i] === 's') O[i] = r < 0.06 ? 'r' : null;
+  }
+  if (bi >= 0) O[bi] = 'L';
+}
+const storyBox = document.getElementById('storyBox'), storyFace = document.getElementById('storyFace');
+const storyKicker = document.getElementById('storyKicker'), storyTitle = document.getElementById('storyTitle'), storyWho = document.getElementById('storyWho');
+const storyBody = document.getElementById('storyBody'), storyRewards = document.getElementById('storyRewards');
+const storyGo = document.getElementById('storyGo'), storyAlt = document.getElementById('storyAlt');
+const storyCard = document.getElementById('storyCard'), scTitle = document.getElementById('scTitle'), scGoals = document.getElementById('scGoals');
+let storyMode = null;
+function openStoryModal({mode, who, kicker, title, paras, rewards, go, alt}){
+  storyMode = mode;
+  const p = who && PEOPLE[who];
+  storyFace.hidden = !p; if (p) drawPortrait(storyFace, p);
+  storyKicker.textContent = kicker; storyTitle.textContent = title;
+  storyWho.hidden = !p; storyWho.textContent = p ? `${p.name}, ${p.role}` : '';
+  storyBody.innerHTML = '';
+  for (const t of paras){ if (typeof t === 'string'){ const el = document.createElement('p'); el.textContent = t; storyBody.append(el); } else storyBody.append(t); }
+  storyRewards.innerHTML = ''; storyRewards.hidden = !(rewards && rewards.length);
+  for (const id of rewards || []){
+    const t = TOOLS.find(t => t.id === id), d = document.createElement('div'); d.className = 'rw';
+    const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; drawIconTo(t, cv);
+    const s = document.createElement('span'); s.textContent = t.name; d.append(cv, s); storyRewards.append(d);
+  }
+  storyGo.textContent = go; storyAlt.hidden = !alt; if (alt) storyAlt.textContent = alt;
+  storyBox.hidden = false; storyBox.querySelector('.story-card').scrollTop = 0;
+}
+function goalsList(ch){
+  const ul = document.createElement('ul'); ul.className = 'story-goals';
+  for (const [label, , need] of ch.goals){ const li = document.createElement('li'); li.textContent = need > 1 ? `${label} : ${need}` : label; ul.append(li); }
+  return ul;
+}
+function openChapter(kind, i){
+  const ch = CHAPTERS[i]; if (!ch) return;
+  if (kind === 'intro') openStoryModal({mode:'intro', who:ch.who, kicker:`Chapitre ${i+1} sur ${CHAPTERS.length}`, title:ch.title, paras:[...ch.intro, goalsList(ch)], go:'C’est parti !'});
+  else openStoryModal({mode:'outro', who:ch.who, kicker:`Chapitre ${i+1} terminé 💛`, title:ch.title, paras:ch.outro, rewards:ch.reward, go: i + 1 < CHAPTERS.length ? 'Chapitre suivant' : 'Merci !'});
+}
+function openBook(){
+  const parts = [], last = Math.min(glob.story.chapter, CHAPTERS.length - 1);
+  for (let i = 0; i <= last; i++){
+    const ch = CHAPTERS[i], h = document.createElement('h3'); h.textContent = `${i+1}. ${ch.title}`; parts.push(h);
+    parts.push(...ch.intro);
+    if (i < glob.story.chapter) for (const t of ch.outro){ const el = document.createElement('p'); el.className = 'outro'; el.textContent = t; parts.push(el); }
+  }
+  openStoryModal({mode:'book', kicker:'Carnet de l’île', title:'L’île de l’histoire', paras:parts, go:'Fermer'});
+}
+function maybeInvite(){
+  if (glob.story.asked || glob.story.started || !giftBox.hidden || !storyBox.hidden) return;
+  openStoryModal({mode:'invite', who:'job', kicker:'Nouveau', title:'L’île de l’histoire',
+    paras:['Une petite île bretonne t’attend, presque vide. Fais-la revivre chapitre après chapitre, avec ses habitants.', 'Chaque chapitre te fait gagner de nouveaux objets : boulangerie, parc à huîtres, petit train… Ils seront aussi disponibles dans tes autres terrains.', 'Ton village actuel ne change pas : l’île est un terrain à part, que tu retrouves dans la ⚙.'],
+    go:'Commencer l’histoire', alt:'Plus tard'});
+}
+function startStory(){
+  if (glob.story.started && terrains.list.some(t => t.id === glob.story.terrain)){ switchTerrain(glob.story.terrain); return; }
+  save();
+  const id = 'story' + newId();
+  terrains.list.unshift({id, name:'L’île de l’histoire', story:true});
+  terrains.cur = id; writeJSON(IDX, terrains);
+  makeIsland(); save();
+  Object.assign(glob.story, {started:true, asked:true, terrain:id, chapter:0, pendingOutro:null}); saveGlob();
+  afterTerrainChange(); setMenu(false);
+  setTimeout(() => openChapter('intro', 0), 300);
+}
+function completeChapter(){
+  const i = glob.story.chapter, ch = CHAPTERS[i];
+  glob.story.pendingOutro = i;
+  for (const id of ch.reward) if (!glob.story.unlocked.includes(id)) glob.story.unlocked.push(id);
+  glob.hearts = (glob.hearts || 0) + (i === CHAPTERS.length - 1 ? 3 : 1);
+  saveGlob(); buildTools(); renderRecent(); renderReq();
+  openChapter('outro', i);
+}
+function renderStoryCard(){
+  const on = isStory();
+  storyCard.hidden = !on;
+  if (!on) return;
+  const i = glob.story.chapter, ch = CHAPTERS[i];
+  scGoals.innerHTML = '';
+  if (!ch){
+    scTitle.textContent = 'Histoire terminée 💛';
+    const li = document.createElement('li'); li.className = 'free'; li.textContent = 'Continue de faire grandir ton île comme tu veux.'; scGoals.append(li);
+    return;
+  }
+  scTitle.textContent = `Chapitre ${i+1} · ${ch.title}`;
+  for (const [label, f, need] of ch.goals){
+    const cur = Math.min(f(), need), li = document.createElement('li');
+    li.className = cur >= need ? 'ok' : ''; li.textContent = `${label} ${cur}/${need}`; scGoals.append(li);
+  }
+}
+function checkStory(){
+  if (!isStory()) { storyCard.hidden = true; return; }
+  renderStoryCard();
+  if (!storyBox.hidden || !giftBox.hidden) return;
+  if (glob.story.pendingOutro != null){ openChapter('outro', glob.story.pendingOutro); return; }
+  const ch = CHAPTERS[glob.story.chapter];
+  if (ch && ch.goals.every(([, f, n]) => f() >= n)) completeChapter();
+}
+function updateStoryBtn(){
+  const b = document.getElementById('storyBtn');
+  const has = glob.story.started && terrains.list.some(t => t.id === glob.story.terrain);
+  b.textContent = !has ? '📖 Commencer l’histoire' : isStory() ? '📖 Carnet de l’île' : '📖 Aller sur l’île';
+}
+document.getElementById('storyBtn').onclick = () => {
+  const has = glob.story.started && terrains.list.some(t => t.id === glob.story.terrain);
+  if (!has){ setMenu(false); startStory(); }
+  else if (!isStory()) switchTerrain(glob.story.terrain);
+  else { setMenu(false); openBook(); }
+};
+document.getElementById('scBook').onclick = openBook;
+storyGo.onclick = () => {
+  if (storyMode === 'outro'){
+    glob.story.chapter = (glob.story.pendingOutro ?? glob.story.chapter) + 1; glob.story.pendingOutro = null; saveGlob();
+    storyBox.hidden = true; renderStoryCard(); updateStoryBtn();
+    if (CHAPTERS[glob.story.chapter]) setTimeout(() => openChapter('intro', glob.story.chapter), 300);
+    else setTimeout(updateStats, 300);
+    return;
+  }
+  if (storyMode === 'invite'){ glob.story.asked = true; saveGlob(); storyBox.hidden = true; startStory(); return; }
+  storyBox.hidden = true; updateStats();
+};
+storyAlt.onclick = () => {
+  if (storyMode === 'invite'){ glob.story.asked = true; saveGlob(); toast('L’histoire t’attend dans la ⚙'); }
+  storyBox.hidden = true;
+};
+storyBox.addEventListener('click', e => { if (e.target === storyBox && storyMode !== 'outro'){ if (storyMode === 'invite'){ glob.story.asked = true; saveGlob(); } storyBox.hidden = true; } });
+giftLater.addEventListener('click', () => setTimeout(maybeInvite, 400));
+giftBox.addEventListener('click', e => { if (e.target === giftBox) setTimeout(maybeInvite, 400); });
+giftOpen.addEventListener('click', () => { if (giftBox.hidden) setTimeout(() => { maybeInvite(); updateStats(); }, 600); });
+
 /* ---------- démarrage ---------- */
 const ecv = document.createElement('canvas'); ecv.width = 16; ecv.height = 20;
 document.getElementById('eraseIcon').replaceWith(ecv); drawIconTo(TOOLS.find(t => t.id === 'x'), ecv);
 glob.recent = (glob.recent || []).filter(id => TOOLS.some(t => t.id === id));
 buildTools(); setSeason(season); syncWalkers(); renderTerrains();
 if (!reqDef()) newRequest(); else renderReq();
-updateStats(); updateGiftBtn();
-if (giftWaiting()) setTimeout(showGift, 900);
+updateGiftBtn(); updateStats();
+if (glob.story.pendingOutro != null && isStory()){ /* updateStats a déjà rouvert la fin du chapitre */ }
+else if (giftWaiting()) setTimeout(showGift, 900);
+else setTimeout(maybeInvite, 900);
 requestAnimationFrame(frame);
 </script>
 
