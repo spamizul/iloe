@@ -388,7 +388,7 @@ function expand(g, o, n0, OFF, extras){
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++){
     const sx = Math.max(0, Math.min(n0-1, x - OFF)), sy = Math.max(0, Math.min(n0-1, y - OFF));
     const inside = x - OFF === sx && y - OFF === sy;
-    let gr = g[sy*n0 + sx]; if (!inside && 'cpR#*~+%&X='.includes(gr)) gr = 'g'; if (!inside && (gr === 'n' || gr === 'q' || gr === 'Î')) gr = 'w';
+    let gr = g[sy*n0 + sx]; if (!inside && 'cpR#*~+%&X=µ¶±£'.includes(gr)) gr = 'g'; if (!inside && (gr === 'n' || gr === 'q' || gr === 'Î')) gr = 'w';
     G.push(gr);
     let ob = inside ? o[sy*n0 + sx] : null;
     if (!inside && extras){
@@ -451,7 +451,7 @@ let saveTimer = null;
 function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(save, 300); }
 
 const gAt = (x, y) => (x < 0 || y < 0 || x >= N || y >= N) ? null : G[y*N + x];
-const walkable = c => c === 'c' || c === 'p' || c === 'q' || c === 'n' || c === '#' || c === '*' || c === '~' || c === '+' || c === 'Î';
+const walkable = c => c === 'c' || c === 'p' || c === 'q' || c === 'n' || c === '#' || c === '*' || c === '~' || c === '+' || c === 'Î' || c === 'µ' || c === '¶' || c === '±' || c === '£';
 const isRoad = c => c === 'R' || c === 'n' || c === '+' || c === '=';
 const isRail = c => c === 'X' || c === '=';
 
@@ -553,6 +553,46 @@ function drawGround(t, ox, oy, x, y, nb){
     R(ox, oy, T, T, a);
     for (let k = 0; k < 4; k++){ R(ox, oy + k*4, T, 1, b); R(ox + k*4, oy, 1, T, b); }
     R(ox + 1 + ((hs(x,y,1)*3|0))*4, oy + 1 + ((hs(x,y,2)*3|0))*4, 3, 3, 'rgba(255,255,255,.18)');
+    return;
+  }
+  if (t === 'µ'){ // vieux pavés de granit arrondis
+    R(ox, oy, T, T, season === 'hiver' ? '#a39d93' : '#7d776d');
+    const cols = season === 'hiver' ? ['#dcd8d0','#cfcac1','#e6e2da','#c4bfb6'] : ['#b9b2a6','#a9a296','#c4bdb0','#9e978b'];
+    for (let r = 0; r < 4; r++) for (let c = -1; c < 4; c++){
+      const sx = ox + c*4 + (r % 2 ? 2 : 0), sy = oy + r*4, col = cols[(hs(x*5 + c, y*5 + r, 801)*4)|0];
+      const x0 = Math.max(ox, sx), x1 = Math.min(ox + T, sx + 4);
+      if (x1 - x0 < 2) continue;
+      R(x0 + (sx < ox ? 0 : 1), sy, x1 - x0 - (sx < ox ? 1 : 2) + (x1 < sx + 4 ? 1 : 0), 1, col);
+      R(x0, sy + 1, x1 - x0, 2, col);
+      R(x0 + (sx < ox ? 0 : 1), sy + 1, 1, 1, 'rgba(255,255,255,.25)');
+    }
+    return;
+  }
+  if (t === '¶'){ // rue piétonne en dalles claires
+    const a = season === 'hiver' ? '#efe8da' : '#e3d7bf', j = '#cdbfa4', curb = '#a89a80';
+    R(ox, oy, T, T, a);
+    for (let r = 0; r < 4; r++){ R(ox, oy + r*4 + 3, T, 1, j); const off = r % 2 ? 4 : 0; for (let c = off; c < T; c += 8) R(ox + c, oy + r*4, 1, 3, j); }
+    const same = c => c === '¶';
+    if (!same(nb(x, y-1))){ R(ox, oy, T, 1, curb); R(ox, oy+1, T, 1, 'rgba(0,0,0,.06)'); }
+    if (!same(nb(x, y+1))) R(ox, oy+T-1, T, 1, curb);
+    if (!same(nb(x-1, y))) R(ox, oy, 1, T, curb);
+    if (!same(nb(x+1, y))) R(ox+T-1, oy, 1, T, curb);
+    return;
+  }
+  if (t === '±'){ // mosaïque de place
+    const tc = '#c8734f', cr = season === 'hiver' ? '#f6efe2' : '#efe3cc';
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) R(ox + c*4, oy + r*4, 4, 4, (r + c) % 2 ? tc : cr);
+    R(ox+7, oy+5, 2, 6, '#2e6fa8'); R(ox+5, oy+7, 6, 2, '#2e6fa8'); R(ox+7, oy+7, 2, 2, '#f2c14e');
+    R(ox, oy, T, 1, 'rgba(0,0,0,.08)'); R(ox, oy, 1, T, 'rgba(0,0,0,.08)');
+    return;
+  }
+  if (t === '£'){ // allée en planches de bois
+    R(ox, oy, T, T, S.grass[0]);
+    const vert = nb(x, y-1) === '£' || nb(x, y+1) === '£', horiz = nb(x-1, y) === '£' || nb(x+1, y) === '£';
+    const wood = season === 'hiver' ? '#d6b98c' : '#c9a06a', seam = '#9a7448';
+    if (vert && !horiz){ R(ox+2, oy, 12, T, wood); for (let k = 0; k < 4; k++) R(ox+2, oy + k*4 + 3, 12, 1, seam); R(ox+2, oy, 1, T, seam); R(ox+13, oy, 1, T, seam); }
+    else { R(ox, oy+2, T, 12, wood); for (let k = 0; k < 4; k++) R(ox + k*4 + 3, oy+2, 1, 12, seam); R(ox, oy+2, T, 1, seam); R(ox, oy+13, T, 1, seam); }
+    if (season === 'hiver') for (let k = 0; k < 3; k++) R(ox + 3 + (hs(x,y,k+810)*9|0), oy + 3 + (hs(x,y,k+820)*9|0), 2, 1, '#fff');
     return;
   }
   if (t === '*'){ // briques
@@ -2035,6 +2075,10 @@ const TOOLS = [
   {id:'R', kind:'ground', name:'Route', group:'Sol'},
   {id:'+', kind:'ground', name:'Passage piéton', group:'Sol'},
   {id:'p', kind:'ground', name:'Pavés', group:'Sol'},
+  {id:'µ', kind:'ground', name:'Vieux pavés', group:'Sol'},
+  {id:'¶', kind:'ground', name:'Rue piétonne', group:'Sol'},
+  {id:'±', kind:'ground', name:'Mosaïque', group:'Sol'},
+  {id:'£', kind:'ground', name:'Allée en bois', group:'Sol'},
   {id:'#', kind:'ground', name:'Dalles', group:'Sol'},
   {id:'*', kind:'ground', name:'Briques', group:'Sol'},
   {id:'~', kind:'ground', name:'Gravier', group:'Sol'},
