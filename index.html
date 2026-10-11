@@ -39,7 +39,7 @@ button{touch-action:manipulation}
 html,body{background:var(--bg);color:var(--ink);overflow-x:hidden;overscroll-behavior:none;max-width:100%}
 body{touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .photo-card img{-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
-body{font-family:var(--f-body);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:20px 32px}
+body{font-family:var(--f-body);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:20px calc(92px + env(safe-area-inset-bottom, 0px))}
 .wrap{max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 header{display:flex;flex-direction:column;gap:6px}
 .hdr-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -80,7 +80,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .confirm{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px}
 .btn.danger{border-color:#b8463b;color:#b8463b}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:calc(100% - 32px)}
+.toast{z-index:40;position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:calc(100% - 32px)}
 .toast.on{opacity:1}
 .hint{font-size:13px;color:var(--muted);margin:0}
 [hidden]{display:none!important}
@@ -90,7 +90,41 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .hdr-right{display:flex;align-items:center;gap:8px;position:relative;flex:none}
 .gear{width:44px;height:44px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:22px;line-height:1;cursor:pointer}
 .gear:hover,.gear[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
-.menu{position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px;width:min(290px, calc(100vw - 32px));box-shadow:0 12px 32px rgba(10,20,30,.22)}
+.menu{position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px;width:min(310px, calc(100vw - 32px));max-height:calc(100svh - 120px);overflow-y:auto;overscroll-behavior:contain;box-shadow:0 12px 32px rgba(10,20,30,.22)}
+.tlist{display:flex;flex-direction:column;gap:4px}
+.trow{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;min-height:38px}
+.trow.cur{background:var(--accent-soft)}
+.tname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trow.cur .tname{font-weight:700}
+.tsize{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.btn.sm{padding:5px 9px;font-size:12px}
+.tinput{flex:1;min-width:0;font:inherit;font-size:16px;padding:6px 8px;border:1px solid var(--accent);border-radius:6px;background:var(--bg);color:var(--ink);-webkit-user-select:text;user-select:text}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface);font-weight:700}
+.row.center{justify-content:center}
+.req{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px}
+.req p{margin:0;flex:1;min-width:0}
+.req button{flex:none;border:none;background:none;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:6px}
+.req.thanks{border-color:var(--glow);background:var(--accent-soft)}
+.giftbtn{animation:wiggle 1.8s ease-in-out infinite}
+@keyframes wiggle{0%,78%,100%{transform:rotate(0)}84%{transform:rotate(-12deg)}90%{transform:rotate(10deg)}95%{transform:rotate(-5deg)}}
+.gift-card{max-width:330px;text-align:center}
+.gift-card .btn{font-size:15px;padding:10px 18px}
+#giftCv{width:112px;height:140px;image-rendering:pixelated}
+.gift-text{margin:0;font-size:15px}
+.tool.isgift span::after{content:" ✨"}
+.thumb{position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(10,20,30,.08);padding:6px 10px calc(6px + env(safe-area-inset-bottom, 0px))}
+.thumb-in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:8px}
+.recent{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-content:flex-start;gap:3px;height:54px;overflow:hidden}
+.acts{display:flex;gap:2px;flex:none;padding-left:8px;border-left:1px solid var(--line)}
+.tb{width:44px;height:54px;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:10px;border:1px solid transparent;background:none;color:var(--ink);font:inherit;font-size:10px;line-height:1;cursor:pointer;padding:0}
+.recent .tb{width:42px;border-color:var(--line);background:var(--bg)}
+.tb canvas{width:22px;height:28px;image-rendering:pixelated}
+.recent .tb canvas{width:26px;height:32px}
+.tb svg{width:22px;height:22px}
+.tb .glyph{font-size:20px;line-height:1;height:24px;display:flex;align-items:center;font-weight:400}
+.tb[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.tb:disabled{opacity:.4;cursor:default}
+@media (prefers-reduced-motion: reduce){.giftbtn{animation:none}}
 .photo{position:fixed;inset:0;z-index:30;background:rgba(10,16,22,.72);display:flex;align-items:center;justify-content:center;padding:16px}
 .photo-card{background:var(--surface);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;align-items:center;max-width:min(560px,100%)}
 .photo-card img{width:100%;image-rendering:pixelated;border-radius:4px}
@@ -102,14 +136,28 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="hdr-top">
       <h1>iloe</h1>
     <div class="hdr-right">
+      <button class="gear giftbtn" id="giftBtn" type="button" aria-label="Ouvrir le cadeau du jour" hidden>🎁</button>
       <button class="gear" id="photoBtn" type="button" aria-label="Prendre une photo">📷</button>
-      <button class="gear" id="gearBtn" type="button" aria-expanded="false" aria-controls="gearMenu" aria-label="Réglages du terrain">⚙</button>
+      <button class="gear" id="gearBtn" type="button" aria-expanded="false" aria-controls="gearMenu" aria-label="Réglages">⚙</button>
       <div class="menu" id="gearMenu" hidden>
+        <div class="label">Mes terrains</div>
+        <div class="tlist" id="tlist"></div>
+        <div class="row">
+          <button class="btn" id="newEmpty" type="button">+ Terrain vide</button>
+          <button class="btn" id="newSample" type="button">+ Village d'exemple</button>
+        </div>
         <div class="label">Taille</div>
         <button class="btn" id="growBtn" type="button">Agrandir le terrain</button>
-        <div class="label">Recommencer</div>
+        <div class="label">Sauvegarde de secours</div>
+        <div class="row">
+          <button class="btn" id="exportBtn" type="button">Enregistrer une copie</button>
+          <button class="btn" id="importBtn" type="button">Charger une copie</button>
+        </div>
+        <input type="file" id="importFile" accept=".json,application/json,text/plain" hidden>
+        <p class="hint">La copie contient tous tes terrains et tes cadeaux. Range-la dans Fichiers : tu pourras tout récupérer, même sur un autre appareil.</p>
+        <div class="label">Recommencer ce terrain</div>
         <div class="row" id="resetRow">
-          <button class="btn" id="askClear">Terrain vide</button>
+          <button class="btn" id="askClear">Tout effacer</button>
           <button class="btn" id="askSample">Village d'exemple</button>
         </div>
         <div class="confirm" id="confirmRow" hidden>
@@ -117,26 +165,24 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
           <button class="btn danger" id="confirmYes">Oui</button>
           <button class="btn" id="confirmNo">Annuler</button>
         </div>
-        <p class="hint">Ton coin est gardé dans ce navigateur. Annuler (↶) permet de revenir en arrière après un effacement.</p>
       </div>
     </div>
     </div>
     <div class="meta">
       <span class="clock"><b id="clock">10 h 00</b> · <span id="seasonName">Automne</span></span>
       <span id="stats"></span>
+      <span id="hearts"></span>
+    </div>
+    <div class="req" id="reqCard" hidden>
+      <span aria-hidden="true">💬</span>
+      <p id="reqText"></p>
+      <button type="button" id="reqSkip">Autre idée</button>
     </div>
   </header>
 
   <div class="app">
     <div class="stage">
       <div class="board-frame"><canvas id="board" aria-label="Terrain de 24 cases sur 24 à construire"></canvas></div>
-      <div class="status">
-        <div class="quick">
-          <button class="qbtn" id="eraseBtn" type="button" aria-pressed="false"><span id="eraseIcon"></span>Gomme</button>
-          <button class="qbtn" id="undoBtn" type="button" disabled>↶ Annuler</button>
-          <button class="qbtn" id="handBtn" type="button" aria-pressed="false" title="Déplacer la vue">✋ Déplacer</button>
-        </div>
-      </div>
     </div>
 
     <aside class="panel">
@@ -155,7 +201,31 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     </aside>
   </div>
 </div>
+<nav class="thumb" aria-label="Outils rapides">
+  <div class="thumb-in">
+    <div class="recent" id="recent"></div>
+    <div class="acts">
+      <button class="tb" id="pipBtn" type="button" aria-pressed="false" title="Pipette : reprendre un objet du terrain">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 3.5a2.1 2.1 0 0 1 3 3L18 9l-3-3 2.5-2.5z"/><path d="M15 6l3 3"/><path d="M16 8l-9 9-3 1 1-3 9-9"/></svg>
+        <span>Pipette</span></button>
+      <button class="tb" id="eraseBtn" type="button" aria-pressed="false"><span id="eraseIcon"></span><span>Gomme</span></button>
+      <button class="tb" id="undoBtn" type="button" disabled><b class="glyph">↶</b><span>Annuler</span></button>
+      <button class="tb" id="handBtn" type="button" aria-pressed="false" title="Déplacer la vue"><b class="glyph">✋</b><span>Bouger</span></button>
+    </div>
+  </div>
+</nav>
 <div class="toast" id="toast" role="status"></div>
+<div class="photo" id="giftBox" hidden>
+  <div class="photo-card gift-card">
+    <div class="label">Cadeau du jour</div>
+    <canvas id="giftCv" width="16" height="20"></canvas>
+    <p class="gift-text" id="giftText"></p>
+    <div class="row center">
+      <button class="btn" id="giftLater" type="button">Plus tard</button>
+      <button class="btn primary" id="giftOpen" type="button">Ouvrir</button>
+    </div>
+  </div>
+</div>
 <div class="photo" id="photoBox" hidden>
   <div class="photo-card">
     <img id="photoImg" alt="Photo de ton iloe">
@@ -234,7 +304,7 @@ function expand(g, o, n0, OFF, extras){
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++){
     const sx = Math.max(0, Math.min(n0-1, x - OFF)), sy = Math.max(0, Math.min(n0-1, y - OFF));
     const inside = x - OFF === sx && y - OFF === sy;
-    let gr = g[sy*n0 + sx]; if (!inside && (gr === 'c' || gr === 'p' || gr === 'R')) gr = 'g';
+    let gr = g[sy*n0 + sx]; if (!inside && (gr === 'c' || gr === 'p' || gr === 'R')) gr = 'g'; if (!inside && (gr === 'n' || gr === 'q')) gr = 'w';
     G.push(gr);
     let ob = inside ? o[sy*n0 + sx] : null;
     if (!inside && extras){
@@ -248,11 +318,30 @@ function expand(g, o, n0, OFF, extras){
 }
 function loadSample(){ expand(SAMPLE_G.join(''), SAMPLE_O.join('').split('').map(c => c === '.' ? null : c), 12, Math.round((N - 12)/2) - 1, true); }
 function clearAll(){ G = Array(N*N).fill('g'); O = Array(N*N).fill(null); }
-const KEY = 'mon-petit-coin-v1';
-function save(){ try { localStorage.setItem(KEY, JSON.stringify({n:N, g:G.join(''), o:O.map(c=>c||'.').join(''), season})); } catch(e){} }
-function load(){
+/* ---------- sauvegardes : plusieurs terrains + état général ---------- */
+function readJSON(k){ try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch(e){ return null; } }
+function writeJSON(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ return false; } }
+const IDX = 'iloe-terrains', GKEY = 'iloe-global';
+const tKey = id => 'iloe-t-' + id;
+const newId = () => 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+let terrains = readJSON(IDX);
+if (!terrains || !Array.isArray(terrains.list) || !terrains.list.length){
+  // première ouverture de cette version : on reprend le terrain déjà construit
+  const id = newId(), old = readJSON('mon-petit-coin-v1');
+  terrains = {cur:id, list:[{id, name:'Mon village'}]};
+  if (old) writeJSON(tKey(id), old);
+  writeJSON(IDX, terrains);
+}
+if (!terrains.list.some(t => t.id === terrains.cur)) terrains.cur = terrains.list[0].id;
+let glob = {gifts:[], lastGift:null, hearts:0, recent:['h','t','c','f','R','w'], req:null};
+Object.assign(glob, readJSON(GKEY) || {});
+function saveGlob(){ writeJSON(GKEY, glob); }
+function terrainData(){ return {n:N, g:G.join(''), o:O.map(c => c || '.').join(''), season}; }
+function save(){ writeJSON(tKey(terrains.cur), terrainData()); }
+function loadTerrain(id){
+  N = 24; W = N*T;
+  const d = readJSON(tKey(id));
   try {
-    const d = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (d && d.g){
       const o = d.o.split('').map(c => c === '.' ? null : c);
       if (SEASONS[d.season]) season = d.season;
@@ -263,7 +352,7 @@ function load(){
   } catch(e){}
   loadSample();
 }
-load(); S = SEASONS[season];
+loadTerrain(terrains.cur); S = SEASONS[season];
 function applySize(){
   world.width = W; world.height = W; darkCv.width = W; darkCv.height = W;
   clampCam(); sizeBoard();
@@ -275,7 +364,8 @@ let saveTimer = null;
 function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(save, 300); }
 
 const gAt = (x, y) => (x < 0 || y < 0 || x >= N || y >= N) ? null : G[y*N + x];
-const walkable = c => c === 'c' || c === 'p';
+const walkable = c => c === 'c' || c === 'p' || c === 'q' || c === 'n';
+const isRoad = c => c === 'R' || c === 'n';
 
 /* ---------- dessin du sol ---------- */
 function drawGround(t, ox, oy, x, y, nb){
@@ -293,11 +383,49 @@ function drawGround(t, ox, oy, x, y, nb){
       }
     }
     const foam = season === 'hiver' ? '#eef7fb' : '#cfe8f4';
-    const isW = c => c === null || c === 'w';
+    const isW = c => c === null || c === 'w' || c === 'n';
     if (!isW(nb(x, y-1))) R(ox, oy, T, 1, foam);
     if (!isW(nb(x, y+1))) R(ox, oy+T-1, T, 1, foam);
     if (!isW(nb(x-1, y))) R(ox, oy, 1, T, foam);
     if (!isW(nb(x+1, y))) R(ox+T-1, oy, 1, T, foam);
+    return;
+  }
+  if (t === 'n'){ // pont : de l'eau dessous, un tablier de bois dessus
+    drawGround('w', ox, oy, x, y, nb);
+    const solid = c => c !== null && c !== 'w';
+    const hz = solid(nb(x-1, y)) || solid(nb(x+1, y));
+    const vt = solid(nb(x, y-1)) || solid(nb(x, y+1));
+    const deck = season === 'hiver' ? '#b09a80' : '#9a7450', dk = '#7a5a3c', rail = '#5e4129';
+    if (hz || !vt){
+      R(ox, oy+12, T, 3, 'rgba(0,0,0,.18)');
+      R(ox, oy+4, T, 8, deck);
+      for (let k = 1; k < T; k += 3) R(ox+k, oy+4, 1, 8, dk);
+      R(ox, oy+3, T, 1, rail); R(ox, oy+11, T, 1, rail);
+      for (let k = 2; k < T; k += 5){ R(ox+k, oy+1, 1, 3, rail); R(ox+k, oy+11, 1, 2, rail); }
+      if (season === 'hiver') R(ox, oy+3, T, 1, '#fff');
+    } else {
+      R(ox+12, oy, 3, T, 'rgba(0,0,0,.18)');
+      R(ox+4, oy, 8, T, deck);
+      for (let k = 1; k < T; k += 3) R(ox+4, oy+k, 8, 1, dk);
+      R(ox+3, oy, 1, T, rail); R(ox+12, oy, 1, T, rail);
+      for (let k = 2; k < T; k += 5){ R(ox+2, oy+k, 1, 2, rail); R(ox+13, oy+k, 1, 2, rail); }
+      if (season === 'hiver') R(ox+3, oy, 1, T, '#fff');
+    }
+    return;
+  }
+  if (t === 'q'){ // quai en planches
+    const pl = season === 'hiver' ? '#a48c70' : '#8f6a45', gap = '#6b4c2f';
+    R(ox, oy, T, T, pl);
+    for (let r = 0; r < 4; r++){
+      R(ox, oy + r*4 + 3, T, 1, gap);
+      R(ox + ((r*7 + x*5 + y*3) % 11) + 2, oy + r*4, 1, 3, gap);
+    }
+    const wet = c => c === 'w' || c === 'n';
+    if (wet(nb(x, y+1))){ R(ox, oy+T-2, T, 2, '#4a3520'); for (let k = 1; k < T; k += 5) R(ox+k, oy+T-1, 2, 1, '#3a2a18'); }
+    if (wet(nb(x, y-1))) R(ox, oy, T, 1, '#a8845c');
+    if (wet(nb(x-1, y))) R(ox, oy, 1, T, '#4a3520');
+    if (wet(nb(x+1, y))) R(ox+T-1, oy, 1, T, '#4a3520');
+    if (season === 'hiver') for (let k = 0; k < 4; k++) R(ox + (hs(x,y,k+40)*15|0), oy + (hs(x,y,k+50)*15|0), 2, 1, '#fff');
     return;
   }
   if (t === 's'){
@@ -329,7 +457,7 @@ function drawGround(t, ox, oy, x, y, nb){
   }
   if (t === 'c'){
     const pc = season === 'hiver' ? '#c9bfae' : '#cdac7c', pd = season === 'hiver' ? '#b3a894' : '#b38f5c';
-    const con = c => c === 'c' || c === 'p';
+    const con = c => c === 'c' || c === 'p' || c === 'q' || c === 'n';
     R(ox+4, oy+4, 8, 8, pc);
     if (con(nb(x, y-1))) R(ox+4, oy, 8, 4, pc);
     if (con(nb(x, y+1))) R(ox+4, oy+12, 8, 4, pc);
@@ -338,7 +466,7 @@ function drawGround(t, ox, oy, x, y, nb){
     for (let k = 0; k < 3; k++) R(ox+5+(hs(x,y,k+20)*6|0), oy+5+(hs(x,y,k+30)*6|0), 1, 1, pd);
   } else if (t === 'R'){
     const as = season === 'hiver' ? '#6f757c' : '#5b6168', edge = '#4b5157', line = '#f2efe0';
-    const isR = c => c === 'R';
+    const isR = isRoad;
     const l = isR(nb(x-1, y)), r = isR(nb(x+1, y)), u = isR(nb(x, y-1)), d = isR(nb(x, y+1));
     R(ox+1, oy+1, 14, 14, as);
     if (l) R(ox, oy+1, 1, 14, as); if (r) R(ox+15, oy+1, 1, 14, as);
@@ -660,6 +788,129 @@ function drawObject(o, ox, oy, x, y, withLights){
       }
     }
     break; }
+  case 'G': { // chalutier
+    const bob = reduce ? 0 : Math.round(Math.sin(now/700 + x*1.3 + y)*0.6), b = oy + bob;
+    R(ox+1, b+14, 14, 1, 'rgba(255,255,255,.35)');
+    R(ox+1, b+10, 14, 2, '#1f4f7a'); R(ox+2, b+12, 12, 1, '#1f4f7a'); R(ox+3, b+13, 10, 1, '#163a5a');
+    R(ox+1, b+10, 14, 1, '#cf453a');
+    R(ox+9, b+5, 5, 5, '#f2efe6'); R(ox+10, b+6, 3, 2, '#9cc8e8'); R(ox+9, b+4, 5, 1, '#cf453a');
+    R(ox+5, b-2, 1, 12, '#5a4632'); R(ox+5, b-3, 1, 1, '#f2c14e');
+    for (let k = 0; k < 10; k++) R(ox+5 - Math.round(k*0.4), b-1+k, 1, 1, '#8a8f94');
+    R(ox+2, b+6, 3, 3, 'rgba(120,150,110,.85)');
+    if (season === 'hiver') R(ox+9, b+4, 5, 1, '#fff');
+    if (withLights) lights.push({x:ox+10, y:b+6, w:3, h:2, kind:'pane'});
+    L(ox+5, b-2, 8, 'win');
+    break; }
+  case 'J': { // bouée
+    const bob = reduce ? 0 : Math.round(Math.sin(now/500 + x*2 + y)*0.8), b = oy + bob;
+    R(ox+4, b+12, 8, 1, 'rgba(255,255,255,.4)');
+    R(ox+6, b+8, 4, 4, '#cf453a'); R(ox+6, b+9, 4, 1, '#f4f2ec');
+    R(ox+7, b+4, 2, 4, '#cf453a'); R(ox+7, b+5, 2, 1, '#f4f2ec'); R(ox+7, b+3, 2, 1, '#2b2b30');
+    if (reduce || Math.floor(now/900) % 2){ R(ox+7, b+2, 2, 1, '#ffe28a'); L(ox+8, b+2, 9, 'win'); }
+    break; }
+  case 'N': { // casiers à homards
+    R(ox+1, oy+14, 14, 2, 'rgba(0,0,0,.15)');
+    const cage = (cx, cy) => { R(cx, cy, 6, 5, '#3f6680'); R(cx+1, cy+1, 4, 3, '#9fbfd0'); R(cx+3, cy+1, 1, 3, '#3f6680'); R(cx+1, cy+2, 4, 1, '#3f6680'); };
+    cage(ox+1, oy+9); cage(ox+8, oy+9); cage(ox+4, oy+4);
+    R(ox+12, oy+5, 3, 3, '#f08a30'); R(ox+13, oy+6, 1, 1, '#ffffff');
+    R(ox+1, oy+14, 4, 1, '#d9b36a');
+    if (season === 'hiver') R(ox+4, oy+4, 6, 1, '#fff');
+    break; }
+  case 'u': { // ruches
+    R(ox+1, oy+14, 14, 1, 'rgba(0,0,0,.15)');
+    const hive = (hx, c1, c2) => { R(hx, oy+8, 5, 6, c1); R(hx, oy+10, 5, 1, c2); R(hx, oy+12, 5, 1, c2); R(hx-1, oy+7, 7, 1, '#7a5434'); R(hx+2, oy+13, 1, 1, '#3b2e22'); if (season === 'hiver') R(hx-1, oy+7, 7, 1, '#fff'); };
+    hive(ox+2, '#f2c14e', '#d9a52f'); hive(ox+9, '#ebe5d8', '#cfc6b4');
+    if (season !== 'hiver' && !reduce) for (let k = 0; k < 3; k++){ const t = now/380 + k*2.1; R(ox+8 + Math.round(Math.cos(t)*6), oy+4 + Math.round(Math.sin(t*1.4)*3), 1, 1, '#2b2b30'); }
+    break; }
+  case 'e': { // éolienne
+    R(ox+5, oy+14, 6, 1, 'rgba(0,0,0,.14)');
+    R(ox+7, oy-2, 2, 17, '#eef2f4'); R(ox+8, oy-2, 1, 17, '#cdd5da');
+    const cx = ox+8, cy = oy-4, a0 = reduce ? 0.3 : now/700 + x;
+    for (let k = 0; k < 3; k++){
+      const a = a0 + k*2.0944, ca = Math.cos(a), sa = Math.sin(a);
+      for (let r = 1; r <= 8; r++) R(Math.round(cx + ca*r), Math.round(cy + sa*r), 1, 1, r < 7 ? '#f8fafb' : '#cf453a');
+    }
+    R(cx-1, cy-1, 2, 2, '#b8c2c8');
+    if (withLights && Math.floor(now/1000) % 2) lights.push({x:cx-1, y:cy-1, w:2, h:2, kind:'pane'});
+    break; }
+  case 'a': { // chapelle
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.16)');
+    R(ox+1, oy+5, 14, 10, '#d6cfbf');
+    for (let k = 0; k < 7; k++) R(ox+2 + (hs(x,y,k+500)*11|0), oy+6 + (hs(x,y,k+510)*8|0), 2, 1, '#bdb4a2');
+    R(ox, oy+3, 16, 2, '#46525e'); R(ox+2, oy+1, 12, 2, '#46525e');
+    R(ox+5, oy-6, 6, 12, '#cfc7b6'); R(ox+10, oy-6, 1, 12, 'rgba(0,0,0,.08)');
+    R(ox+6, oy-9, 4, 3, '#46525e'); R(ox+7, oy-12, 2, 3, '#46525e');
+    R(ox+8, oy-15, 1, 3, '#3b434b'); R(ox+7, oy-14, 3, 1, '#3b434b');
+    R(ox+7, oy-4, 2, 3, '#3b434b'); R(ox+7, oy+1, 2, 2, '#c97ab0');
+    R(ox+6, oy+10, 4, 5, '#6b4a2e'); R(ox+7, oy+9, 2, 1, '#6b4a2e');
+    R(ox+2, oy+8, 2, 3, '#d9a64a'); R(ox+12, oy+8, 2, 3, '#7aa0d8');
+    if (season === 'hiver'){ R(ox+2, oy+1, 12, 1, '#fff'); R(ox+6, oy-9, 4, 1, '#fff'); R(ox, oy+3, 5, 1, '#fff'); R(ox+11, oy+3, 5, 1, '#fff'); }
+    if (withLights) lights.push({x:ox+2, y:oy+8, w:2, h:3, kind:'pane'}, {x:ox+12, y:oy+8, w:2, h:3, kind:'pane'});
+    L(ox+8, oy+10, 14, 'win');
+    break; }
+  case 'O': { // kiosque à musique
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.15)');
+    R(ox+1, oy+11, 14, 3, '#d6cfbf'); R(ox+1, oy+11, 14, 1, '#e8e2d4');
+    for (const px of [2, 6, 9, 13]) R(ox+px, oy+4, 1, 7, '#2e6f5a');
+    R(ox+1, oy+3, 14, 2, '#2e6f5a'); R(ox+3, oy+1, 10, 2, '#3a8a70'); R(ox+6, oy-1, 4, 2, '#2e6f5a'); R(ox+7, oy-2, 2, 1, '#f2c14e');
+    R(ox+1, oy+5, 14, 1, '#e8e2d4');
+    if (season === 'hiver'){ R(ox+3, oy+1, 10, 1, '#fff'); R(ox+6, oy-1, 4, 1, '#fff'); }
+    R(ox+4, oy+8, 2, 3, '#1f3550'); R(ox+4, oy+7, 2, 1, '#f1c9a5'); R(ox+10, oy+8, 2, 3, '#cf453a'); R(ox+10, oy+7, 2, 1, '#d8a07a'); R(ox+12, oy+8, 1, 1, '#f2c14e');
+    if (!reduce && season !== 'hiver') for (let k = 0; k < 2; k++){
+      const t = (now/1600 + k/2) % 1, nx = ox+11 + Math.round(Math.sin(t*6 + k)*2), ny = oy+2 - Math.round(t*9), c = `rgba(43,43,48,${(1 - t).toFixed(2)})`;
+      R(nx, ny, 1, 2, c); R(nx+1, ny, 1, 1, c);
+    }
+    if (withLights) for (let k = 0; k < 7; k++) lights.push({x:ox+1+k*2, y:oy+5, w:1, h:1, kind:'pane'});
+    L(ox+8, oy+8, 14, 'win');
+    break; }
+  case 'j': { // manège
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.15)');
+    R(ox+1, oy+12, 14, 2, '#cf453a'); R(ox+1, oy+12, 14, 1, '#f2c14e');
+    R(ox+7, oy+2, 2, 10, '#f2c14e');
+    const a0 = reduce ? 0 : now/900;
+    const hrs = [0, 1, 2].map(k => { const a = a0 + k*2.094; return {a, s:Math.sin(a), c:Math.cos(a), col:['#f4f2ec','#9cc8e8','#f6c7d6'][k]}; }).sort((p, q) => p.s - q.s);
+    for (const h of hrs){
+      const hx = ox + 7 + Math.round(h.c*5), hy = oy + 8 + Math.round(Math.sin(a0*3 + h.a));
+      R(hx+1, oy+4, 1, hy - oy - 4, '#f2c14e');
+      R(hx-1, hy, 4, 2, h.col); R(hx+3, hy-1, 1, 2, h.col); R(hx-1, hy+2, 1, 1, h.col); R(hx+2, hy+2, 1, 1, h.col);
+    }
+    for (let i = 0; i < 7; i++) R(ox+1+i*2, oy+2, 2, 2, i % 2 ? '#ffffff' : '#cf453a');
+    for (let i = 0; i < 5; i++) R(ox+3+i*2, oy, 2, 2, i % 2 ? '#cf453a' : '#ffffff');
+    R(ox+7, oy-2, 2, 2, '#f2c14e');
+    if (season === 'hiver') R(ox+3, oy, 10, 1, '#fff');
+    if (withLights) for (let i = 0; i < 7; i++) lights.push({x:ox+1+i*2, y:oy+4, w:1, h:1, kind:'pane'});
+    L(ox+8, oy+8, 16, 'win');
+    break; }
+  case 'y': { // serre
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.12)');
+    R(ox+1, oy+6, 14, 9, '#bfe0e8'); R(ox+2, oy+4, 12, 2, '#cfe8ee'); R(ox+4, oy+3, 8, 1, '#cfe8ee');
+    for (let k = 0; k < 4; k++){ R(ox+2+k*3, oy+10, 2, 4, '#4f8d3e'); if (season === 'ete') R(ox+2+k*3, oy+10, 1, 1, '#e04848'); if (season === 'printemps') R(ox+3+k*3, oy+10, 1, 1, '#f6c945'); }
+    R(ox+1, oy+6, 14, 1, '#f4f8f9'); R(ox+1, oy+14, 14, 1, '#9aa7ad');
+    for (let k = 0; k <= 4; k++) R(ox+1 + k*3 + (k === 4 ? 1 : 0), oy+6, 1, 9, '#f4f8f9');
+    R(ox+3, oy+7, 2, 2, 'rgba(255,255,255,.6)');
+    if (season === 'hiver'){ R(ox+2, oy+4, 12, 1, '#fff'); R(ox+4, oy+3, 8, 1, '#fff'); }
+    break; }
+  case 'D': { // calvaire breton
+    R(ox+3, oy+14, 10, 2, 'rgba(0,0,0,.15)');
+    R(ox+4, oy+12, 8, 3, '#8a8f94'); R(ox+5, oy+11, 6, 1, '#9aa0a5');
+    R(ox+7, oy, 2, 11, '#8a8f94'); R(ox+4, oy+2, 8, 2, '#8a8f94'); R(ox+9, oy, 1, 11, '#73787d');
+    R(ox+7, oy-1, 2, 1, '#9aa0a5'); R(ox+5, oy+12, 1, 1, '#a9b56a'); R(ox+10, oy+13, 1, 1, '#a9b56a'); R(ox+8, oy+6, 1, 1, '#a9b56a');
+    if (season === 'hiver'){ R(ox+7, oy-1, 2, 1, '#fff'); R(ox+4, oy+2, 3, 1, '#fff'); R(ox+9, oy+2, 3, 1, '#fff'); }
+    break; }
+  case 'd': { // montgolfière
+    const bob = reduce ? 0 : Math.round(Math.sin(now/1500 + x)*2), by = oy - 9 + bob;
+    R(ox+5, oy+14, 6, 1, 'rgba(0,0,0,.1)');
+    const cols = ['#cf453a','#f2b134','#2e6fa8'];
+    for (let py = -6; py <= 6; py++){
+      const hw = Math.round(6 * Math.sqrt(Math.max(0, 1 - (py/6.6)**2)) * (py > 2 ? 1 - (py-2)*0.12 : 1));
+      for (let px = -hw; px < hw; px++) R(ox+8+px, by+py, 1, 1, cols[((px + 8) >> 1) % 3]);
+    }
+    R(ox+4, by-3, 1, 3, 'rgba(255,255,255,.35)');
+    R(ox+5, by+7, 1, 3, '#5a4632'); R(ox+10, by+7, 1, 3, '#5a4632');
+    R(ox+5, by+10, 6, 3, '#9a6b3f'); R(ox+5, by+10, 6, 1, '#b88a5a');
+    if (!reduce && Math.sin(now/300 + x) > 0.2) R(ox+7, by+8, 2, 1, '#f2b134');
+    L(ox+8, by+8, 10, 'win');
+    break; }
   }
 }
 let iconMode = false;
@@ -675,15 +926,17 @@ function makeWalker(cells, i){
   const c = cells[(Math.random()*cells.length)|0], x = c % N, y = (c / N)|0;
   return {cx:x, cy:y, tx:x, ty:y, px:x*T+8, py:y*T+10, prev:null, pause:Math.random()*2,
     shirt:SHIRTS[i % SHIRTS.length], skin:SKINS[(Math.random()*SKINS.length)|0], hair:HAIR[(Math.random()*HAIR.length)|0],
-    jx:((Math.random()*5)|0)-2, jy:((Math.random()*3)|0)-1, step:0};
+    jx:((Math.random()*5)|0)-2, jy:((Math.random()*3)|0)-1, step:0,
+    dog: Math.random() < 0.3 ? {x:x*T+4, y:y*T+10, face:1, col:DOGS[(Math.random()*DOGS.length)|0]} : null};
 }
+const DOGS = ['#8a5a32','#2b2b30','#e8dcc8','#c98a4a'];
 function syncWalkers(){
   const cells = walkCells();
   const want = cells.length ? Math.min(residents() + 1, Math.round(16 * N / 24)) : 0;
   walkers = walkers.filter(w => walkable(gAt(w.cx, w.cy)) && walkable(gAt(w.tx, w.ty)));
   while (walkers.length > want) walkers.pop();
   while (walkers.length < want) walkers.push(makeWalker(cells, walkers.length));
-  syncCars();
+  syncCars(); syncBoats(); syncAnimals();
 }
 const RES = {h:1, K:1, I:3, T:6};
 function residents(){ let n = 0; for (const o of O) if (o && RES[o]) n += RES[o]; return n; }
@@ -695,7 +948,7 @@ function roadCells(){ const out = []; for (let i = 0; i < N*N; i++) if (G[i] ===
 function syncCars(){
   const cells = roadCells();
   const want = Math.min(Math.floor(cells.length / 5), Math.round(12 * N / 24));
-  cars = cars.filter(c => gAt(c.cx, c.cy) === 'R' && gAt(c.tx, c.ty) === 'R');
+  cars = cars.filter(c => isRoad(gAt(c.cx, c.cy)) && isRoad(gAt(c.tx, c.ty)));
   while (cars.length > want) cars.pop();
   while (cars.length < want){
     const i = cells[(Math.random()*cells.length)|0], x = i % N, y = (i / N)|0;
@@ -708,7 +961,7 @@ function updateCars(dt){
     const dx = gx - c.px, dy = gy - c.py, d = Math.hypot(dx, dy), sp = c.sp*dt;
     if (d <= sp){
       c.px = gx; c.py = gy; c.prev = [c.cx, c.cy]; c.cx = c.tx; c.cy = c.ty;
-      const opts = [[1,0],[-1,0],[0,1],[0,-1]].filter(([a,b]) => gAt(c.cx+a, c.cy+b) === 'R');
+      const opts = [[1,0],[-1,0],[0,1],[0,-1]].filter(([a,b]) => isRoad(gAt(c.cx+a, c.cy+b)));
       let fwd = opts.filter(([a,b]) => !c.prev || c.cx+a !== c.prev[0] || c.cy+b !== c.prev[1]);
       if (!fwd.length) fwd = opts;
       if (fwd.length){ const n = fwd[(Math.random()*fwd.length)|0]; c.dx = n[0]; c.dy = n[1]; c.tx = c.cx + n[0]; c.ty = c.cy + n[1]; }
@@ -732,6 +985,11 @@ function drawCar(c){
 }
 function updateWalkers(dt){
   for (const w of walkers){
+    if (w.dog){
+      const g = w.dog, dx = w.px - g.x, dy = w.py - g.y, d = Math.hypot(dx, dy);
+      if (d > 5){ const k = Math.min(1, dt*5); g.x += dx/d*(d-5)*k; g.y += dy/d*(d-5)*k; }
+      if (Math.abs(dx) > 0.5) g.face = dx > 0 ? 1 : -1;
+    }
     if (w.pause > 0){ w.pause -= dt; continue; }
     const gx = w.tx*T + 8 + w.jx, gy = w.ty*T + 10 + w.jy;
     const dx = gx - w.px, dy = gy - w.py, d = Math.hypot(dx, dy), sp = 9*dt;
@@ -746,6 +1004,13 @@ function updateWalkers(dt){
   }
 }
 function drawWalker(w){
+  if (w.dog){
+    const g = w.dog, x = Math.round(g.x), y = Math.round(g.y), f = g.face;
+    R(x-2, y, 5, 1, 'rgba(0,0,0,.15)');
+    R(x-2, y-2, 4, 2, g.col); R(f > 0 ? x+1 : x-3, y-4, 2, 2, g.col);
+    R(x-2, y, 1, 1, g.col); R(x+1, y, 1, 1, g.col);
+    R(f > 0 ? x-3 : x+2, y-3 - (Math.sin(now/120) > 0 ? 1 : 0), 1, 1, g.col);
+  }
   const x = Math.round(w.px), y = Math.round(w.py);
   R(x-1, y, 4, 1, 'rgba(0,0,0,.18)');
   const f = w.pause > 0 ? 0 : (Math.floor(w.step) % 2);
@@ -754,6 +1019,159 @@ function drawWalker(w){
   if (w.shirt[1]){ R(x-1, y-5, 3, 1, w.shirt[1]); R(x-1, y-3, 3, 1, w.shirt[1]); }
   R(x-1, y-7, 3, 2, w.skin); R(x-1, y-8, 3, 1, w.hair);
   if (season === 'hiver') R(x-1, y-5, 3, 1, '#cf453a');
+}
+
+/* ---------- voiliers ---------- */
+const SAILS = ['#f4f1e8','#f4f1e8','#cf453a','#f2b134','#9cc8e8'], HULLS = ['#2e6fa8','#cf453a','#f4f1e8','#1f3550','#3f8f5a'];
+let boats = [];
+function syncBoats(){
+  const water = []; for (let i = 0; i < N*N; i++) if (G[i] === 'w') water.push(i);
+  const quais = G.filter(c => c === 'q').length;
+  const want = water.length >= 12 ? Math.min(Math.round(7 * N / 24), Math.floor(water.length / 60) + Math.ceil(quais / 3)) : 0;
+  boats = boats.filter(b => gAt(b.cx, b.cy) === 'w' && gAt(b.tx, b.ty) === 'w');
+  while (boats.length > want) boats.pop();
+  while (boats.length < want){
+    const i = water[(Math.random()*water.length)|0], x = i % N, y = (i / N)|0, d = Math.random() < .5 ? 1 : -1;
+    boats.push({cx:x, cy:y, tx:x, ty:y, px:x*T+8, py:y*T+10, dx:d, dy:0, face:d, sail:SAILS[(Math.random()*SAILS.length)|0], hull:HULLS[(Math.random()*HULLS.length)|0], sp:4 + Math.random()*3, ph:Math.random()*6});
+  }
+}
+const isOpen = (x, y) => [[1,0],[-1,0],[0,1],[0,-1]].every(([a,b]) => { const c = gAt(x+a, y+b); return c === null || c === 'w'; });
+function updateBoats(dt){
+  for (const b of boats){
+    const gx = b.tx*T + 8, gy = b.ty*T + 10;
+    const dx = gx - b.px, dy = gy - b.py, d = Math.hypot(dx, dy), sp = b.sp*dt;
+    if (d <= sp){
+      b.px = gx; b.py = gy; b.cx = b.tx; b.cy = b.ty;
+      let opts = [[1,0],[-1,0],[0,1],[0,-1]].filter(([a,c]) => gAt(b.cx+a, b.cy+c) === 'w' && !(a === -b.dx && c === -b.dy));
+      if (!opts.length) opts = [[-b.dx, -b.dy]].filter(([a,c]) => gAt(b.cx+a, b.cy+c) === 'w');
+      const open = opts.filter(([a,c]) => isOpen(b.cx+a, b.cy+c));
+      if (open.length) opts = open;
+      const straight = opts.find(([a,c]) => a === b.dx && c === b.dy);
+      const n = (straight && Math.random() < 0.8) ? straight : opts[(Math.random()*opts.length)|0];
+      if (n){ b.dx = n[0]; b.dy = n[1]; b.tx = b.cx + n[0]; b.ty = b.cy + n[1]; if (n[0]) b.face = n[0]; }
+    } else { b.px += dx/d*sp; b.py += dy/d*sp; }
+  }
+}
+function drawBoat(b){
+  const bob = reduce ? 0 : Math.round(Math.sin(now/650 + b.ph) * 0.6);
+  const x = Math.round(b.px), y = Math.round(b.py) + bob, f = b.face;
+  if (b.dx){ R(x - f*7 - 1, y+1, 3, 1, 'rgba(255,255,255,.5)'); R(x - f*10 - 1, y+1, 2, 1, 'rgba(255,255,255,.28)'); }
+  else { R(x, y + (b.dy > 0 ? -3 : 3), 1, 2, 'rgba(255,255,255,.4)'); }
+  R(x-4, y-1, 9, 2, b.hull); R(x-3, y+1, 7, 1, b.hull); R(x-4, y-1, 9, 1, 'rgba(255,255,255,.35)');
+  R(x, y-10, 1, 9, '#5a4632');
+  for (let k = 0; k < 8; k++){ const w = Math.min(k + 1, 5); if (f > 0) R(x - w, y-10+k, w, 1, b.sail); else R(x + 1, y-10+k, w, 1, b.sail); }
+  for (let k = 0; k < 5; k++){ const w = Math.min(k + 1, 3); if (f > 0) R(x + 1, y-7+k, w, 1, '#f4f1e8'); else R(x - w, y-7+k, w, 1, '#f4f1e8'); }
+  lights.push({x, y:y-2, r:6, kind:'win'});
+}
+
+/* ---------- animaux ---------- */
+let animals = [], gulls = [], gullSpots = [];
+const cellAtPx = (px, py) => gAt(Math.floor(px / T), Math.floor(py / T));
+function near8(i, fn){
+  const x = i % N, y = (i / N)|0;
+  for (let b = -1; b <= 1; b++) for (let a = -1; a <= 1; a++){
+    if (!a && !b) continue;
+    const xx = x+a, yy = y+b;
+    if (xx < 0 || yy < 0 || xx >= N || yy >= N) continue;
+    if (fn(yy*N + xx)) return true;
+  }
+  return false;
+}
+const landOK = c => c === 'g' || c === 'k' || c === 'z' || c === 's' || c === 'c';
+const grassOK = c => c === 'g' || c === 'k' || c === 'z';
+const SPECIES = {
+  hen:  {anchor:i => O[i] === 'o' || O[i] === 'V' || O[i] === 'y' || O[i] === 'm', want:n => Math.min(10, n*2), rad:20, ok:landOK, sp:7, rest:[0.4, 2]},
+  sheep:{anchor:i => O[i] === 'F', want:n => Math.min(8, Math.floor(n/2)), rad:26, ok:grassOK, sp:3, rest:[2, 6]},
+  duck: {anchor:i => G[i] === 'w' && near8(i, j => G[j] === 'g' || G[j] === 'k' || G[j] === 'z'), want:n => Math.min(4, Math.ceil(n/6)), rad:30, ok:c => c === 'w', sp:4, rest:[1, 3]},
+};
+const HEN_COLS = ['#f4f2ec','#f4f2ec','#a8642e','#2b2b30'];
+function pickTarget(a){
+  const sp = SPECIES[a.kind];
+  for (let k = 0; k < 8; k++){
+    const ang = Math.random()*6.283, r = Math.random()*sp.rad;
+    const px = a.ax + Math.cos(ang)*r, py = a.ay + Math.sin(ang)*r, c = cellAtPx(px, py);
+    if (c && sp.ok(c)){ a.tx = px; a.ty = py; return true; }
+  }
+  a.tx = a.x; a.ty = a.y; return false;
+}
+function newAnimal(kind, ai){
+  const a = {kind, ai, ax:(ai % N)*T + 8, ay:((ai / N)|0)*T + 10, x:0, y:0, tx:0, ty:0, pause:Math.random()*2, face:Math.random() < .5 ? 1 : -1, ph:Math.random()*6, col:HEN_COLS[(Math.random()*HEN_COLS.length)|0], babies:null};
+  a.x = a.ax; a.y = a.ay;
+  if (pickTarget(a)){ a.x = a.tx; a.y = a.ty; }
+  if (kind === 'duck' && Math.random() < .7) a.babies = Array.from({length: 1 + ((Math.random()*3)|0)}, () => ({x:a.x, y:a.y}));
+  return a;
+}
+function syncAnimals(){
+  for (const kind of Object.keys(SPECIES)){
+    const sp = SPECIES[kind], anchors = [];
+    for (let i = 0; i < N*N; i++) if (sp.anchor(i)) anchors.push(i);
+    const set = new Set(anchors), want = anchors.length ? sp.want(anchors.length) : 0;
+    const mine = animals.filter(a => a.kind === kind && set.has(a.ai) && sp.ok(cellAtPx(a.x, a.y)));
+    while (mine.length > want) mine.pop();
+    while (mine.length < want) mine.push(newAnimal(kind, anchors[(Math.random()*anchors.length)|0]));
+    animals = [...animals.filter(a => a.kind !== kind), ...mine];
+  }
+  gullSpots = [];
+  let water = 0;
+  for (let i = 0; i < N*N; i++) if (G[i] === 'w'){ water++; if (near8(i, j => G[j] !== 'w' && G[j] !== 'n')) gullSpots.push(i); }
+  if (!gullSpots.length) for (let i = 0; i < N*N; i++) if (G[i] === 'w') gullSpots.push(i);
+  const port = O.filter(o => o === 'G' || o === 'N').length;
+  const wantG = water >= 8 ? Math.min(8, 1 + Math.floor(water/70) + port) : 0;
+  while (gulls.length > wantG) gulls.pop();
+  while (gulls.length < wantG){ const g = {x:Math.random()*W, y:Math.random()*W, tx:0, ty:0, sp:12 + Math.random()*8, ph:Math.random()*6}; gullTarget(g); gulls.push(g); }
+}
+function gullTarget(g){
+  const i = gullSpots[(Math.random()*gullSpots.length)|0];
+  if (i === undefined){ g.tx = g.x; g.ty = g.y; return; }
+  g.tx = (i % N)*T + 8 + (Math.random()*16 - 8); g.ty = ((i / N)|0)*T + (Math.random()*16 - 8);
+}
+function updateAnimals(dt){
+  for (const a of animals){
+    const sp = SPECIES[a.kind];
+    if (a.pause > 0) a.pause -= dt;
+    else {
+      const dx = a.tx - a.x, dy = a.ty - a.y, d = Math.hypot(dx, dy), s = sp.sp*dt;
+      if (d <= s){ a.x = a.tx; a.y = a.ty; a.pause = sp.rest[0] + Math.random()*(sp.rest[1] - sp.rest[0]); pickTarget(a); }
+      else { a.x += dx/d*s; a.y += dy/d*s; if (Math.abs(dx) > 0.3) a.face = dx > 0 ? 1 : -1; }
+    }
+    if (a.babies){
+      let lx = a.x, ly = a.y;
+      for (const b of a.babies){ const dx = lx - b.x, dy = ly - b.y, d = Math.hypot(dx, dy); if (d > 4){ b.x += dx/d*(d-4); b.y += dy/d*(d-4); } lx = b.x; ly = b.y; }
+    }
+  }
+  for (const g of gulls){
+    const dx = g.tx - g.x, dy = g.ty - g.y, d = Math.hypot(dx, dy), s = g.sp*dt;
+    if (d <= s + 1) gullTarget(g);
+    else { g.x += dx/d*s; g.y += dy/d*s + Math.sin(now/400 + g.ph)*0.12; }
+  }
+}
+function drawAnimal(a){
+  const x = Math.round(a.x), y = Math.round(a.y), f = a.face;
+  if (a.kind === 'hen'){
+    const peck = a.pause > 0 && Math.sin(now/150 + a.ph) > 0.4;
+    R(x-2, y, 5, 1, 'rgba(0,0,0,.15)');
+    R(x-2, y-3, 4, 3, a.col); R(f > 0 ? x-3 : x+2, y-4, 1, 2, a.col);
+    const hx = f > 0 ? x+1 : x-2, hy = peck ? y-2 : y-4;
+    R(hx, hy, 2, 2, a.col); R(hx + (f > 0 ? 0 : 1), hy-1, 1, 1, '#d93b30'); R(f > 0 ? hx+2 : hx-1, hy+1, 1, 1, '#f2b134');
+  } else if (a.kind === 'sheep'){
+    const wool = season === 'hiver' ? '#e6e4dc' : '#f4f2ec', graze = a.pause > 0 && Math.sin(now/500 + a.ph) > 0;
+    R(x-3, y, 7, 1, 'rgba(0,0,0,.15)');
+    R(x-3, y-4, 6, 4, wool); R(x-2, y-5, 4, 1, wool);
+    R(x-2, y, 1, 1, '#2b2b30'); R(x+1, y, 1, 1, '#2b2b30');
+    R(f > 0 ? x+3 : x-5, y-5 + (graze ? 2 : 0), 2, 2, '#2b2b30');
+  } else {
+    for (const b of a.babies || []){ const bx = Math.round(b.x), by = Math.round(b.y); R(bx-1, by, 3, 1, 'rgba(255,255,255,.35)'); R(bx-1, by-2, 2, 2, '#f6d35a'); }
+    R(x-3, y+1, 6, 1, 'rgba(255,255,255,.4)');
+    R(x-2, y-1, 4, 2, a.col === '#a8642e' ? '#8a6a48' : '#f4f2ec');
+    R(f > 0 ? x+1 : x-2, y-3, 2, 2, '#2f7a4a'); R(f > 0 ? x+3 : x-3, y-2, 1, 1, '#f2b134');
+  }
+}
+function drawGull(g){
+  const x = Math.round(g.x), y = Math.round(g.y), up = Math.sin(now/170 + g.ph) > 0;
+  R(x, y+12, 2, 1, 'rgba(0,0,0,.1)');
+  R(x-1, y, 3, 1, '#ffffff');
+  if (up){ R(x-3, y-1, 2, 1, '#ffffff'); R(x+2, y-1, 2, 1, '#ffffff'); R(x-4, y-2, 1, 1, '#8a8f94'); R(x+4, y-2, 1, 1, '#8a8f94'); }
+  else { R(x-3, y+1, 2, 1, '#ffffff'); R(x+2, y+1, 2, 1, '#ffffff'); }
 }
 
 /* ---------- particules ---------- */
@@ -796,7 +1214,10 @@ function render(){
     for (let x = 0; x < N; x++){ const o = O[y*N+x]; if (o) drawObject(o, x*T, y*T, x, y, true); }
     for (const w of walkers) if (Math.round((w.py - 10)/T) === y) drawWalker(w);
     for (const c of cars) if (Math.floor(c.py / T) === y) drawCar(c);
+    for (const b of boats) if (Math.floor(b.py / T) === y) drawBoat(b);
+    for (const a of animals) if (Math.floor((a.y - 2) / T) === y) drawAnimal(a);
   }
+  for (const g of gulls) drawGull(g);
   const {dark, warm} = darkness(tday);
   drawParticles(dark > 0.2);
   if (warm > 0){ ctx.fillStyle = `rgba(255,140,70,${warm})`; ctx.fillRect(0, 0, W, W); }
@@ -845,7 +1266,7 @@ function frame(ts){
   const dt = Math.min(0.1, (ts - last)/1000); last = ts;
   now = reduce ? 0 : ts;
   if (autoTime && !reduce) tday = (tday + dt/240) % 1;
-  if (!reduce){ updateWalkers(dt); updateCars(dt); updateParticles(dt); }
+  if (!reduce){ updateWalkers(dt); updateCars(dt); updateBoats(dt); updateAnimals(dt); updateParticles(dt); }
   render(); updateClock();
   requestAnimationFrame(frame);
 }
@@ -864,12 +1285,17 @@ const TOOLS = [
   {id:'o', kind:'obj', name:'Foin', group:'Campagne'},
   {id:'V', kind:'obj', name:'Potager', group:'Campagne'},
   {id:'m', kind:'obj', name:'Moulin', group:'Campagne'},
+  {id:'u', kind:'obj', name:'Ruches', group:'Campagne', gift:true},
+  {id:'e', kind:'obj', name:'Éolienne', group:'Campagne', gift:true},
+  {id:'y', kind:'obj', name:'Serre', group:'Campagne', gift:true},
   {id:'I', kind:'obj', name:'Immeuble', group:'Ville'},
   {id:'T', kind:'obj', name:'Tour', group:'Ville'},
   {id:'S', kind:'obj', name:'Magasin', group:'Ville'},
   {id:'A', kind:'obj', name:'Mairie', group:'Ville'},
   {id:'E', kind:'obj', name:'École', group:'Ville'},
   {id:'Q', kind:'obj', name:'Fontaine', group:'Ville'},
+  {id:'O', kind:'obj', name:'Kiosque', group:'Ville', gift:true},
+  {id:'j', kind:'obj', name:'Manège', group:'Ville', gift:true},
   {id:'t', kind:'obj', name:'Arbre', group:'Nature'},
   {id:'P', kind:'obj', name:'Sapin', group:'Nature'},
   {id:'f', kind:'obj', name:'Fleurs', group:'Nature'},
@@ -883,46 +1309,64 @@ const TOOLS = [
   {id:'l', kind:'obj', name:'Lampadaire', group:'Village'},
   {id:'F', kind:'obj', name:'Clôture', group:'Village'},
   {id:'C', kind:'obj', name:'Chat', group:'Village'},
-  {id:'L', kind:'obj', name:'Phare', group:'Plage'},
+  {id:'a', kind:'obj', name:'Chapelle', group:'Village', gift:true},
+  {id:'D', kind:'obj', name:'Calvaire', group:'Village', gift:true},
+  {id:'d', kind:'obj', name:'Montgolfière', group:'Village', gift:true},
+  {id:'q', kind:'ground', name:'Quai', group:'Port'},
+  {id:'n', kind:'ground', name:'Pont', group:'Port'},
+  {id:'G', kind:'obj', name:'Chalutier', group:'Port'},
+  {id:'B', kind:'obj', name:'Barque', group:'Port'},
+  {id:'J', kind:'obj', name:'Bouée', group:'Port'},
+  {id:'N', kind:'obj', name:'Casiers', group:'Port'},
+  {id:'L', kind:'obj', name:'Phare', group:'Port'},
   {id:'Y', kind:'obj', name:'Cabine', group:'Plage'},
   {id:'U', kind:'obj', name:'Parasol', group:'Plage'},
   {id:'Z', kind:'obj', name:'Château', group:'Plage'},
-  {id:'B', kind:'obj', name:'Barque', group:'Plage'},
   {id:'x', kind:'erase', name:'Gomme', group:'Outils'}
 ];
-let tool = 'h';
-const iconCanvases = {};
-function drawIcon(t){
-  const cv = iconCanvases[t.id]; const c = cv.getContext('2d'); C = c; c.clearRect(0, 0, 16, 20);
+const WATER_OBJ = new Set(['B','G','J']);
+let tool = 'h', pipMode = false;
+let iconCanvases = {};
+const ICON_OY = {I:7, T:20, A:5, a:13, e:12, d:16};
+function drawIconTo(t, cv){
+  const c = cv.getContext('2d'), prevC = C; C = c; c.clearRect(0, 0, 16, 20);
   if (t.kind === 'erase'){
     R(3, 9, 10, 6, '#e8a0a8'); R(3, 9, 4, 6, '#5a7fb0'); R(3, 15, 10, 1, 'rgba(0,0,0,.25)');
-    return;
+    C = prevC; return;
   }
-  const ground = t.kind === 'ground' ? t.id : (t.id === 'B' ? 'w' : 'g');
-  const nb = (x, y) => ((t.id === 'c' || t.id === 'R') && y === 0) ? t.id : (ground === 'w' ? 'w' : 'g');
-  const oy = {I:7, T:20, A:5}[t.id] ?? 4;
+  const ground = t.kind === 'ground' ? t.id : WATER_OBJ.has(t.id) ? 'w' : t.id === 'N' ? 'q' : 'g';
+  const nb = t.id === 'n' ? ((x, y) => y === 0 ? 'g' : 'w') : ((x, y) => ((t.id === 'c' || t.id === 'R') && y === 0) ? t.id : (ground === 'w' ? 'w' : 'g'));
+  const oy = ICON_OY[t.id] ?? 4;
   drawGround(ground, 0, oy, 0, 0, nb);
   if (oy > 4) drawGround(ground, 0, oy - 16, 0, 0, nb);
   iconMode = true;
   if (t.kind === 'obj') drawObject(t.id, 0, oy, 3, 5, false);
-  iconMode = false;
+  iconMode = false; C = prevC;
 }
+function drawIcon(t){ if (iconCanvases[t.id]) drawIconTo(t, iconCanvases[t.id]); }
 let activeGroup = 'Village';
+function openTab(g){
+  activeGroup = g;
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.g === g));
+  document.querySelectorAll('.tgroup').forEach(w => w.hidden = w.dataset.g !== g);
+}
 function buildTools(){
-  const host = document.getElementById('toolGroups');
+  const host = document.getElementById('toolGroups'); host.innerHTML = '';
   host.style.display = 'flex'; host.style.flexDirection = 'column'; host.style.gap = '10px';
-  const groups = [...new Set(TOOLS.filter(t => t.kind !== 'erase').map(t => t.group))];
+  iconCanvases = {};
+  const avail = TOOLS.filter(t => t.kind !== 'erase' && unlocked(t.id));
+  const groups = [...new Set(avail.map(t => t.group))];
   const tabs = document.createElement('div'); tabs.className = 'seg tabs'; tabs.setAttribute('role', 'tablist');
   host.append(tabs);
   for (const g of groups){
-    const tb = document.createElement('button'); tb.type = 'button'; tb.id = 'tab-' + g; tb.textContent = g; tb.setAttribute('role', 'tab');
+    const tb = document.createElement('button'); tb.type = 'button'; tb.id = 'tab-' + g; tb.dataset.g = g; tb.textContent = g; tb.setAttribute('role', 'tab');
     tb.setAttribute('aria-pressed', g === activeGroup);
-    tb.onclick = () => { activeGroup = g; document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-pressed', b === tb)); document.querySelectorAll('.tgroup').forEach(w => w.hidden = w.dataset.g !== g); };
+    tb.onclick = () => openTab(g);
     tabs.append(tb);
     const wrap = document.createElement('div'); wrap.className = 'group tgroup'; wrap.dataset.g = g; wrap.hidden = g !== activeGroup;
     const grid = document.createElement('div'); grid.className = 'tools';
-    for (const t of TOOLS.filter(t => t.group === g)){
-      const b = document.createElement('button'); b.className = 'tool'; b.id = 'tool-' + t.id; b.type = 'button';
+    for (const t of avail.filter(t => t.group === g)){
+      const b = document.createElement('button'); b.className = 'tool' + (t.gift ? ' isgift' : ''); b.id = 'tool-' + t.id; b.type = 'button';
       b.setAttribute('aria-pressed', t.id === tool);
       const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; iconCanvases[t.id] = cv;
       const sp = document.createElement('span'); sp.textContent = t.name;
@@ -932,18 +1376,46 @@ function buildTools(){
     }
     wrap.append(grid); host.append(wrap);
   }
-  const ecv = document.createElement('canvas'); ecv.width = 16; ecv.height = 20; iconCanvases.x = ecv;
-  document.getElementById('eraseIcon').replaceWith(ecv);
-  TOOLS.forEach(drawIcon);
+  avail.forEach(drawIcon);
+}
+/* barre sous le pouce : les derniers outils utilisés */
+function renderRecent(){
+  const el = document.getElementById('recent'); el.innerHTML = '';
+  for (const id of glob.recent){
+    const t = TOOLS.find(t => t.id === id);
+    if (!t || t.kind === 'erase' || !unlocked(id)) continue;
+    const b = document.createElement('button'); b.className = 'tb'; b.type = 'button'; b.dataset.id = id; b.id = 'recent-' + id;
+    b.title = t.name; b.setAttribute('aria-label', t.name); b.setAttribute('aria-pressed', tool === id);
+    const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; drawIconTo(t, cv);
+    b.append(cv); b.onclick = () => selectTool(id, true);
+    el.append(b);
+  }
 }
 let prevTool = 'h';
-function selectTool(id){
+function selectTool(id, fromBar){
   if (id !== 'x') prevTool = id;
   tool = id;
+  if (pipMode){ pipMode = false; document.getElementById('pipBtn').setAttribute('aria-pressed', 'false'); }
+  if (id !== 'x' && !fromBar && glob.recent[0] !== id){ glob.recent = [id, ...glob.recent.filter(r => r !== id)].slice(0, 8); saveGlob(); renderRecent(); }
   document.querySelectorAll('.tool').forEach(e => e.setAttribute('aria-pressed', e.id === 'tool-' + id));
+  document.querySelectorAll('#recent .tb').forEach(e => e.setAttribute('aria-pressed', e.dataset.id === id));
   document.getElementById('eraseBtn').setAttribute('aria-pressed', id === 'x');
 }
-document.getElementById('eraseBtn').onclick = () => selectTool(tool === 'x' ? prevTool : 'x');
+document.getElementById('eraseBtn').onclick = () => selectTool(tool === 'x' ? prevTool : 'x', true);
+/* pipette : on touche un objet du terrain pour reprendre le même outil */
+const pipBtn = document.getElementById('pipBtn');
+pipBtn.onclick = () => {
+  pipMode = !pipMode; pipBtn.setAttribute('aria-pressed', pipMode);
+  if (pipMode) toast('Touche un objet ou un sol du terrain');
+};
+function pickAt(x, y){
+  const i = y*N + x; let id = O[i];
+  if (!id){ const below = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x])); if (below) id = O[below[0]*N + x]; }
+  if (!id) id = G[i];
+  pipMode = false; pipBtn.setAttribute('aria-pressed', 'false');
+  const t = TOOLS.find(t => t.id === id);
+  if (t && unlocked(id)){ selectTool(id); openTab(t.group); toast(`Outil choisi : ${t.name}`); }
+}
 
 /* ---------- annuler ---------- */
 let history = [];
@@ -959,7 +1431,7 @@ undoBtn.onclick = () => {
 /* ---------- pose ---------- */
 const toastEl = document.getElementById('toast'); let toastT;
 function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), 1800); }
-const TALL1 = new Set(['t','P','L','I','T','A','m','K','h']), TALL2 = new Set(['T']);
+const TALL1 = new Set(['t','P','L','I','T','A','m','K','h','a','e','d']), TALL2 = new Set(['T','d']);
 function place(x, y, forceErase){
   const i = y*N + x, t = TOOLS.find(t => t.id === (forceErase ? 'x' : tool));
   if (t.kind === 'erase'){
@@ -968,17 +1440,20 @@ function place(x, y, forceErase){
       // le haut d'un arbre, d'une maison ou d'une tour dépasse sur la case du dessus : on efface l'objet qu'on voit
       const below = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x]));
       if (below) O[below[0]*N + x] = null;
+      else if (G[i] === 'n') G[i] = 'w';
+      else if (G[i] === 'q') G[i] = [[1,0],[-1,0],[0,1],[0,-1]].filter(([a,b]) => gAt(x+a, y+b) === 'w').length >= 2 ? 'w' : 'g';
       else G[i] = 'g';
     }
   }
   else if (t.kind === 'ground'){
+    if (t.id === 'n' && G[i] !== 'w' && G[i] !== 'n'){ toast("Le pont se pose sur l'eau"); return; }
     G[i] = t.id;
-    if (t.id === 'w' && O[i] && O[i] !== 'B') O[i] = null;
-    if (t.id !== 'w' && O[i] === 'B') O[i] = null;
-    if (t.id === 'c' || t.id === 'R') O[i] = null;
+    if (t.id === 'w' && O[i] && !WATER_OBJ.has(O[i])) O[i] = null;
+    if (t.id !== 'w' && WATER_OBJ.has(O[i])) O[i] = null;
+    if (t.id === 'c' || t.id === 'R' || t.id === 'n') O[i] = null;
   } else {
-    if (t.id === 'B'){ if (G[i] !== 'w'){ toast("La barque se pose sur l'eau"); return; } }
-    else if (G[i] === 'w'){ toast('Pose-le sur la terre ferme'); return; }
+    if (WATER_OBJ.has(t.id)){ if (G[i] !== 'w'){ toast(`${t.name} : à poser sur l'eau`); return; } }
+    else if (G[i] === 'w' || G[i] === 'n'){ toast('Pose-le sur la terre ferme'); return; }
     else if (G[i] === 'c'){ toast('Les chemins restent libres pour les promeneurs'); return; }
     else if (G[i] === 'R'){ toast('Les routes restent libres pour les voitures'); return; }
     O[i] = t.id;
@@ -994,7 +1469,7 @@ function cellOf(e){
 }
 const pts = new Map();
 let stroke = null, pendingTouch = null, panDrag = null, gesture = null, lockUntilUp = false;
-function startStroke(ev, erase){ const c = cellOf(ev); if (!c) return; snapshot(); stroke = {erase, last:c.join(), t:performance.now(), touch:!!ev.touch}; place(c[0], c[1], erase); }
+function startStroke(ev, erase){ const c = cellOf(ev); if (!c) return; if (pipMode && !erase){ pickAt(c[0], c[1]); return; } snapshot(); stroke = {erase, last:c.join(), t:performance.now(), touch:!!ev.touch}; place(c[0], c[1], erase); }
 /* si un deuxième doigt arrive juste après le premier, c'était un geste pour bouger : on annule ce qui vient d'être posé */
 function revertStroke(){
   const s = history.pop(); if (!s) return;
@@ -1071,7 +1546,7 @@ function setSeason(k){
   season = k; S = SEASONS[k];
   document.querySelectorAll('#seasons button').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === k));
   document.getElementById('seasonName').textContent = S.name;
-  TOOLS.forEach(drawIcon); resetParticles(); queueSave();
+  TOOLS.forEach(drawIcon); renderRecent(); resetParticles(); queueSave();
 }
 const seasonsEl = document.getElementById('seasons');
 for (const k of SEASON_KEYS){ const b = document.createElement('button'); b.type = 'button'; b.id = 'season-' + k; b.dataset.k = k; b.textContent = SEASONS[k].name; b.onclick = () => setSeason(k); seasonsEl.append(b); }
@@ -1087,8 +1562,10 @@ function updateClock(){
 }
 function updateStats(){
   const hab = residents(), p = walkers.length, v = cars.length;
-  const pl = (n, w) => `${n} ${w}${n > 1 ? 's' : ''}`;
-  document.getElementById('stats').textContent = `${N}×${N} · ${pl(hab, 'foyer')} · ${pl(p, 'promeneur')} · ${pl(v, 'voiture')}`;
+  const an = animals.length + animals.reduce((s, a) => s + (a.babies ? a.babies.length : 0), 0) + gulls.length + walkers.filter(w => w.dog).length + cnt('v') + cnt('C');
+  const pl = (n, w, ws) => `${n} ${n > 1 ? (ws || w + 's') : w}`;
+  document.getElementById('stats').textContent = `${N}×${N} · ${pl(hab, 'foyer')} · ${pl(p, 'promeneur')} · ${pl(v, 'voiture')} · ${pl(boats.length, 'voilier')} · ${pl(an, 'animal', 'animaux')}`;
+  checkRequest();
 }
 let pending = null;
 const confirmRow = document.getElementById('confirmRow'), resetRow = document.getElementById('resetRow');
@@ -1110,8 +1587,9 @@ growBtn.onclick = () => {
   expand(g, o, n0, off, true);
   zoom = zoom * N / n0; camX += sh; camY += sh;
   applySize();
-  for (const w of walkers){ w.px += sh; w.py += sh; w.cx += off; w.cy += off; w.tx += off; w.ty += off; if (w.prev){ w.prev[0] += off; w.prev[1] += off; } }
+  for (const w of walkers){ w.px += sh; w.py += sh; w.cx += off; w.cy += off; w.tx += off; w.ty += off; if (w.prev){ w.prev[0] += off; w.prev[1] += off; } if (w.dog){ w.dog.x += sh; w.dog.y += sh; } }
   for (const c of cars){ c.px += sh; c.py += sh; c.cx += off; c.cy += off; c.tx += off; c.ty += off; c.prev = null; }
+  boats = []; animals = []; gulls = [];
   history = []; undoBtn.disabled = true;
   resetParticles(); syncWalkers(); updateStats(); updateGrowBtn(); save();
   toast(`Ton terrain fait maintenant ${N}×${N}`);
@@ -1131,6 +1609,24 @@ let downloads = null;
 const photoBox = document.getElementById('photoBox');
 document.getElementById('photoClose').onclick = () => { photoBox.hidden = true; };
 photoBox.addEventListener('click', e => { if (e.target === photoBox) photoBox.hidden = true; });
+/* propose un fichier : enregistrement Claude, sinon partage (téléphone), sinon téléchargement */
+const coarse = matchMedia('(pointer: coarse)').matches;
+async function offerFile(blob, name, isPhoto){
+  if (downloads){
+    try { await downloads.save({filename:name, data:blob}); return 'saved'; }
+    catch(err){ if (err && err.code === 'declined') return 'declined'; if (err && err.code === 'rate_limited'){ toast('Une demande est déjà ouverte'); return 'declined'; } }
+  }
+  if (coarse) try {
+    const file = new File([blob], name, {type:blob.type});
+    if (navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:'iloe'}); return 'shared'; }
+  } catch(err){ if (err && err.name === 'AbortError') return 'declined'; }
+  if (isPhoto) return 'fallback';
+  try {
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    return 'saved';
+  } catch(e){ return 'failed'; }
+}
 document.getElementById('photoBtn').onclick = async () => {
   const keep = hover; hover = null; render(); hover = keep;
   const k = 4, pad = 8*k, out = document.createElement('canvas');
@@ -1141,16 +1637,9 @@ document.getElementById('photoBtn').onclick = async () => {
   const blob = await new Promise(r => out.toBlob(r, 'image/png'));
   if (!blob){ toast("La photo n'a pas pu être créée"); return; }
   const name = `iloe-${S.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')}.png`;
-  if (downloads){
-    try { await downloads.save({filename:name, data:blob}); toast('Photo enregistrée'); return; }
-    catch(err){ if (err && err.code === 'declined') return; if (err && err.code === 'rate_limited'){ toast('Une demande est déjà ouverte'); return; } }
-  }
-  try {
-    const file = new File([blob], name, {type:'image/png'});
-    if (navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:'iloe'}); return; }
-  } catch(err){ if (err && err.name === 'AbortError') return; }
-  document.getElementById('photoImg').src = URL.createObjectURL(blob);
-  photoBox.hidden = false;
+  const res = await offerFile(blob, name, true);
+  if (res === 'saved') toast('Photo enregistrée');
+  if (res === 'fallback'){ document.getElementById('photoImg').src = URL.createObjectURL(blob); photoBox.hidden = false; }
 };
 document.getElementById('confirmYes').onclick = () => {
   snapshot();
@@ -1159,7 +1648,217 @@ document.getElementById('confirmYes').onclick = () => {
   setMenu(false);
 };
 
-buildTools(); setSeason(season); syncWalkers(); updateStats();
+/* ---------- cadeau du jour ---------- */
+const GIFTS = ['u','e','O','a','y','j','D','d'];
+const GIFT_TXT = {u:'Des ruches', e:'Une éolienne', O:'Un kiosque à musique', a:'Une chapelle', y:'Une serre', j:'Un manège', D:'Un calvaire breton', d:'Une montgolfière'};
+function today(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function unlocked(id){ return !GIFTS.includes(id) || glob.gifts.includes(id); }
+const giftBox = document.getElementById('giftBox'), giftBtn = document.getElementById('giftBtn'), giftCv = document.getElementById('giftCv');
+const giftText = document.getElementById('giftText'), giftOpen = document.getElementById('giftOpen'), giftLater = document.getElementById('giftLater');
+let giftShown = null;
+const giftWaiting = () => glob.lastGift !== today() && GIFTS.some(g => !glob.gifts.includes(g));
+function updateGiftBtn(){ giftBtn.hidden = !giftWaiting(); }
+function drawPresent(){
+  const c = giftCv.getContext('2d'), prevC = C; C = c; c.clearRect(0, 0, 16, 20);
+  R(2, 17, 12, 1, 'rgba(0,0,0,.2)'); R(3, 9, 10, 8, '#cf453a'); R(3, 9, 10, 1, '#e86a5c');
+  R(7, 9, 2, 8, '#f2c14e'); R(3, 12, 10, 2, '#f2c14e');
+  R(4, 6, 3, 3, '#f2c14e'); R(9, 6, 3, 3, '#f2c14e'); R(5, 7, 1, 1, '#cf453a'); R(10, 7, 1, 1, '#cf453a'); R(7, 8, 2, 1, '#d9a52f');
+  C = prevC;
+}
+function showGift(){
+  if (!giftWaiting()) return;
+  giftShown = null; drawPresent();
+  giftText.textContent = 'Un petit paquet t’attend…';
+  giftOpen.textContent = 'Ouvrir'; giftLater.hidden = false; giftBox.hidden = false;
+}
+giftOpen.onclick = () => {
+  if (!giftShown){
+    const id = GIFTS.find(g => !glob.gifts.includes(g));
+    if (!id){ giftBox.hidden = true; return; }
+    glob.gifts.push(id); glob.lastGift = today(); saveGlob();
+    giftShown = id;
+    const t = TOOLS.find(t => t.id === id), left = GIFTS.length - glob.gifts.length;
+    drawIconTo(t, giftCv);
+    giftText.textContent = `${GIFT_TXT[id]} ! À retrouver dans l’onglet ${t.group}. ` + (left ? `Encore ${left} cadeau${left > 1 ? 'x' : ''} à découvrir, un par jour.` : 'C’était le dernier cadeau… pour l’instant !');
+    giftOpen.textContent = 'Le poser'; giftLater.hidden = true;
+    buildTools(); updateGiftBtn();
+  } else {
+    const t = TOOLS.find(t => t.id === giftShown);
+    giftBox.hidden = true; openTab(t.group); selectTool(giftShown);
+  }
+};
+giftLater.onclick = () => { giftBox.hidden = true; };
+giftBtn.onclick = showGift;
+giftBox.addEventListener('click', e => { if (e.target === giftBox) giftBox.hidden = true; });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) updateGiftBtn(); });
+
+/* ---------- idées des habitants ---------- */
+const NAMES = ['Maëlle','Yann','Gwenaëlle','Loïc','Soizic','Erwan','Nolwenn','Tanguy','Rozenn','Corentin','Anaïg','Mathurin','Katell','Goulven'];
+function cnt(id){ let n = 0; for (const o of O) if (o === id) n++; return n; }
+function cntG(id){ let n = 0; for (const c of G) if (c === id) n++; return n; }
+function cntOn(o, g){ let n = 0; for (let i = 0; i < N*N; i++) if (O[i] === o && G[i] === g) n++; return n; }
+const adjO = (a, b) => O.some((o, i) => o === a && near8(i, j => O[j] === b));
+const nearG = (a, g) => O.some((o, i) => o === a && near8(i, j => G[j] === g));
+const hasWater = () => cntG('w') > 0;
+const REQS = [
+  {id:'banc', txt:'un banc à côté de la fontaine', done:() => adjO('b', 'Q')},
+  {id:'arbres', txt:'trois arbres de plus dans le coin', base:() => cnt('t') + cnt('P'), done:b => cnt('t') + cnt('P') >= b + 3},
+  {id:'lampe', txt:"un lampadaire au bord de l'eau, pour les balades du soir", done:() => nearG('l', 'w'), avail:hasWater},
+  {id:'potager', txt:'un potager juste à côté d’une maison', done:() => adjO('V', 'h')},
+  {id:'pont', txt:"un pont pour traverser l'eau", base:() => cntG('n'), done:b => cntG('n') > b, avail:hasWater},
+  {id:'parasol', txt:'un parasol sur la plage', base:() => cntOn('U', 's'), done:b => cntOn('U', 's') > b, avail:() => cntG('s') > 0},
+  {id:'hortensias', txt:'des hortensias devant la crêperie', done:() => adjO('H', 'K')},
+  {id:'chat', txt:'un chat pour veiller sur la mairie', done:() => adjO('C', 'A')},
+  {id:'quai', txt:'un quai de deux cases pour amarrer les bateaux', base:() => cntG('q'), done:b => cntG('q') >= b + 2, avail:hasWater},
+  {id:'chalutier', txt:'un chalutier amarré le long du quai', done:() => nearG('G', 'q'), avail:hasWater},
+  {id:'colza', txt:"un champ de colza d'au moins quatre cases", base:() => cntG('z'), done:b => cntG('z') >= b + 4},
+  {id:'vache', txt:"une vache à côté d'une botte de foin", done:() => adjO('v', 'o')},
+  {id:'ecole', txt:'une école pour les enfants du quartier', base:() => cnt('E'), done:b => cnt('E') > b},
+  {id:'fleurs', txt:'cinq massifs de fleurs en plus', base:() => cnt('f') + cnt('H'), done:b => cnt('f') + cnt('H') >= b + 5},
+  {id:'route', txt:"une route d'au moins six cases", base:() => cntG('R'), done:b => cntG('R') >= b + 6},
+  {id:'place', txt:'une fontaine au milieu d’une place pavée', done:() => cntOn('Q', 'p') > 0},
+  {id:'maisons', txt:'deux nouvelles maisons pour ses cousins', base:() => cnt('h'), done:b => cnt('h') >= b + 2},
+  {id:'casiers', txt:'des casiers à homards sur le quai', done:() => cntOn('N', 'q') > 0, avail:hasWater},
+  {id:'moutons', txt:'une clôture de quatre morceaux pour accueillir des moutons', base:() => cnt('F'), done:b => cnt('F') >= b + 4},
+  {id:'bouee', txt:'une bouée pour guider les bateaux', base:() => cnt('J'), done:b => cnt('J') > b, avail:hasWater},
+  {id:'menhir', txt:'un menhir, comme dans les légendes', base:() => cnt('M'), done:b => cnt('M') > b},
+  {id:'phare', txt:'un phare de plus pour veiller sur la côte', base:() => cnt('L'), done:b => cnt('L') > b, avail:hasWater},
+];
+const reqCard = document.getElementById('reqCard'), reqText = document.getElementById('reqText'), reqSkip = document.getElementById('reqSkip');
+let reqThanks = false, reqTimer = null;
+const reqDef = () => glob.req && REQS.find(r => r.id === glob.req.id);
+function newRequest(){
+  clearTimeout(reqTimer);
+  const cur = glob.req && glob.req.id;
+  const pool = REQS.filter(r => r.id !== cur && (!r.avail || r.avail()) && !r.done(r.base ? r.base() : null));
+  const r = pool[(Math.random()*pool.length)|0] || REQS[1];
+  glob.req = {id:r.id, name:NAMES[(Math.random()*NAMES.length)|0], base:r.base ? r.base() : null, terrain:terrains.cur};
+  reqThanks = false; saveGlob(); renderReq();
+}
+function renderReq(){
+  const r = reqDef();
+  if (!r){ reqCard.hidden = true; return; }
+  reqCard.hidden = false; reqCard.classList.toggle('thanks', reqThanks);
+  reqText.textContent = '';
+  const b = document.createElement('b'); b.textContent = glob.req.name;
+  reqText.append(b, reqThanks ? ' te dit merci ! 💛' : ` aimerait ${r.txt}.`);
+  reqSkip.hidden = reqThanks;
+  const h = glob.hearts;
+  document.getElementById('hearts').textContent = h ? `💛 ${h} idée${h > 1 ? 's' : ''} réalisée${h > 1 ? 's' : ''}` : '';
+}
+function checkRequest(){
+  const r = reqDef();
+  if (!r || reqThanks) return;
+  if (glob.req.terrain !== terrains.cur){ glob.req.terrain = terrains.cur; glob.req.base = r.base ? r.base() : null; saveGlob(); return; }
+  if (r.done(glob.req.base)){
+    reqThanks = true; glob.hearts = (glob.hearts || 0) + 1; saveGlob(); renderReq();
+    toast('Idée réalisée ! 💛');
+    reqTimer = setTimeout(newRequest, 6000);
+  }
+}
+reqSkip.onclick = newRequest;
+
+/* ---------- mes terrains ---------- */
+const tlist = document.getElementById('tlist');
+function afterTerrainChange(){
+  zoom = (innerWidth < 700 ? 2 : 1) * N / 24; camX = camY = (W - vw())/2; applySize();
+  walkers = []; cars = []; boats = []; animals = []; gulls = []; history = []; undoBtn.disabled = true;
+  setSeason(season); syncWalkers(); updateStats(); updateGrowBtn(); renderTerrains();
+}
+function switchTerrain(id){
+  if (id === terrains.cur) return;
+  save(); terrains.cur = id; writeJSON(IDX, terrains);
+  loadTerrain(id); afterTerrainChange(); setMenu(false);
+  const t = terrains.list.find(t => t.id === id); toast(`Bienvenue à ${t ? t.name : 'ton terrain'}`);
+}
+function newTerrain(kind){
+  save();
+  const id = newId(), n = terrains.list.length + 1;
+  terrains.list.push({id, name: kind === 'sample' ? `Village ${n}` : `Terrain ${n}`});
+  terrains.cur = id; writeJSON(IDX, terrains);
+  N = 24; W = N*T;
+  if (kind === 'sample') loadSample(); else clearAll();
+  save(); afterTerrainChange(); setMenu(false); toast('Nouveau terrain prêt');
+}
+function mkBtn(label, fn, cls){ const b = document.createElement('button'); b.type = 'button'; b.className = 'btn sm' + (cls ? ' ' + cls : ''); b.textContent = label; b.onclick = fn; return b; }
+function renderTerrains(){
+  tlist.innerHTML = '';
+  for (const t of terrains.list){
+    const isCur = t.id === terrains.cur;
+    const row = document.createElement('div'); row.className = 'trow' + (isCur ? ' cur' : '');
+    const name = document.createElement('span'); name.className = 'tname'; name.textContent = t.name;
+    const d = isCur ? {n:N} : readJSON(tKey(t.id));
+    const size = document.createElement('span'); size.className = 'tsize'; size.textContent = d && d.n ? `${d.n}×${d.n}` : '';
+    row.append(name, size);
+    if (isCur) row.append(mkBtn('Renommer', () => startRename(row, t)));
+    else {
+      row.append(mkBtn('Ouvrir', () => switchTerrain(t.id)));
+      const del = mkBtn('×', () => {
+        if (del.dataset.sure){ terrains.list = terrains.list.filter(x => x !== t); try { localStorage.removeItem(tKey(t.id)); } catch(e){} writeJSON(IDX, terrains); renderTerrains(); }
+        else { del.dataset.sure = '1'; del.textContent = 'Supprimer ?'; del.classList.add('danger'); }
+      });
+      del.setAttribute('aria-label', `Supprimer ${t.name}`);
+      row.append(del);
+    }
+    tlist.append(row);
+  }
+}
+function startRename(row, t){
+  const inp = document.createElement('input'); inp.type = 'text'; inp.value = t.name; inp.maxLength = 30; inp.className = 'tinput'; inp.id = 'rename-' + t.id;
+  row.innerHTML = ''; row.append(inp); inp.focus(); inp.select();
+  const done = () => { const v = inp.value.trim(); if (v) t.name = v; writeJSON(IDX, terrains); renderTerrains(); };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); e.stopPropagation(); });
+  inp.addEventListener('blur', done, {once:true});
+}
+document.getElementById('newEmpty').onclick = () => newTerrain('empty');
+document.getElementById('newSample').onclick = () => newTerrain('sample');
+
+/* ---------- sauvegarde de secours ---------- */
+document.getElementById('exportBtn').onclick = async () => {
+  save();
+  const data = {app:'iloe', version:1, date:new Date().toISOString(), glob:{gifts:glob.gifts, hearts:glob.hearts},
+    terrains: terrains.list.map(t => ({name:t.name, data: t.id === terrains.cur ? terrainData() : readJSON(tKey(t.id))})).filter(t => t.data)};
+  const blob = new Blob([JSON.stringify(data)], {type:'application/json'});
+  const res = await offerFile(blob, `iloe-sauvegarde-${today()}.json`, false);
+  if (res === 'saved' || res === 'shared') toast('Copie de sauvegarde prête');
+  if (res === 'failed') toast("La copie n'a pas pu être créée");
+};
+const importFile = document.getElementById('importFile');
+document.getElementById('importBtn').onclick = () => importFile.click();
+importFile.onchange = async () => {
+  const f = importFile.files && importFile.files[0]; importFile.value = '';
+  if (!f) return;
+  let d = null;
+  try { d = JSON.parse(await f.text()); } catch(e){}
+  if (!d || d.app !== 'iloe' || !Array.isArray(d.terrains)){ toast("Ce fichier n'est pas une sauvegarde d'iloe"); return; }
+  save();
+  let first = null, n = 0;
+  for (const t of d.terrains){
+    if (!t || !t.data || typeof t.data.g !== 'string' || typeof t.data.o !== 'string') continue;
+    const id = newId() + n;
+    let name = String(t.name || 'Terrain').slice(0, 30);
+    if (terrains.list.some(x => x.name === name)) name = (name + ' (copie)').slice(0, 30);
+    terrains.list.push({id, name}); writeJSON(tKey(id), t.data);
+    if (!first) first = id; n++;
+  }
+  if (d.glob){
+    glob.gifts = [...new Set([...glob.gifts, ...(Array.isArray(d.glob.gifts) ? d.glob.gifts : [])])].filter(g => GIFTS.includes(g));
+    glob.hearts = Math.max(glob.hearts || 0, +d.glob.hearts || 0); saveGlob(); buildTools(); renderRecent();
+  }
+  if (!n){ toast('Aucun terrain trouvé dans ce fichier'); return; }
+  terrains.cur = first; writeJSON(IDX, terrains);
+  loadTerrain(first); afterTerrainChange(); setMenu(false);
+  toast(n > 1 ? `${n} terrains récupérés` : 'Terrain récupéré');
+};
+
+/* ---------- démarrage ---------- */
+const ecv = document.createElement('canvas'); ecv.width = 16; ecv.height = 20;
+document.getElementById('eraseIcon').replaceWith(ecv); drawIconTo(TOOLS.find(t => t.id === 'x'), ecv);
+glob.recent = (glob.recent || []).filter(id => TOOLS.some(t => t.id === id));
+buildTools(); setSeason(season); syncWalkers(); renderTerrains();
+if (!reqDef()) newRequest(); else renderReq();
+updateStats(); updateGiftBtn();
+if (giftWaiting()) setTimeout(showGift, 900);
 requestAnimationFrame(frame);
 </script>
 
