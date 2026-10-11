@@ -1,0 +1,1142 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2b3a44">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="iloe">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-size:14px;-webkit-text-size-adjust:100%}
+img{max-width:100%}
+[hidden]{display:none!important}
+button{touch-action:manipulation}
+</style>
+</head>
+<body>
+<title>iloe</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout : le terrain en pixel art à gauche, l'établi d'outils à droite (empilés sur téléphone). Couleurs : granit et ardoise bretons, volets bleus, lueur des lampadaires. */
+:root{
+  --bg:#e8ecee; --surface:#f8fafb; --ink:#1e2830; --muted:#5a6872; --line:#cfd6db;
+  --accent:#2e6fa8; --accent-soft:#dbe7f2; --glow:#d99a2b;
+  --f-display:"Pixelify Sans", "Courier New", monospace;
+  --f-body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11171c; --surface:#1a2229; --ink:#e4eaee; --muted:#93a1aa; --line:#2c3842;
+  --accent:#7cb0e0; --accent-soft:#22364a; --glow:#f0b850; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11171c; --surface:#1a2229; --ink:#e4eaee; --muted:#93a1aa; --line:#2c3842;
+  --accent:#7cb0e0; --accent-soft:#22364a; --glow:#f0b850; color-scheme:dark}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:20px 32px}
+.wrap{max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,5vw,40px);margin:0;letter-spacing:.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:2px 0 0}
+.clock{font-family:var(--f-display);font-size:22px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.clock b{color:var(--ink);font-weight:500}
+.app{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start}
+@media (min-width:860px){.app{grid-template-columns:minmax(0,1fr) 320px}}
+.stage{display:flex;flex-direction:column;gap:10px;min-width:0}
+.board-frame{background:#2b3a44;padding:6px;border-radius:4px;box-shadow:0 2px 0 #1b252c, 0 10px 30px rgba(20,30,40,.18);width:min(100%, max(320px, calc(100svh - 150px)));max-width:100%}
+@media (max-width:600px){.board-frame{padding:3px}}
+canvas#board{display:block;width:100%;max-width:100%;aspect-ratio:1;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none;cursor:crosshair}
+.hand canvas#board{cursor:grab}
+.qbtn.sq{min-width:44px;justify-content:center;padding:8px 12px;font-size:18px}
+.status{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 14px;color:var(--muted);font-size:14px}
+.quick{display:flex;flex-wrap:wrap;gap:8px}
+.qbtn{display:flex;align-items:center;gap:6px;font:inherit;font-size:15px;font-weight:700;padding:8px 14px;min-height:44px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.qbtn canvas{width:24px;height:30px;image-rendering:pixelated}
+.qbtn:hover{border-color:var(--accent)}
+.qbtn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.qbtn:disabled{opacity:.45;cursor:default}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:16px}
+.group{display:flex;flex-direction:column;gap:8px}
+.label{font-family:var(--f-display);font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px}
+.tool{display:flex;align-items:center;gap:6px;padding:5px 6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;font:inherit;font-size:13px;cursor:pointer;text-align:left;min-width:0}
+.tool canvas{width:24px;height:30px;image-rendering:pixelated;flex:none}
+.tool span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tool:hover{border-color:var(--accent)}
+.tool[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button,.btn{font:inherit;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn:hover,.seg button:hover{border-color:var(--accent)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.confirm{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px}
+.btn.danger{border-color:#b8463b;color:#b8463b}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:calc(100% - 32px)}
+.toast.on{opacity:1}
+.hint{font-size:13px;color:var(--muted);margin:0}
+[hidden]{display:none!important}
+.tabs{gap:4px}
+.tabs button{font-family:var(--f-display);font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+.hdr-right{display:flex;align-items:center;gap:12px;position:relative}
+.gear{width:44px;height:44px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:22px;line-height:1;cursor:pointer}
+.gear:hover,.gear[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+.menu{position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px;width:min(290px, calc(100vw - 32px));box-shadow:0 12px 32px rgba(10,20,30,.22)}
+.photo{position:fixed;inset:0;z-index:30;background:rgba(10,16,22,.72);display:flex;align-items:center;justify-content:center;padding:16px}
+.photo-card{background:var(--surface);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;align-items:center;max-width:min(560px,100%)}
+.photo-card img{width:100%;image-rendering:pixelated;border-radius:4px}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>iloe</h1>
+      <p class="sub">Un bout de côte à aménager, case par case.</p>
+    </div>
+    <div class="hdr-right">
+      <div class="clock" aria-live="off"><b id="clock">10 h 00</b> · <span id="seasonName">Automne</span></div>
+      <button class="gear" id="gearBtn" type="button" aria-expanded="false" aria-controls="gearMenu" aria-label="Réglages du terrain">⚙</button>
+      <div class="menu" id="gearMenu" hidden>
+        <div class="label">Taille</div>
+        <button class="btn" id="growBtn" type="button">Agrandir le terrain</button>
+        <div class="label">Recommencer</div>
+        <div class="row" id="resetRow">
+          <button class="btn" id="askClear">Terrain vide</button>
+          <button class="btn" id="askSample">Village d'exemple</button>
+        </div>
+        <div class="confirm" id="confirmRow" hidden>
+          <span id="confirmText">Tout effacer ?</span>
+          <button class="btn danger" id="confirmYes">Oui</button>
+          <button class="btn" id="confirmNo">Annuler</button>
+        </div>
+        <p class="hint">Ton coin est gardé dans ce navigateur. Annuler (↶) permet de revenir en arrière après un effacement.</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="app">
+    <div class="stage">
+      <div class="board-frame"><canvas id="board" aria-label="Terrain de 24 cases sur 24 à construire"></canvas></div>
+      <div class="status">
+        <div class="quick">
+          <button class="qbtn" id="eraseBtn" type="button" aria-pressed="false"><span id="eraseIcon"></span>Gomme</button>
+          <button class="qbtn" id="undoBtn" type="button" disabled>↶ Annuler</button>
+          <button class="qbtn" id="handBtn" type="button" aria-pressed="false" title="Déplacer la vue">✋ Déplacer</button>
+          <button class="qbtn sq" id="zoomOut" type="button" aria-label="Dézoomer">−</button>
+          <button class="qbtn sq" id="zoomIn" type="button" aria-label="Zoomer">+</button>
+          <button class="qbtn" id="photoBtn" type="button">📷 Photo</button>
+        </div>
+        <span id="stats"></span>
+      </div>
+      <p class="hint">Sur téléphone, pince avec deux doigts pour zoomer et glisse-les pour te déplacer. Sur ordinateur, la molette zoome.</p>
+    </div>
+
+    <aside class="panel">
+      <div id="toolGroups"></div>
+
+      <div class="group">
+        <div class="label">Saison</div>
+        <div class="seg" id="seasons"></div>
+      </div>
+
+      <div class="group">
+        <div class="label">Heure</div>
+        <div class="seg" id="times"></div>
+        <div class="seg"><button id="autoTime" aria-pressed="true">Le temps passe</button></div>
+      </div>
+    </aside>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<div class="photo" id="photoBox" hidden>
+  <div class="photo-card">
+    <img id="photoImg" alt="Photo de ton iloe">
+    <p class="hint">Appuie longuement sur l'image (ou clic droit) pour l'enregistrer.</p>
+    <button class="btn" id="photoClose" type="button">Fermer</button>
+  </div>
+</div>
+
+<script>
+const T = 16, NMAX = 48;
+let N = 24, W = N * T;
+const board = document.getElementById('board');
+const disp = board.getContext('2d');
+const world = document.createElement('canvas'); world.width = W; world.height = W;
+const ctx = world.getContext('2d');
+/* caméra */
+let zoom = innerWidth < 700 ? 2 : 1, camX = 0, camY = 0;
+const ZMIN = 1, zmax = () => 3 * N / 24;
+const vw = () => W / zoom;
+function clampCam(){ const v = vw(); camX = Math.max(0, Math.min(W - v, camX)); camY = Math.max(0, Math.min(W - v, camY)); }
+function sizeBoard(){ const s = Math.round(vw()); if (board.width !== s){ board.width = s; board.height = s; } }
+function setZoom(z, fx = 0.5, fy = 0.5){
+  const wx = camX + fx*vw(), wy = camY + fy*vw();
+  zoom = Math.max(ZMIN, Math.min(zmax(), z));
+  camX = wx - fx*vw(); camY = wy - fy*vw(); clampCam(); sizeBoard();
+}
+camX = camY = (W - vw())/2; sizeBoard();
+const darkCv = document.createElement('canvas'); darkCv.width = W; darkCv.height = W;
+const dctx = darkCv.getContext('2d');
+let C = ctx;
+function R(x, y, w, h, c){ C.fillStyle = c; C.fillRect(x, y, w, h); }
+function hs(x, y, k){ let n = (x*374761393 + y*668265263 + k*1442695041) | 0; n = Math.imul(n ^ (n >>> 13), 1274126177); return ((n ^ (n >>> 16)) >>> 0) / 4294967296; }
+
+/* ---------- saisons ---------- */
+const SEASONS = {
+  printemps:{name:'Printemps', grass:['#86c66a','#72b158','#a1d681'], leaf:['#5ea551','#4a8c42','#f4a9c4'], flowers:['#f6c945','#ef6f8a','#ffffff','#9a7fe0'], sand:'#ead7a2', water:'#4b93c9'},
+  ete:{name:'Été', grass:['#7dbd52','#69a742','#96d066'], leaf:['#3f8f3b','#2f7530','#58ad4c'], flowers:['#f6c945','#e45757','#ffffff','#5aa0e8'], sand:'#efd99a', water:'#3f8fd0'},
+  automne:{name:'Automne', grass:['#a7b15a','#939c4a','#bcc36e'], leaf:['#e08a30','#c25d29','#f0b44c'], flowers:['#e39b3a','#b4482f','#f2d07a','#8e5aa0'], sand:'#e3cf9a', water:'#4a86b8'},
+  hiver:{name:'Hiver', grass:['#eaf1f4','#d3e0e7','#ffffff'], leaf:null, flowers:['#ffffff','#e8f0f4','#ffffff','#cfe0ea'], sand:'#e6e3d8', water:'#a7cfe4'}
+};
+const SEASON_KEYS = ['printemps','ete','automne','hiver'];
+let season = 'automne';
+let S = SEASONS[season];
+
+/* ---------- état ---------- */
+const SAMPLE_G = [
+  "gggggggggssw",
+  "gccccccccssw",
+  "gcggggggcssw",
+  "gcggggggcsww",
+  "gcgggpppcsww",
+  "gccccpppcsww",
+  "ggggcpppgsww",
+  "ggggcggggsww",
+  "ggggcgggssww",
+  "sssscsssswww",
+  "wwwwwwwwwwww",
+  "wwwwwwwwwwww"];
+const SAMPLE_O = [
+  "tP..t.Pt.r..",
+  "t.........L.",
+  "P.h..h.f....",
+  "l..ff..f....",
+  "t.VV..b..r..",
+  ".....l......",
+  "hb.l....h..B",
+  "t.f.......B.",
+  "tPf..h.t....",
+  "............",
+  "..B.........",
+  "......B....."];
+let G = [], O = [];
+/* agrandit un terrain : l'ancien placé à `off`, les bords prolongés (la mer continue, la lande aussi) */
+function expand(g, o, n0, OFF, extras){
+  G = []; O = [];
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++){
+    const sx = Math.max(0, Math.min(n0-1, x - OFF)), sy = Math.max(0, Math.min(n0-1, y - OFF));
+    const inside = x - OFF === sx && y - OFF === sy;
+    let gr = g[sy*n0 + sx]; if (!inside && (gr === 'c' || gr === 'p' || gr === 'R')) gr = 'g';
+    G.push(gr);
+    let ob = inside ? o[sy*n0 + sx] : null;
+    if (!inside && extras){
+      const r = hs(x, y, 99);
+      if (gr === 'g') ob = r < 0.10 ? 't' : r < 0.17 ? 'P' : r < 0.22 ? 'f' : r < 0.24 ? 'r' : null;
+      else if (gr === 's') ob = r < 0.05 ? 'r' : null;
+      else if (gr === 'w') ob = r < 0.008 ? 'B' : null;
+    }
+    O.push(ob);
+  }
+}
+function loadSample(){ expand(SAMPLE_G.join(''), SAMPLE_O.join('').split('').map(c => c === '.' ? null : c), 12, Math.round((N - 12)/2) - 1, true); }
+function clearAll(){ G = Array(N*N).fill('g'); O = Array(N*N).fill(null); }
+const KEY = 'mon-petit-coin-v1';
+function save(){ try { localStorage.setItem(KEY, JSON.stringify({n:N, g:G.join(''), o:O.map(c=>c||'.').join(''), season})); } catch(e){} }
+function load(){
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (d && d.g){
+      const o = d.o.split('').map(c => c === '.' ? null : c);
+      if (SEASONS[d.season]) season = d.season;
+      if (d.g.length === 144){ expand(d.g, o, 12, 5, true); return; }
+      const n = Math.round(Math.sqrt(d.g.length));
+      if (n*n === d.g.length && n >= 24 && n <= NMAX){ N = n; W = N*T; G = d.g.split(''); O = o; return; }
+    }
+  } catch(e){}
+  loadSample();
+}
+load(); S = SEASONS[season];
+function applySize(){
+  world.width = W; world.height = W; darkCv.width = W; darkCv.height = W;
+  clampCam(); sizeBoard();
+  board.setAttribute('aria-label', `Terrain de ${N} cases sur ${N} à construire`);
+}
+if (N !== 24){ zoom = (innerWidth < 700 ? 2 : 1) * N / 24; camX = camY = (W - vw())/2; }
+applySize();
+let saveTimer = null;
+function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(save, 300); }
+
+const gAt = (x, y) => (x < 0 || y < 0 || x >= N || y >= N) ? null : G[y*N + x];
+const walkable = c => c === 'c' || c === 'p';
+
+/* ---------- dessin du sol ---------- */
+function drawGround(t, ox, oy, x, y, nb){
+  if (t === 'w'){
+    const wc = S.water;
+    R(ox, oy, T, T, wc);
+    if (season === 'hiver'){
+      R(ox + (hs(x,y,1)*10|0)+2, oy + (hs(x,y,2)*10|0)+2, 4, 1, '#d6ecf6');
+    } else {
+      const ph = now / 1000;
+      for (let k = 0; k < 2; k++){
+        const wx = ((hs(x,y,k+3)*16 + ph*(3+k)) % 16) | 0;
+        const wy = (hs(x,y,k+5)*12 | 0) + 2;
+        R(ox + Math.min(wx, 13), oy + wy, 3, 1, 'rgba(255,255,255,.35)');
+      }
+    }
+    const foam = season === 'hiver' ? '#eef7fb' : '#cfe8f4';
+    const isW = c => c === null || c === 'w';
+    if (!isW(nb(x, y-1))) R(ox, oy, T, 1, foam);
+    if (!isW(nb(x, y+1))) R(ox, oy+T-1, T, 1, foam);
+    if (!isW(nb(x-1, y))) R(ox, oy, 1, T, foam);
+    if (!isW(nb(x+1, y))) R(ox+T-1, oy, 1, T, foam);
+    return;
+  }
+  if (t === 's'){
+    R(ox, oy, T, T, S.sand);
+    for (let k = 0; k < 4; k++) R(ox + (hs(x,y,k)*15|0), oy + (hs(x,y,k+9)*15|0), 1, 1, 'rgba(120,90,40,.25)');
+    return;
+  }
+  if (t === 'k' || t === 'z'){
+    const P = t === 'k' ? {
+      printemps:['#93c65c','#7aae48','#a8d872'], ete:['#e6c25a','#cfa43c','#f4d97c'],
+      automne:['#c7a76a','#a8864c','#d8bd85'], hiver:['#8a6a4a','#74583c','#eef3f6'] }[season]
+      : {
+      printemps:['#f2d43a','#7aa848','#fbe470'], ete:['#9fae58','#86964a','#b8c46c'],
+      automne:['#7d5a3c','#664730','#93704f'], hiver:['#5c7a4c','#4a663e','#eef3f6'] }[season];
+    R(ox, oy, T, T, P[0]);
+    for (let r = 0; r < 5; r++) R(ox, oy + 1 + r*3, T, 1, P[1]);
+    for (let k = 0; k < 7; k++) R(ox + (hs(x,y,k+200)*16|0), oy + (hs(x,y,k+210)*5|0)*3, 1, 1, P[2]);
+    if (season === 'ete' && t === 'k' && !reduce){
+      const sw = Math.round(Math.sin(now/700 + x*0.6 + y*0.3));
+      for (let r = 0; r < 5; r++) R(ox + ((r*5 + sw + 16) % 16), oy + r*3, 1, 1, '#fff1b8');
+    }
+    return;
+  }
+  // herbe sous chemin, route, pavés et herbe
+  R(ox, oy, T, T, S.grass[0]);
+  for (let k = 0; k < 5; k++){
+    const px = hs(x,y,k)*15|0, py = hs(x,y,k+11)*14|0;
+    R(ox+px, oy+py, 1, 2, k % 2 ? S.grass[1] : S.grass[2]);
+  }
+  if (t === 'c'){
+    const pc = season === 'hiver' ? '#c9bfae' : '#cdac7c', pd = season === 'hiver' ? '#b3a894' : '#b38f5c';
+    const con = c => c === 'c' || c === 'p';
+    R(ox+4, oy+4, 8, 8, pc);
+    if (con(nb(x, y-1))) R(ox+4, oy, 8, 4, pc);
+    if (con(nb(x, y+1))) R(ox+4, oy+12, 8, 4, pc);
+    if (con(nb(x-1, y))) R(ox, oy+4, 4, 8, pc);
+    if (con(nb(x+1, y))) R(ox+12, oy+4, 4, 8, pc);
+    for (let k = 0; k < 3; k++) R(ox+5+(hs(x,y,k+20)*6|0), oy+5+(hs(x,y,k+30)*6|0), 1, 1, pd);
+  } else if (t === 'R'){
+    const as = season === 'hiver' ? '#6f757c' : '#5b6168', edge = '#4b5157', line = '#f2efe0';
+    const isR = c => c === 'R';
+    const l = isR(nb(x-1, y)), r = isR(nb(x+1, y)), u = isR(nb(x, y-1)), d = isR(nb(x, y+1));
+    R(ox+1, oy+1, 14, 14, as);
+    if (l) R(ox, oy+1, 1, 14, as); if (r) R(ox+15, oy+1, 1, 14, as);
+    if (u) R(ox+1, oy, 14, 1, as); if (d) R(ox+1, oy+15, 14, 1, as);
+    if (!u) R(ox+1, oy+1, 14, 1, edge); if (!d) R(ox+1, oy+14, 14, 1, edge);
+    if (!l) R(ox+1, oy+1, 1, 14, edge); if (!r) R(ox+14, oy+1, 1, 14, edge);
+    const horiz = l || r, vert = u || d;
+    if (horiz && !vert){ R(ox+2, oy+7, 4, 1, line); R(ox+10, oy+7, 4, 1, line); }
+    else if (vert && !horiz){ R(ox+7, oy+2, 1, 4, line); R(ox+7, oy+10, 1, 4, line); }
+    else if (!horiz && !vert){ R(ox+6, oy+7, 4, 1, line); }
+    if (season === 'hiver'){ R(ox+1, oy+1, 2, 1, '#fff'); R(ox+13, oy+14, 2, 1, '#fff'); }
+  } else if (t === 'p'){
+    const a = season === 'hiver' ? '#d2d0cb' : '#bbb6ad', b = season === 'hiver' ? '#bcb9b2' : '#a29c92';
+    R(ox, oy, T, T, a);
+    for (let r = 0; r < 4; r++){
+      R(ox, oy + r*4, T, 1, b);
+      const off = r % 2 ? 2 : 0;
+      for (let c = 0; c < 4; c++) R(ox + c*4 + off, oy + r*4, 1, 4, b);
+    }
+  }
+}
+
+/* ---------- dessin des objets ---------- */
+let lights = [];
+function shadow(ox, oy, w){ R(ox + 8 - w/2, oy + 14, w, 2, 'rgba(0,0,0,.14)'); }
+function drawObject(o, ox, oy, x, y, withLights){
+  const L = (lx, ly, r, kind) => { if (withLights) lights.push({x:lx, y:ly, r, kind}); };
+  switch(o){
+  case 't': {
+    shadow(ox, oy, 10);
+    R(ox+7, oy+9, 2, 6, '#6b4a2e');
+    if (!S.leaf){
+      R(ox+5, oy+5, 1, 4, '#6b4a2e'); R(ox+10, oy+4, 1, 5, '#6b4a2e'); R(ox+6, oy+4, 1, 1, '#6b4a2e'); R(ox+9, oy+3, 1, 1, '#6b4a2e'); R(ox+7, oy+2, 2, 7, '#6b4a2e');
+      R(ox+5, oy+4, 1, 1, '#fff'); R(ox+10, oy+3, 1, 1, '#fff'); R(ox+7, oy+1, 2, 1, '#fff');
+    } else {
+      const [a, b, c] = S.leaf;
+      R(ox+4, oy-2, 8, 2, a); R(ox+3, oy, 10, 3, a); R(ox+2, oy+2, 12, 5, a); R(ox+3, oy+7, 10, 2, b);
+      R(ox+2, oy+5, 12, 2, b);
+      R(ox+5, oy, 3, 2, c); R(ox+4, oy+2, 2, 1, c);
+      if (season === 'printemps' || season === 'automne'){
+        for (let k = 0; k < 5; k++) R(ox+3+(hs(x,y,k+40)*10|0), oy-1+(hs(x,y,k+50)*8|0), 1, 1, season === 'printemps' ? '#ffd3e2' : '#f6c35a');
+      }
+    }
+    break; }
+  case 'P': {
+    shadow(ox, oy, 10);
+    const a = '#2f6b4a', b = '#245438', sn = season === 'hiver';
+    R(ox+7, oy+11, 2, 4, '#5e4129');
+    R(ox+7, oy-3, 2, 2, a); R(ox+6, oy-1, 4, 3, a); R(ox+5, oy+2, 6, 3, a); R(ox+4, oy+5, 8, 3, a); R(ox+3, oy+8, 10, 3, a);
+    R(ox+9, oy, 1, 2, b); R(ox+10, oy+3, 1, 2, b); R(ox+11, oy+6, 1, 2, b); R(ox+12, oy+9, 1, 2, b);
+    if (sn){ R(ox+7, oy-3, 2, 1, '#fff'); R(ox+6, oy-1, 4, 1, '#fff'); R(ox+5, oy+2, 6, 1, '#fff'); R(ox+4, oy+5, 8, 1, '#fff'); R(ox+3, oy+8, 10, 1, '#fff'); }
+    break; }
+  case 'f': {
+    for (let k = 0; k < 6; k++){
+      const px = 2 + (hs(x,y,k+60)*11|0), py = 4 + (hs(x,y,k+70)*9|0);
+      R(ox+px, oy+py+1, 1, 2, season === 'hiver' ? '#8fb08f' : '#4f8d3e');
+      R(ox+px, oy+py, 1, 1, S.flowers[k % 4]);
+      if (season !== 'hiver'){ R(ox+px-1, oy+py, 1, 1, S.flowers[k % 4]); R(ox+px+1, oy+py, 1, 1, S.flowers[k % 4]); }
+    }
+    break; }
+  case 'r': {
+    R(ox+3, oy+13, 10, 2, 'rgba(0,0,0,.14)');
+    R(ox+4, oy+8, 8, 6, '#8d9298'); R(ox+5, oy+7, 6, 1, '#8d9298'); R(ox+3, oy+10, 1, 4, '#8d9298');
+    R(ox+5, oy+8, 3, 1, '#b5babf'); R(ox+9, oy+12, 3, 2, '#70767c');
+    if (season === 'hiver') R(ox+5, oy+7, 6, 1, '#fff');
+    break; }
+  case 'V': {
+    R(ox+1, oy+3, 14, 11, '#7a5434');
+    for (let k = 0; k < 3; k++){
+      R(ox+2, oy+5+k*3, 12, 1, '#5e3f25');
+      if (season !== 'hiver') for (let j = 0; j < 4; j++){
+        const sx = ox+3+j*3, sy = oy+3+k*3;
+        R(sx, sy+1, 1, 1, '#5aa04a'); R(sx-1, sy, 1, 1, '#6cbf55'); R(sx+1, sy, 1, 1, '#6cbf55');
+        if (season === 'ete' && (j+k) % 2 === 0) R(sx, sy-1, 1, 1, '#e04848');
+        if (season === 'automne' && (j+k) % 3 === 0) R(sx-1, sy-1, 2, 2, '#e8862e');
+      }
+    }
+    if (season === 'hiver') R(ox+1, oy+3, 14, 1, '#fff');
+    break; }
+  case 'h': {
+    R(ox+1, oy+14, 14, 2, 'rgba(0,0,0,.14)');
+    R(ox+2, oy+6, 12, 9, '#cbc4b8');
+    for (let k = 0; k < 6; k++) R(ox+3+(hs(x,y,k+80)*10|0), oy+7+(hs(x,y,k+90)*7|0), 2, 1, '#aea598');
+    const roof = '#46525e', roofL = '#5b6874';
+    R(ox+1, oy+4, 14, 2, roof); R(ox+2, oy+2, 12, 2, roof); R(ox+4, oy, 8, 2, roof); R(ox+6, oy-1, 4, 1, roof);
+    R(ox+2, oy+3, 12, 1, roofL); R(ox+4, oy+1, 8, 1, roofL);
+    R(ox+11, oy-3, 2, 4, '#8a8178');
+    if (season === 'hiver'){ R(ox+6, oy-1, 4, 1, '#fff'); R(ox+4, oy, 8, 1, '#fff'); R(ox+2, oy+2, 2, 1, '#fff'); R(ox+12, oy+2, 2, 1, '#fff'); R(ox+11, oy-3, 2, 1, '#fff'); }
+    R(ox+7, oy+10, 3, 5, '#2e6fa8'); R(ox+9, oy+12, 1, 1, '#f2c14e');
+    R(ox+3, oy+8, 3, 3, '#9cc8e8'); R(ox+11, oy+8, 2, 3, '#9cc8e8');
+    R(ox+2, oy+8, 1, 3, '#2e6fa8'); R(ox+6, oy+8, 1, 3, '#2e6fa8');
+    L(ox+4.5, oy+9.5, 14, 'win'); L(ox+12, oy+9.5, 10, 'win');
+    if (withLights) lights.push({x:ox+3, y:oy+8, w:3, h:3, kind:'pane'}, {x:ox+11, y:oy+8, w:2, h:3, kind:'pane'});
+    break; }
+  case 'b': {
+    R(ox+3, oy+12, 10, 2, 'rgba(0,0,0,.12)');
+    R(ox+3, oy+6, 10, 1, '#8a5d35'); R(ox+3, oy+8, 10, 2, '#9a6b3f');
+    R(ox+4, oy+7, 1, 1, '#6b4a2e'); R(ox+11, oy+7, 1, 1, '#6b4a2e');
+    R(ox+4, oy+10, 1, 3, '#4b3a2c'); R(ox+11, oy+10, 1, 3, '#4b3a2c');
+    if (season === 'hiver') R(ox+3, oy+8, 10, 1, '#fff');
+    break; }
+  case 'l': {
+    R(ox+5, oy+14, 6, 1, 'rgba(0,0,0,.18)');
+    R(ox+7, oy+3, 2, 12, '#2f3a42'); R(ox+6, oy+14, 4, 1, '#2f3a42');
+    R(ox+6, oy, 4, 1, '#2f3a42'); R(ox+6, oy+1, 1, 2, '#2f3a42'); R(ox+9, oy+1, 1, 2, '#2f3a42'); R(ox+7, oy+1, 2, 2, '#dfe6ea');
+    L(ox+8, oy+2, 26, 'lamp');
+    if (withLights) lights.push({x:ox+7, y:oy+1, w:2, h:2, kind:'pane'});
+    break; }
+  case 'L': {
+    R(ox+4, oy+14, 8, 2, 'rgba(0,0,0,.15)');
+    R(ox+5, oy+12, 6, 3, '#8d9298');
+    R(ox+6, oy+2, 4, 11, '#f3f1ec'); R(ox+6, oy+4, 4, 2, '#cf453a'); R(ox+6, oy+8, 4, 2, '#cf453a');
+    R(ox+9, oy+2, 1, 11, 'rgba(0,0,0,.1)');
+    R(ox+5, oy+1, 6, 1, '#3b434b'); R(ox+6, oy-2, 4, 3, '#3b434b'); R(ox+7, oy-1, 2, 2, '#ffe28a'); R(ox+6, oy-3, 4, 1, '#cf453a');
+    L(ox+8, oy-1, 22, 'lamp');
+    if (withLights) lights.push({x:ox+8, y:oy-0.5, kind:'beam'});
+    break; }
+  case 'B': {
+    const bob = Math.round(Math.sin(now/600 + x*1.7 + y) * 0.6);
+    const oyb = oy + bob;
+    R(ox+3, oyb+13, 10, 1, 'rgba(255,255,255,.35)');
+    R(ox+2, oyb+9, 12, 2, '#b4473a'); R(ox+3, oyb+11, 10, 1, '#b4473a'); R(ox+4, oyb+12, 8, 1, '#8e3329');
+    R(ox+2, oyb+9, 12, 1, '#f1e7d0');
+    R(ox+7, oyb+1, 1, 8, '#5a4632');
+    for (let k = 0; k < 6; k++) R(ox+8, oyb+2+k, Math.min(k+1, 5), 1, '#f2ead6');
+    R(ox+8, oyb+5, 4, 1, '#cf453a');
+    if (season === 'hiver') R(ox+3, oyb+9, 10, 1, '#fff');
+    break; }
+  case 'H': { // hortensias
+    shadow(ox, oy, 12);
+    R(ox+2, oy+8, 12, 6, '#3f7a3c'); R(ox+3, oy+7, 10, 1, '#3f7a3c'); R(ox+3, oy+12, 10, 2, '#2f6230');
+    const cols = season === 'hiver' ? ['#a58a6a','#8f765a','#b89e7e'] : season === 'automne' ? ['#8f6a8a','#7a6a9a','#a0788a'] : ['#6f9fe0','#e48fbf','#9b86e0'];
+    const spots = [[3,6],[7,5],[10,7],[5,9],[9,10]];
+    spots.forEach(([sx, sy], k) => { const c = cols[(k + (hs(x,y,k)*3|0)) % 3]; R(ox+sx, oy+sy, 3, 3, c); R(ox+sx+1, oy+sy, 1, 1, 'rgba(255,255,255,.4)'); });
+    if (season === 'hiver') R(ox+3, oy+7, 10, 1, '#fff');
+    break; }
+  case 'M': { // menhir
+    R(ox+4, oy+14, 9, 2, 'rgba(0,0,0,.16)');
+    R(ox+6, oy+1, 5, 14, '#8a8f94'); R(ox+7, oy-1, 3, 2, '#8a8f94'); R(ox+5, oy+6, 1, 9, '#8a8f94');
+    R(ox+9, oy+1, 2, 14, '#73787d'); R(ox+6, oy+3, 1, 4, '#a5aaaf');
+    R(ox+7, oy+9, 2, 1, '#a9b56a'); R(ox+8, oy+4, 1, 1, '#a9b56a');
+    if (season === 'hiver') R(ox+7, oy-1, 3, 1, '#fff');
+    break; }
+  case 'F': { // clôture
+    const isF = (a, b) => iconMode ? (b === y) : oAt(a, b) === 'F';
+    const l = isF(x-1, y), r = isF(x+1, y), u = !iconMode && isF(x, y-1), d = !iconMode && isF(x, y+1);
+    const rail = season === 'hiver' ? '#a88b6a' : '#9a6b3f';
+    if (l || (!u && !d && !r)) { R(ox, oy+8, 8, 1, rail); R(ox, oy+11, 8, 1, rail); }
+    if (r || (!u && !d && !l)) { R(ox+8, oy+8, 8, 1, rail); R(ox+8, oy+11, 8, 1, rail); }
+    if (u) R(ox+7, oy, 2, 7, rail);
+    if (d) R(ox+7, oy+13, 2, 3, rail);
+    R(ox+7, oy+6, 2, 8, '#7a5434'); R(ox+7, oy+6, 2, 1, season === 'hiver' ? '#fff' : '#b88a5a');
+    break; }
+  case 'W': { // puits
+    shadow(ox, oy, 12);
+    R(ox+3, oy+8, 10, 6, '#9a958c'); R(ox+3, oy+8, 10, 1, '#b5b0a6'); R(ox+4, oy+9, 8, 2, '#2c4a62');
+    for (let k = 0; k < 3; k++) R(ox+4+k*3, oy+12, 2, 1, '#7f7a72');
+    R(ox+3, oy+2, 1, 7, '#6b4a2e'); R(ox+12, oy+2, 1, 7, '#6b4a2e');
+    R(ox+2, oy+1, 12, 2, '#46525e'); R(ox+4, oy, 8, 1, '#46525e');
+    R(ox+8, oy+3, 1, 3, '#c9b48a'); R(ox+7, oy+6, 3, 2, '#7a5434');
+    if (season === 'hiver') R(ox+4, oy, 8, 1, '#fff');
+    break; }
+  case 'm': { // moulin
+    R(ox+3, oy+14, 10, 2, 'rgba(0,0,0,.15)');
+    R(ox+5, oy+4, 6, 11, '#ebe5d8'); R(ox+4, oy+9, 8, 6, '#ebe5d8'); R(ox+10, oy+4, 1, 11, 'rgba(0,0,0,.08)');
+    R(ox+5, oy+2, 6, 2, '#7a5434'); R(ox+6, oy+1, 4, 1, '#7a5434');
+    if (season === 'hiver') R(ox+6, oy+1, 4, 1, '#fff');
+    R(ox+7, oy+11, 2, 4, '#2e6fa8'); R(ox+7, oy+6, 2, 2, '#9cc8e8');
+    if (withLights) lights.push({x:ox+7, y:oy+6, w:2, h:2, kind:'pane'}, {x:ox+8, y:oy+7, r:9, kind:'win'});
+    const cx = ox+8, cy = oy+4, a0 = reduce ? 0.4 : now/1400;
+    for (let k = 0; k < 4; k++){
+      const a = a0 + k*Math.PI/2, ca = Math.cos(a), sa = Math.sin(a);
+      for (let r = 1; r <= 7; r++){
+        const px = Math.round(cx + ca*r), py = Math.round(cy + sa*r);
+        R(px, py, 1, 1, '#5a4632');
+        if (r >= 3) R(Math.round(cx + ca*r - sa), Math.round(cy + sa*r + ca), 1, 1, '#f2ead6');
+      }
+    }
+    R(cx-1, cy-1, 2, 2, '#3b2e22');
+    break; }
+  case 'K': { // crêperie
+    R(ox+1, oy+14, 14, 2, 'rgba(0,0,0,.14)');
+    R(ox+2, oy+6, 12, 9, '#f0eadf');
+    const roof = '#46525e';
+    R(ox+1, oy+4, 14, 2, roof); R(ox+2, oy+2, 12, 2, roof); R(ox+4, oy, 8, 2, roof); R(ox+6, oy-1, 4, 1, roof);
+    R(ox+2, oy+3, 12, 1, '#5b6874');
+    R(ox+3, oy-3, 2, 4, '#8a8178');
+    if (season === 'hiver'){ R(ox+6, oy-1, 4, 1, '#fff'); R(ox+4, oy, 8, 1, '#fff'); R(ox+3, oy-3, 2, 1, '#fff'); }
+    if (!reduce) for (let k = 0; k < 3; k++){ const t = ((now/900 + k/3) % 1); R(ox+3 + Math.round(Math.sin(t*6 + k)*1.5), oy-4 - Math.round(t*8), 2, 1, `rgba(235,235,235,${0.7*(1-t)})`); }
+    R(ox+5, oy+6, 6, 2, '#2e6fa8'); R(ox+7, oy+6, 2, 2, '#f2c14e');
+    for (let i = 0; i < 6; i++) R(ox+2+i*2, oy+9, 2, 2, i % 2 ? '#ffffff' : '#cf453a');
+    R(ox+3, oy+11, 5, 3, '#9cc8e8'); R(ox+10, oy+11, 3, 4, '#2e6fa8');
+    L(ox+5.5, oy+12.5, 16, 'win');
+    if (withLights) lights.push({x:ox+3, y:oy+11, w:5, h:3, kind:'pane'});
+    break; }
+  case 'C': { // chat
+    const col = ['#e08a3a','#2b2b30','#9a9ea4','#f2efe8'][hs(x,y,7)*4|0];
+    const dk = col === '#2b2b30' ? '#46464e' : 'rgba(0,0,0,.25)';
+    R(ox+5, oy+14, 7, 1, 'rgba(0,0,0,.15)');
+    R(ox+6, oy+10, 5, 4, col); R(ox+5, oy+7, 4, 4, col);
+    R(ox+5, oy+6, 1, 1, col); R(ox+8, oy+6, 1, 1, col);
+    R(ox+6, oy+8, 1, 1, '#2f8a3a'); R(ox+8, oy+8, 1, 1, '#2f8a3a');
+    R(ox+7, oy+12, 4, 1, dk);
+    const wag = reduce ? 0 : Math.round(Math.sin(now/400 + x) );
+    R(ox+11, oy+12, 1, 2, col); R(ox+12, oy+10 + wag, 1, 3, col);
+    break; }
+  case 'Y': { // cabine de plage
+    R(ox+3, oy+14, 10, 2, 'rgba(0,0,0,.14)');
+    for (let i = 0; i < 4; i++) R(ox+4+i*2, oy+4, 2, 11, i % 2 ? '#ffffff' : '#2e6fa8');
+    R(ox+3, oy+3, 10, 1, '#cf453a'); R(ox+5, oy+2, 6, 1, '#cf453a'); R(ox+7, oy+1, 2, 1, '#cf453a');
+    R(ox+7, oy+9, 2, 6, '#1f3550');
+    if (season === 'hiver') R(ox+5, oy+2, 6, 1, '#fff');
+    break; }
+  case 'U': { // parasol
+    R(ox+3, oy+11, 6, 3, '#2e6fa8'); R(ox+3, oy+12, 6, 1, '#f2c14e');
+    R(ox+7, oy+3, 1, 11, '#ece6da');
+    const cA = '#f2b134', cB = '#ffffff';
+    for (let i = 0; i < 6; i++) R(ox+2+i*2, oy+3, 2, 2, i % 2 ? cB : cA);
+    for (let i = 0; i < 4; i++) R(ox+4+i*2, oy+2, 2, 1, i % 2 ? cB : cA);
+    R(ox+6, oy+1, 4, 1, cA);
+    R(ox+2, oy+14, 12, 1, 'rgba(0,0,0,.12)');
+    break; }
+  case 'Z': { // château de sable
+    R(ox+2, oy+14, 12, 1, 'rgba(0,0,0,.12)');
+    const s = '#d9bd7a', sd = '#c2a25f';
+    R(ox+3, oy+9, 10, 5, s); R(ox+3, oy+6, 3, 4, s); R(ox+10, oy+6, 3, 4, s); R(ox+6, oy+7, 4, 2, s);
+    R(ox+3, oy+5, 1, 1, s); R(ox+5, oy+5, 1, 1, s); R(ox+10, oy+5, 1, 1, s); R(ox+12, oy+5, 1, 1, s);
+    R(ox+12, oy+6, 1, 8, sd); R(ox+7, oy+11, 2, 3, '#a88b4f');
+    R(ox+11, oy+1, 1, 4, '#5a4632'); R(ox+12, oy+1, 2, 2, '#cf453a');
+    if (season === 'hiver') R(ox+3, oy+9, 10, 1, '#fff');
+    break; }
+  case 'v': { // vache
+    R(ox+3, oy+14, 10, 1, 'rgba(0,0,0,.15)');
+    const graze = reduce ? 0 : (Math.sin(now/1300 + x*2 + y) > 0.3 ? 1 : 0);
+    R(ox+4, oy+8, 8, 4, '#f4f2ec'); R(ox+5, oy+8, 3, 2, '#2b2b30'); R(ox+9, oy+10, 2, 2, '#2b2b30');
+    R(ox+4, oy+12, 1, 2, '#3a3a40'); R(ox+6, oy+12, 1, 2, '#3a3a40'); R(ox+9, oy+12, 1, 2, '#3a3a40'); R(ox+11, oy+12, 1, 2, '#3a3a40');
+    R(ox+12, oy+7 + graze*2, 3, 3, '#f4f2ec'); R(ox+14, oy+9 + graze*2, 1, 1, '#e8a5a0'); R(ox+12, oy+6 + graze*2, 1, 1, '#c9b48a');
+    R(ox+3, oy+9, 1, 3, '#f4f2ec');
+    break; }
+  case 'o': { // botte de foin
+    R(ox+3, oy+14, 10, 1, 'rgba(0,0,0,.15)');
+    R(ox+4, oy+7, 8, 7, '#e2c26a'); R(ox+3, oy+8, 10, 5, '#e2c26a');
+    R(ox+5, oy+9, 6, 1, '#c9a34a'); R(ox+5, oy+11, 6, 1, '#c9a34a'); R(ox+7, oy+8, 2, 5, '#d4b052');
+    if (season === 'hiver') R(ox+4, oy+7, 8, 1, '#fff');
+    break; }
+  case 'I': { // immeuble
+    const col = ['#d9c7a8','#c9b39a','#b8c4cc','#e3d5c0','#c7a49a'][hs(x,y,300)*5|0];
+    R(ox+1, oy+14, 14, 2, 'rgba(0,0,0,.18)');
+    R(ox+2, oy-6, 12, 21, col); R(ox+12, oy-6, 2, 21, 'rgba(0,0,0,.08)');
+    R(ox+1, oy-7, 14, 2, '#5b6168');
+    if (season === 'hiver') R(ox+1, oy-7, 14, 1, '#fff');
+    for (let r = 0; r < 5; r++) for (let c = 0; c < 3; c++){
+      const wx = ox+3+c*4, wy = oy-4+r*3;
+      R(wx, wy, 2, 2, '#9cc8e8');
+      if (withLights && hs(x*7+c, y*5+r, 301) < 0.65) lights.push({x:wx, y:wy, w:2, h:2, kind:'pane'});
+    }
+    R(ox+6, oy+11, 4, 4, '#3b434b'); R(ox+5, oy+10, 6, 1, '#5b6168');
+    L(ox+8, oy+4, 16, 'win');
+    break; }
+  case 'T': { // tour
+    R(ox+1, oy+14, 14, 2, 'rgba(0,0,0,.2)');
+    R(ox+3, oy-14, 10, 29, '#5f84a3'); R(ox+3, oy-14, 3, 29, '#7aa0bf'); R(ox+11, oy-14, 2, 29, '#4c6d88');
+    for (let r = 0; r < 9; r++) R(ox+3, oy-12 + r*3, 10, 1, '#3e5a72');
+    R(ox+2, oy-15, 12, 1, '#3b434b'); R(ox+8, oy-19, 1, 4, '#3b434b');
+    if (!reduce && Math.floor(now/700) % 2) R(ox+8, oy-20, 1, 1, '#ff4b3e');
+    if (season === 'hiver') R(ox+2, oy-15, 12, 1, '#fff');
+    R(ox+6, oy+11, 4, 4, '#2b3540');
+    if (withLights) for (let r = 0; r < 8; r++) for (let c = 0; c < 3; c++)
+      if (hs(x*11+c, y*13+r, 302) < 0.55) lights.push({x:ox+4+c*3, y:oy-11+r*3, w:2, h:1, kind:'pane'});
+    L(ox+8, oy, 20, 'win');
+    break; }
+  case 'S': { // magasin
+    const aw = [['#3f8f5a','#fff'],['#2e6fa8','#fff'],['#cf453a','#fff'],['#e0a030','#fff']][hs(x,y,303)*4|0];
+    R(ox+1, oy+14, 14, 2, 'rgba(0,0,0,.15)');
+    R(ox+2, oy+4, 12, 11, '#ece6da'); R(ox+1, oy+3, 14, 2, '#7a8086');
+    if (season === 'hiver') R(ox+1, oy+3, 14, 1, '#fff');
+    R(ox+3, oy+5, 10, 2, '#3b434b'); for (let i = 0; i < 4; i++) R(ox+4+i*2, oy+5, 1, 1, aw[0]);
+    for (let i = 0; i < 6; i++) R(ox+2+i*2, oy+8, 2, 2, aw[i % 2]);
+    R(ox+3, oy+10, 6, 4, '#9cc8e8'); R(ox+10, oy+10, 3, 5, '#3b434b');
+    R(ox+4, oy+12, 1, 2, aw[0]); R(ox+6, oy+11, 2, 3, '#f2c14e');
+    if (withLights) lights.push({x:ox+3, y:oy+10, w:6, h:4, kind:'pane'});
+    L(ox+6, oy+12, 16, 'win');
+    break; }
+  case 'A': { // mairie
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.16)');
+    R(ox+1, oy+5, 14, 10, '#ebe5d8'); R(ox, oy+4, 16, 2, '#46525e'); R(ox+3, oy+2, 10, 2, '#46525e'); R(ox+6, oy, 4, 2, '#46525e');
+    if (season === 'hiver'){ R(ox+6, oy, 4, 1, '#fff'); R(ox+3, oy+2, 10, 1, '#fff'); }
+    R(ox+7, oy+1, 2, 2, '#f8f6f0'); R(ox+8, oy+1, 1, 1, '#3b434b');
+    for (let i = 0; i < 4; i++) R(ox+2+i*4, oy+7, 1, 7, '#d4ccbd');
+    R(ox+3, oy+7, 2, 3, '#9cc8e8'); R(ox+11, oy+7, 2, 3, '#9cc8e8');
+    R(ox+6, oy+10, 4, 5, '#2e6fa8'); R(ox+5, oy+14, 6, 1, '#b5b0a6');
+    R(ox+14, oy-5, 1, 9, '#5a4632');
+    const fw = reduce ? 0 : Math.round(Math.sin(now/300));
+    const fy = oy-5 + (fw > 0 ? 1 : 0);
+    R(ox+15, oy-5, 1, 2, '#2e5aa8'); R(ox+16, fy, 1, 2, '#ffffff'); R(ox+17, oy-5, 1, 2, '#cf453a');
+    if (withLights) lights.push({x:ox+3, y:oy+7, w:2, h:3, kind:'pane'}, {x:ox+11, y:oy+7, w:2, h:3, kind:'pane'});
+    L(ox+8, oy+9, 18, 'win');
+    break; }
+  case 'E': { // école
+    R(ox+1, oy+14, 14, 2, 'rgba(0,0,0,.15)');
+    R(ox+2, oy+6, 12, 9, '#c9785a');
+    for (let r = 0; r < 4; r++) R(ox+2, oy+7 + r*2, 12, 1, '#b8684c');
+    R(ox+1, oy+4, 14, 2, '#46525e'); R(ox+3, oy+2, 10, 2, '#46525e');
+    if (season === 'hiver') R(ox+3, oy+2, 10, 1, '#fff');
+    R(ox+7, oy-1, 2, 3, '#ebe5d8'); R(ox+7, oy, 2, 1, '#e0a030');
+    R(ox+4, oy+6, 8, 2, '#ebe5d8'); R(ox+5, oy+6, 1, 1, '#2e6fa8'); R(ox+7, oy+6, 1, 1, '#cf453a'); R(ox+9, oy+6, 1, 1, '#3f8f5a');
+    R(ox+3, oy+9, 3, 3, '#9cc8e8'); R(ox+10, oy+9, 3, 3, '#9cc8e8'); R(ox+7, oy+10, 2, 5, '#3b434b');
+    if (withLights) lights.push({x:ox+3, y:oy+9, w:3, h:3, kind:'pane'});
+    L(ox+4.5, oy+10.5, 12, 'win');
+    break; }
+  case 'Q': { // fontaine
+    R(ox+2, oy+14, 12, 1, 'rgba(0,0,0,.15)');
+    R(ox+2, oy+8, 12, 6, '#a9a49b'); R(ox+3, oy+7, 10, 1, '#a9a49b'); R(ox+3, oy+9, 10, 3, season === 'hiver' ? '#cfe6f2' : S.water);
+    R(ox+7, oy+4, 2, 6, '#b5b0a6'); R(ox+6, oy+4, 4, 1, '#b5b0a6');
+    if (season !== 'hiver' && !reduce){
+      for (let k = 0; k < 6; k++){
+        const t = ((now/700 + k/6) % 1), side = k % 2 ? 1 : -1;
+        R(ox+8 + Math.round(side*t*4) - (side < 0 ? 1 : 0), oy+3 - Math.round(Math.sin(t*Math.PI)*3) + Math.round(t*5), 1, 1, 'rgba(220,240,255,.9)');
+      }
+    }
+    break; }
+  }
+}
+let iconMode = false;
+const oAt = (x, y) => (x < 0 || y < 0 || x >= N || y >= N) ? null : O[y*N + x];
+
+/* ---------- promeneurs ---------- */
+const SHIRTS = [['#f4f4f4','#2e6fa8'], ['#cf453a'], ['#f2b134'], ['#5a9e5a'], ['#8a5aa8'], ['#f4f4f4','#1f3550'], ['#e07a5f'], ['#3d7fb8']];
+const SKINS = ['#f1c9a5','#d8a07a','#a86f4b','#7a4c32'];
+const HAIR = ['#3a2a1e','#c79a4f','#1e1e24','#8a3f25','#d9d4cc'];
+let walkers = [];
+function walkCells(){ const out = []; for (let i = 0; i < N*N; i++) if (walkable(G[i])) out.push(i); return out; }
+function makeWalker(cells, i){
+  const c = cells[(Math.random()*cells.length)|0], x = c % N, y = (c / N)|0;
+  return {cx:x, cy:y, tx:x, ty:y, px:x*T+8, py:y*T+10, prev:null, pause:Math.random()*2,
+    shirt:SHIRTS[i % SHIRTS.length], skin:SKINS[(Math.random()*SKINS.length)|0], hair:HAIR[(Math.random()*HAIR.length)|0],
+    jx:((Math.random()*5)|0)-2, jy:((Math.random()*3)|0)-1, step:0};
+}
+function syncWalkers(){
+  const cells = walkCells();
+  const want = cells.length ? Math.min(residents() + 1, Math.round(16 * N / 24)) : 0;
+  walkers = walkers.filter(w => walkable(gAt(w.cx, w.cy)) && walkable(gAt(w.tx, w.ty)));
+  while (walkers.length > want) walkers.pop();
+  while (walkers.length < want) walkers.push(makeWalker(cells, walkers.length));
+  syncCars();
+}
+const RES = {h:1, K:1, I:3, T:6};
+function residents(){ let n = 0; for (const o of O) if (o && RES[o]) n += RES[o]; return n; }
+
+/* ---------- voitures ---------- */
+const CAR_COLS = ['#cf453a','#2e6fa8','#f2b134','#f4f4f4','#3f8f5a','#2b2b30','#8a5aa8'];
+let cars = [];
+function roadCells(){ const out = []; for (let i = 0; i < N*N; i++) if (G[i] === 'R') out.push(i); return out; }
+function syncCars(){
+  const cells = roadCells();
+  const want = Math.min(Math.floor(cells.length / 5), Math.round(12 * N / 24));
+  cars = cars.filter(c => gAt(c.cx, c.cy) === 'R' && gAt(c.tx, c.ty) === 'R');
+  while (cars.length > want) cars.pop();
+  while (cars.length < want){
+    const i = cells[(Math.random()*cells.length)|0], x = i % N, y = (i / N)|0;
+    cars.push({cx:x, cy:y, tx:x, ty:y, px:x*T+8, py:y*T+8, dx:1, dy:0, prev:null, col:CAR_COLS[(Math.random()*CAR_COLS.length)|0], sp:18 + Math.random()*8});
+  }
+}
+function updateCars(dt){
+  for (const c of cars){
+    const gx = c.tx*T + 8 - c.dy*3, gy = c.ty*T + 8 + c.dx*3;
+    const dx = gx - c.px, dy = gy - c.py, d = Math.hypot(dx, dy), sp = c.sp*dt;
+    if (d <= sp){
+      c.px = gx; c.py = gy; c.prev = [c.cx, c.cy]; c.cx = c.tx; c.cy = c.ty;
+      const opts = [[1,0],[-1,0],[0,1],[0,-1]].filter(([a,b]) => gAt(c.cx+a, c.cy+b) === 'R');
+      let fwd = opts.filter(([a,b]) => !c.prev || c.cx+a !== c.prev[0] || c.cy+b !== c.prev[1]);
+      if (!fwd.length) fwd = opts;
+      if (fwd.length){ const n = fwd[(Math.random()*fwd.length)|0]; c.dx = n[0]; c.dy = n[1]; c.tx = c.cx + n[0]; c.ty = c.cy + n[1]; }
+    } else { c.px += dx/d*sp; c.py += dy/d*sp; }
+  }
+}
+function drawCar(c){
+  const x = Math.round(c.px), y = Math.round(c.py);
+  if (c.dx !== 0){
+    R(x-3, y+1, 7, 1, 'rgba(0,0,0,.2)');
+    R(x-3, y-2, 7, 3, c.col); R(x-1 + (c.dx > 0 ? 0 : 0), y-3, 3, 1, c.col);
+    R(x + (c.dx > 0 ? 0 : -1), y-2, 2, 1, '#9cc8e8');
+    R(x-2, y+1, 1, 1, '#1e1e24'); R(x+2, y+1, 1, 1, '#1e1e24');
+    lights.push({x:x + c.dx*4, y:y-1, r:7, kind:'car'});
+  } else {
+    R(x-1, y-3, 4, 7, 'rgba(0,0,0,.2)');
+    R(x-2, y-3, 4, 6, c.col);
+    R(x-1, y + (c.dy > 0 ? 1 : -2), 2, 1, '#9cc8e8');
+    lights.push({x:x, y:y + c.dy*4, r:7, kind:'car'});
+  }
+}
+function updateWalkers(dt){
+  for (const w of walkers){
+    if (w.pause > 0){ w.pause -= dt; continue; }
+    const gx = w.tx*T + 8 + w.jx, gy = w.ty*T + 10 + w.jy;
+    const dx = gx - w.px, dy = gy - w.py, d = Math.hypot(dx, dy), sp = 9*dt;
+    if (d <= sp){
+      w.px = gx; w.py = gy; w.prev = [w.cx, w.cy]; w.cx = w.tx; w.cy = w.ty;
+      const opts = [[1,0],[-1,0],[0,1],[0,-1]].map(([a,b]) => [w.cx+a, w.cy+b]).filter(([a,b]) => walkable(gAt(a,b)));
+      let fwd = opts.filter(([a,b]) => !w.prev || a !== w.prev[0] || b !== w.prev[1]);
+      if (!fwd.length) fwd = opts;
+      if (fwd.length){ const n = fwd[(Math.random()*fwd.length)|0]; w.tx = n[0]; w.ty = n[1]; }
+      if (Math.random() < 0.12) w.pause = 1 + Math.random()*2.5;
+    } else { w.px += dx/d*sp; w.py += dy/d*sp; w.step += dt*6; }
+  }
+}
+function drawWalker(w){
+  const x = Math.round(w.px), y = Math.round(w.py);
+  R(x-1, y, 4, 1, 'rgba(0,0,0,.18)');
+  const f = w.pause > 0 ? 0 : (Math.floor(w.step) % 2);
+  R(x-1, y-2, 1, 2 - f, '#33384a'); R(x+1, y-2, 1, 1 + f, '#33384a');
+  R(x-1, y-5, 3, 3, w.shirt[0]);
+  if (w.shirt[1]){ R(x-1, y-5, 3, 1, w.shirt[1]); R(x-1, y-3, 3, 1, w.shirt[1]); }
+  R(x-1, y-7, 3, 2, w.skin); R(x-1, y-8, 3, 1, w.hair);
+  if (season === 'hiver') R(x-1, y-5, 3, 1, '#cf453a');
+}
+
+/* ---------- particules ---------- */
+let parts = [];
+function resetParticles(){
+  parts = [];
+  const n = Math.round((season === 'ete' ? 30 : season === 'hiver' ? 140 : 60) * (N/24) * (N/24));
+  for (let i = 0; i < n; i++) parts.push({x:Math.random()*W, y:Math.random()*W, ph:Math.random()*6.28, s:0.6 + Math.random()*0.8, c:(Math.random()*3)|0});
+}
+function updateParticles(dt){
+  for (const p of parts){
+    p.ph += dt*p.s*2;
+    if (season === 'ete'){ p.x += Math.cos(p.ph)*6*dt; p.y += Math.sin(p.ph*1.3)*5*dt; }
+    else { const vy = season === 'hiver' ? 7 : season === 'automne' ? 9 : 6; p.y += vy*p.s*dt; p.x += (Math.sin(p.ph)*4 + 2)*dt; }
+    if (p.y > W+2) { p.y = -2; p.x = Math.random()*W; }
+    if (p.x > W+2) p.x = -2; if (p.x < -2) p.x = W+2; if (p.y < -2) p.y = W+2;
+  }
+}
+function drawParticles(isDark){
+  for (const p of parts){
+    const x = Math.round(p.x), y = Math.round(p.y);
+    if (season === 'hiver') R(x, y, 1, 1, '#ffffff');
+    else if (season === 'printemps') R(x, y, 1, 1, ['#f7b6cc','#ffffff','#f0d2e0'][p.c]);
+    else if (season === 'automne'){ const c = ['#e08a30','#c25d29','#f0b44c'][p.c]; R(x, y, 2, 1, c); }
+    else if (!isDark){ const c = ['#ffffff','#f6d35a','#9fd0f2'][p.c]; const open = Math.sin(p.ph*6) > 0; R(x, y, 1, 1, c); if (open) R(x+1, y, 1, 1, c); }
+  }
+}
+
+/* ---------- temps ---------- */
+let tday = 0.42, autoTime = true;
+function darkness(t){ const d = (Math.cos(2*Math.PI*t) + 1)/2; return { dark: Math.min(1, Math.max(0, (d - 0.45)/0.42)) * 0.78, warm: Math.max(0, 1 - Math.abs(d - 0.5)/0.18) * 0.16 }; }
+
+/* ---------- rendu ---------- */
+let now = 0;
+function render(){
+  C = ctx; lights = [];
+  ctx.clearRect(0, 0, W, W);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) drawGround(G[y*N+x], x*T, y*T, x, y, gAt);
+  for (let y = 0; y < N; y++){
+    for (let x = 0; x < N; x++){ const o = O[y*N+x]; if (o) drawObject(o, x*T, y*T, x, y, true); }
+    for (const w of walkers) if (Math.round((w.py - 10)/T) === y) drawWalker(w);
+    for (const c of cars) if (Math.floor(c.py / T) === y) drawCar(c);
+  }
+  const {dark, warm} = darkness(tday);
+  drawParticles(dark > 0.2);
+  if (warm > 0){ ctx.fillStyle = `rgba(255,140,70,${warm})`; ctx.fillRect(0, 0, W, W); }
+  if (dark > 0.01){
+    dctx.globalCompositeOperation = 'source-over';
+    dctx.clearRect(0, 0, W, W);
+    dctx.fillStyle = `rgba(16,22,56,${dark})`; dctx.fillRect(0, 0, W, W);
+    if (dark > 0.15){
+      dctx.globalCompositeOperation = 'destination-out';
+      for (const l of lights){ if (!l.r) continue;
+        const g = dctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r);
+        g.addColorStop(0, 'rgba(0,0,0,.85)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+        dctx.fillStyle = g; dctx.beginPath(); dctx.arc(l.x, l.y, l.r, 0, 6.29); dctx.fill(); }
+    }
+    ctx.drawImage(darkCv, 0, 0);
+    if (dark > 0.15){
+      const k = Math.min(1, (dark - 0.15)/0.3);
+      ctx.save(); ctx.globalAlpha = k;
+      for (const l of lights) if (l.kind === 'pane') { ctx.fillStyle = '#ffd36b'; ctx.fillRect(l.x, l.y, l.w, l.h); }
+      ctx.globalCompositeOperation = 'lighter';
+      for (const l of lights){
+        if (l.r){ const g = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r*0.7); g.addColorStop(0, 'rgba(255,190,90,.35)'); g.addColorStop(1, 'rgba(255,190,90,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(l.x, l.y, l.r*0.7, 0, 6.29); ctx.fill(); }
+        if (l.kind === 'beam'){
+          const a = now/1000*0.9;
+          ctx.fillStyle = 'rgba(255,230,150,.22)';
+          ctx.beginPath(); ctx.moveTo(l.x, l.y);
+          ctx.lineTo(l.x + Math.cos(a-0.1)*300, l.y + Math.sin(a-0.1)*300);
+          ctx.lineTo(l.x + Math.cos(a+0.1)*300, l.y + Math.sin(a+0.1)*300);
+          ctx.closePath(); ctx.fill();
+        }
+      }
+      if (season === 'ete') for (const p of parts){ const b = (Math.sin(p.ph*3) + 1)/2; ctx.fillStyle = `rgba(230,255,120,${0.3 + b*0.7})`; ctx.fillRect(Math.round(p.x), Math.round(p.y), 1, 1); }
+      ctx.restore();
+    }
+  }
+  if (hover && !handMode){ ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 1; ctx.strokeRect(hover[0]*T + 0.5, hover[1]*T + 0.5, T-1, T-1); }
+  const s = board.width;
+  disp.imageSmoothingEnabled = false;
+  disp.clearRect(0, 0, s, s);
+  disp.drawImage(world, Math.round(camX), Math.round(camY), s, s, 0, 0, s, s);
+}
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let last = performance.now();
+function frame(ts){
+  const dt = Math.min(0.1, (ts - last)/1000); last = ts;
+  now = reduce ? 0 : ts;
+  if (autoTime && !reduce) tday = (tday + dt/240) % 1;
+  if (!reduce){ updateWalkers(dt); updateCars(dt); updateParticles(dt); }
+  render(); updateClock();
+  requestAnimationFrame(frame);
+}
+
+/* ---------- outils ---------- */
+const TOOLS = [
+  {id:'g', kind:'ground', name:'Herbe', group:'Sol'},
+  {id:'c', kind:'ground', name:'Chemin', group:'Sol'},
+  {id:'R', kind:'ground', name:'Route', group:'Sol'},
+  {id:'p', kind:'ground', name:'Pavés', group:'Sol'},
+  {id:'s', kind:'ground', name:'Sable', group:'Sol'},
+  {id:'w', kind:'ground', name:'Eau', group:'Sol'},
+  {id:'k', kind:'ground', name:'Blé', group:'Campagne'},
+  {id:'z', kind:'ground', name:'Colza', group:'Campagne'},
+  {id:'v', kind:'obj', name:'Vache', group:'Campagne'},
+  {id:'o', kind:'obj', name:'Foin', group:'Campagne'},
+  {id:'V', kind:'obj', name:'Potager', group:'Campagne'},
+  {id:'m', kind:'obj', name:'Moulin', group:'Campagne'},
+  {id:'I', kind:'obj', name:'Immeuble', group:'Ville'},
+  {id:'T', kind:'obj', name:'Tour', group:'Ville'},
+  {id:'S', kind:'obj', name:'Magasin', group:'Ville'},
+  {id:'A', kind:'obj', name:'Mairie', group:'Ville'},
+  {id:'E', kind:'obj', name:'École', group:'Ville'},
+  {id:'Q', kind:'obj', name:'Fontaine', group:'Ville'},
+  {id:'t', kind:'obj', name:'Arbre', group:'Nature'},
+  {id:'P', kind:'obj', name:'Sapin', group:'Nature'},
+  {id:'f', kind:'obj', name:'Fleurs', group:'Nature'},
+  {id:'H', kind:'obj', name:'Hortensias', group:'Nature'},
+  {id:'r', kind:'obj', name:'Rocher', group:'Nature'},
+  {id:'M', kind:'obj', name:'Menhir', group:'Nature'},
+  {id:'h', kind:'obj', name:'Maison', group:'Village'},
+  {id:'K', kind:'obj', name:'Crêperie', group:'Village'},
+  {id:'W', kind:'obj', name:'Puits', group:'Village'},
+  {id:'b', kind:'obj', name:'Banc', group:'Village'},
+  {id:'l', kind:'obj', name:'Lampadaire', group:'Village'},
+  {id:'F', kind:'obj', name:'Clôture', group:'Village'},
+  {id:'C', kind:'obj', name:'Chat', group:'Village'},
+  {id:'L', kind:'obj', name:'Phare', group:'Plage'},
+  {id:'Y', kind:'obj', name:'Cabine', group:'Plage'},
+  {id:'U', kind:'obj', name:'Parasol', group:'Plage'},
+  {id:'Z', kind:'obj', name:'Château', group:'Plage'},
+  {id:'B', kind:'obj', name:'Barque', group:'Plage'},
+  {id:'x', kind:'erase', name:'Gomme', group:'Outils'}
+];
+let tool = 'h';
+const iconCanvases = {};
+function drawIcon(t){
+  const cv = iconCanvases[t.id]; const c = cv.getContext('2d'); C = c; c.clearRect(0, 0, 16, 20);
+  if (t.kind === 'erase'){
+    R(3, 9, 10, 6, '#e8a0a8'); R(3, 9, 4, 6, '#5a7fb0'); R(3, 15, 10, 1, 'rgba(0,0,0,.25)');
+    return;
+  }
+  const ground = t.kind === 'ground' ? t.id : (t.id === 'B' ? 'w' : 'g');
+  const nb = (x, y) => ((t.id === 'c' || t.id === 'R') && y === 0) ? t.id : (ground === 'w' ? 'w' : 'g');
+  const oy = {I:7, T:20, A:5}[t.id] ?? 4;
+  drawGround(ground, 0, oy, 0, 0, nb);
+  if (oy > 4) drawGround(ground, 0, oy - 16, 0, 0, nb);
+  iconMode = true;
+  if (t.kind === 'obj') drawObject(t.id, 0, oy, 3, 5, false);
+  iconMode = false;
+}
+let activeGroup = 'Village';
+function buildTools(){
+  const host = document.getElementById('toolGroups');
+  host.style.display = 'flex'; host.style.flexDirection = 'column'; host.style.gap = '10px';
+  const groups = [...new Set(TOOLS.filter(t => t.kind !== 'erase').map(t => t.group))];
+  const tabs = document.createElement('div'); tabs.className = 'seg tabs'; tabs.setAttribute('role', 'tablist');
+  host.append(tabs);
+  for (const g of groups){
+    const tb = document.createElement('button'); tb.type = 'button'; tb.id = 'tab-' + g; tb.textContent = g; tb.setAttribute('role', 'tab');
+    tb.setAttribute('aria-pressed', g === activeGroup);
+    tb.onclick = () => { activeGroup = g; document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-pressed', b === tb)); document.querySelectorAll('.tgroup').forEach(w => w.hidden = w.dataset.g !== g); };
+    tabs.append(tb);
+    const wrap = document.createElement('div'); wrap.className = 'group tgroup'; wrap.dataset.g = g; wrap.hidden = g !== activeGroup;
+    const grid = document.createElement('div'); grid.className = 'tools';
+    for (const t of TOOLS.filter(t => t.group === g)){
+      const b = document.createElement('button'); b.className = 'tool'; b.id = 'tool-' + t.id; b.type = 'button';
+      b.setAttribute('aria-pressed', t.id === tool);
+      const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; iconCanvases[t.id] = cv;
+      const sp = document.createElement('span'); sp.textContent = t.name;
+      b.append(cv, sp);
+      b.onclick = () => selectTool(t.id);
+      grid.append(b);
+    }
+    wrap.append(grid); host.append(wrap);
+  }
+  const ecv = document.createElement('canvas'); ecv.width = 16; ecv.height = 20; iconCanvases.x = ecv;
+  document.getElementById('eraseIcon').replaceWith(ecv);
+  TOOLS.forEach(drawIcon);
+}
+let prevTool = 'h';
+function selectTool(id){
+  if (id !== 'x') prevTool = id;
+  tool = id;
+  document.querySelectorAll('.tool').forEach(e => e.setAttribute('aria-pressed', e.id === 'tool-' + id));
+  document.getElementById('eraseBtn').setAttribute('aria-pressed', id === 'x');
+}
+document.getElementById('eraseBtn').onclick = () => selectTool(tool === 'x' ? prevTool : 'x');
+
+/* ---------- annuler ---------- */
+let history = [];
+const undoBtn = document.getElementById('undoBtn');
+function snapshot(){ history.push({g:G.join(''), o:O.map(c => c || '.').join('')}); if (history.length > 60) history.shift(); undoBtn.disabled = false; }
+undoBtn.onclick = () => {
+  const s = history.pop(); if (!s) return;
+  G = s.g.split(''); O = s.o.split('').map(c => c === '.' ? null : c);
+  undoBtn.disabled = !history.length;
+  syncWalkers(); updateStats(); queueSave();
+};
+
+/* ---------- pose ---------- */
+const toastEl = document.getElementById('toast'); let toastT;
+function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), 1800); }
+function place(x, y, forceErase){
+  const i = y*N + x, t = TOOLS.find(t => t.id === (forceErase ? 'x' : tool));
+  if (t.kind === 'erase'){ if (O[i]) O[i] = null; else G[i] = 'g'; }
+  else if (t.kind === 'ground'){
+    G[i] = t.id;
+    if (t.id === 'w' && O[i] && O[i] !== 'B') O[i] = null;
+    if (t.id !== 'w' && O[i] === 'B') O[i] = null;
+    if (t.id === 'c' || t.id === 'R') O[i] = null;
+  } else {
+    if (t.id === 'B'){ if (G[i] !== 'w'){ toast("La barque se pose sur l'eau"); return; } }
+    else if (G[i] === 'w'){ toast('Pose-le sur la terre ferme'); return; }
+    else if (G[i] === 'c'){ toast('Les chemins restent libres pour les promeneurs'); return; }
+    else if (G[i] === 'R'){ toast('Les routes restent libres pour les voitures'); return; }
+    O[i] = t.id;
+  }
+  syncWalkers(); updateStats(); queueSave();
+}
+let hover = null, handMode = false;
+function cellOf(e){
+  const r = board.getBoundingClientRect();
+  const wx = camX + (e.clientX - r.left)/r.width*vw(), wy = camY + (e.clientY - r.top)/r.height*vw();
+  const x = Math.floor(wx / T), y = Math.floor(wy / T);
+  return (x < 0 || y < 0 || x >= N || y >= N) ? null : [x, y];
+}
+const pts = new Map();
+let stroke = null, pendingTouch = null, panDrag = null, gesture = null, lockUntilUp = false;
+function startStroke(ev, erase){ const c = cellOf(ev); if (!c) return; snapshot(); stroke = {erase, last:c.join()}; place(c[0], c[1], erase); }
+function continueStroke(ev){ const c = cellOf(ev); if (!c) return; const k = c.join(); if (k !== stroke.last){ stroke.last = k; place(c[0], c[1], stroke.erase); } }
+function twoPts(){ const [a, b] = [...pts.values()]; return {d: Math.hypot(a.x-b.x, a.y-b.y) || 1, mx:(a.x+b.x)/2, my:(a.y+b.y)/2}; }
+board.addEventListener('contextmenu', e => e.preventDefault());
+board.addEventListener('pointerdown', e => {
+  try { board.setPointerCapture(e.pointerId); } catch(err){}
+  pts.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if (pts.size === 2){
+    if (pendingTouch){ clearTimeout(pendingTouch.t); pendingTouch = null; }
+    stroke = null; panDrag = null; lockUntilUp = true;
+    const p = twoPts(); gesture = {...p, z:zoom, cx:camX, cy:camY};
+    return;
+  }
+  if (pts.size > 2 || lockUntilUp) return;
+  if (handMode || e.button === 1){ panDrag = {x:e.clientX, y:e.clientY}; board.style.cursor = 'grabbing'; return; }
+  const erase = e.button === 2;
+  if (e.pointerType === 'touch'){
+    const ev = {clientX:e.clientX, clientY:e.clientY};
+    pendingTouch = {ev, erase, t:setTimeout(() => { if (pendingTouch){ const p = pendingTouch; pendingTouch = null; startStroke(p.ev, p.erase); } }, 90)};
+  } else startStroke(e, erase);
+});
+board.addEventListener('pointermove', e => {
+  hover = e.pointerType === 'mouse' ? cellOf(e) : null;
+  if (!pts.has(e.pointerId)) return;
+  pts.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  const r = board.getBoundingClientRect();
+  if (gesture && pts.size >= 2){
+    const p = twoPts();
+    const wx = gesture.cx + (gesture.mx - r.left)/r.width*(W/gesture.z), wy = gesture.cy + (gesture.my - r.top)/r.height*(W/gesture.z);
+    zoom = Math.max(ZMIN, Math.min(zmax(), gesture.z * p.d / gesture.d));
+    camX = wx - (p.mx - r.left)/r.width*vw(); camY = wy - (p.my - r.top)/r.height*vw();
+    clampCam(); sizeBoard(); return;
+  }
+  if (panDrag){
+    camX -= (e.clientX - panDrag.x) * vw()/r.width; camY -= (e.clientY - panDrag.y) * vw()/r.height;
+    panDrag = {x:e.clientX, y:e.clientY}; clampCam(); return;
+  }
+  if (pendingTouch){ clearTimeout(pendingTouch.t); const p = pendingTouch; pendingTouch = null; startStroke(p.ev, p.erase); }
+  if (stroke) continueStroke(e);
+});
+function endPointer(e){
+  pts.delete(e.pointerId);
+  if (pendingTouch){ clearTimeout(pendingTouch.t); const p = pendingTouch; pendingTouch = null; startStroke(p.ev, p.erase); }
+  if (pts.size < 2) gesture = null;
+  if (pts.size === 0){ stroke = null; panDrag = null; lockUntilUp = false; board.style.cursor = ''; }
+}
+board.addEventListener('pointerup', endPointer); board.addEventListener('pointercancel', endPointer);
+board.addEventListener('pointerleave', () => { hover = null; });
+board.addEventListener('wheel', e => {
+  e.preventDefault();
+  const r = board.getBoundingClientRect();
+  setZoom(zoom * (e.deltaY < 0 ? 1.15 : 1/1.15), (e.clientX - r.left)/r.width, (e.clientY - r.top)/r.height);
+}, {passive:false});
+document.getElementById('zoomIn').onclick = () => setZoom(zoom * 1.4);
+document.getElementById('zoomOut').onclick = () => setZoom(zoom / 1.4);
+const handBtn = document.getElementById('handBtn');
+handBtn.onclick = () => { handMode = !handMode; handBtn.setAttribute('aria-pressed', handMode); document.querySelector('.stage').classList.toggle('hand', handMode); };
+
+/* ---------- saisons, heure, terrain ---------- */
+function setSeason(k){
+  season = k; S = SEASONS[k];
+  document.querySelectorAll('#seasons button').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === k));
+  document.getElementById('seasonName').textContent = S.name;
+  TOOLS.forEach(drawIcon); resetParticles(); queueSave();
+}
+const seasonsEl = document.getElementById('seasons');
+for (const k of SEASON_KEYS){ const b = document.createElement('button'); b.type = 'button'; b.id = 'season-' + k; b.dataset.k = k; b.textContent = SEASONS[k].name; b.onclick = () => setSeason(k); seasonsEl.append(b); }
+const TIMES = [['Matin', 0.30], ['Midi', 0.5], ['Soir', 0.78], ['Nuit', 0.95]];
+const timesEl = document.getElementById('times');
+for (const [n, v] of TIMES){ const b = document.createElement('button'); b.type = 'button'; b.id = 'time-' + n; b.textContent = n; b.onclick = () => { tday = v; }; timesEl.append(b); }
+const autoBtn = document.getElementById('autoTime');
+autoBtn.onclick = () => { autoTime = !autoTime; autoBtn.setAttribute('aria-pressed', autoTime); };
+if (reduce){ autoTime = false; autoBtn.setAttribute('aria-pressed', 'false'); }
+function updateClock(){
+  const h = Math.floor(tday*24), m = Math.floor((tday*24 % 1)*4)*15;
+  document.getElementById('clock').textContent = `${h} h ${String(m).padStart(2, '0')}`;
+}
+function updateStats(){
+  const hab = residents(), p = walkers.length, v = cars.length;
+  const pl = (n, w) => `${n} ${w}${n > 1 ? 's' : ''}`;
+  document.getElementById('stats').textContent = `${N}×${N} · ${pl(hab, 'foyer')} · ${pl(p, 'promeneur')} · ${pl(v, 'voiture')}`;
+}
+let pending = null;
+const confirmRow = document.getElementById('confirmRow'), resetRow = document.getElementById('resetRow');
+function ask(what, text){ pending = what; document.getElementById('confirmText').textContent = text; confirmRow.hidden = false; resetRow.hidden = true; }
+document.getElementById('askClear').onclick = () => ask('clear', 'Effacer tout le terrain ?');
+document.getElementById('askSample').onclick = () => ask('sample', 'Remplacer par le village d’exemple ?');
+document.getElementById('confirmNo').onclick = () => { confirmRow.hidden = true; resetRow.hidden = false; };
+
+/* ---------- agrandir ---------- */
+const growBtn = document.getElementById('growBtn');
+function updateGrowBtn(){
+  if (N >= NMAX){ growBtn.textContent = `Taille maximale (${N}×${N})`; growBtn.disabled = true; }
+  else { growBtn.textContent = `Agrandir : ${N}×${N} → ${N+8}×${N+8}`; growBtn.disabled = false; }
+}
+growBtn.onclick = () => {
+  if (N >= NMAX) return;
+  const n0 = N, g = G.join(''), o = [...O], off = 4, sh = off*T;
+  N += 8; W = N*T;
+  expand(g, o, n0, off, true);
+  zoom = zoom * N / n0; camX += sh; camY += sh;
+  applySize();
+  for (const w of walkers){ w.px += sh; w.py += sh; w.cx += off; w.cy += off; w.tx += off; w.ty += off; if (w.prev){ w.prev[0] += off; w.prev[1] += off; } }
+  for (const c of cars){ c.px += sh; c.py += sh; c.cx += off; c.cy += off; c.tx += off; c.ty += off; c.prev = null; }
+  history = []; undoBtn.disabled = true;
+  resetParticles(); syncWalkers(); updateStats(); updateGrowBtn(); save();
+  toast(`Ton terrain fait maintenant ${N}×${N}`);
+};
+updateGrowBtn();
+
+/* ---------- roue crantée ---------- */
+const gearBtn = document.getElementById('gearBtn'), gearMenu = document.getElementById('gearMenu');
+function setMenu(open){ gearMenu.hidden = !open; gearBtn.setAttribute('aria-expanded', open); if (!open){ confirmRow.hidden = true; resetRow.hidden = false; } }
+gearBtn.onclick = e => { e.stopPropagation(); setMenu(gearMenu.hidden); };
+document.addEventListener('pointerdown', e => { if (!gearMenu.hidden && !gearMenu.contains(e.target) && e.target !== gearBtn) setMenu(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+
+/* ---------- photo ---------- */
+let downloads = null;
+(async () => { try { downloads = await window.claude?.use?.('downloads'); } catch(e){ downloads = null; } })();
+const photoBox = document.getElementById('photoBox');
+document.getElementById('photoClose').onclick = () => { photoBox.hidden = true; };
+photoBox.addEventListener('click', e => { if (e.target === photoBox) photoBox.hidden = true; });
+document.getElementById('photoBtn').onclick = async () => {
+  const keep = hover; hover = null; render(); hover = keep;
+  const k = 4, pad = 8*k, out = document.createElement('canvas');
+  out.width = W*k + pad*2; out.height = W*k + pad*2;
+  const o = out.getContext('2d'); o.imageSmoothingEnabled = false;
+  o.fillStyle = '#2b3a44'; o.fillRect(0, 0, out.width, out.height);
+  o.drawImage(world, 0, 0, W, W, pad, pad, W*k, W*k);
+  const blob = await new Promise(r => out.toBlob(r, 'image/png'));
+  if (!blob){ toast("La photo n'a pas pu être créée"); return; }
+  const name = `iloe-${S.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')}.png`;
+  if (downloads){
+    try { await downloads.save({filename:name, data:blob}); toast('Photo enregistrée'); return; }
+    catch(err){ if (err && err.code === 'declined') return; if (err && err.code === 'rate_limited'){ toast('Une demande est déjà ouverte'); return; } }
+  }
+  try {
+    const file = new File([blob], name, {type:'image/png'});
+    if (navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:'iloe'}); return; }
+  } catch(err){ if (err && err.name === 'AbortError') return; }
+  document.getElementById('photoImg').src = URL.createObjectURL(blob);
+  photoBox.hidden = false;
+};
+document.getElementById('confirmYes').onclick = () => {
+  snapshot();
+  if (pending === 'clear') clearAll(); else loadSample();
+  walkers = []; syncWalkers(); updateStats(); save();
+  setMenu(false);
+};
+
+buildTools(); setSeason(season); syncWalkers(); updateStats();
+requestAnimationFrame(frame);
+</script>
+
+</body>
+</html>
