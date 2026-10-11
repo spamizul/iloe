@@ -1258,6 +1258,112 @@ function drawObject(o, ox, oy, x, y, withLights){
     R(ox+2, oy+10, 8, 2, '#8a6a48'); R(ox+5, oy+8, 7, 2, '#a8845c'); R(ox+9, oy+11, 4, 2, '#6b4a2e');
     R(ox+3, oy+12, 3, 1, '#3f6b3a'); R(ox+11, oy+9, 2, 1, '#3f6b3a'); R(ox+7, oy+12, 2, 1, '#5a7a4a'); R(ox+4, oy+9, 1, 1, '#cf453a');
     break; }
+  case 'ÿ': { // indice qui scintille
+    const tw = reduce ? 1 : (Math.sin(now/260 + x*3 + y*2)*0.5 + 0.5), a = (0.45 + tw*0.55).toFixed(2);
+    R(ox+5, oy+13, 6, 1, 'rgba(0,0,0,.12)');
+    R(ox+7, oy+4, 2, 8, `rgba(255,226,120,${a})`); R(ox+4, oy+7, 8, 2, `rgba(255,226,120,${a})`);
+    R(ox+6, oy+6, 4, 4, `rgba(255,240,180,${a})`); R(ox+7, oy+7, 2, 2, '#ffffff');
+    L(ox+8, oy+8, 10, 'win');
+    break; }
+  case 'ý': { // lumière sous la mer
+    const tw = reduce ? 1 : (Math.sin(now/400 + x + y)*0.5 + 0.5), a = (0.35 + tw*0.5).toFixed(2);
+    R(ox+4, oy+6, 8, 4, `rgba(120,255,230,${a})`); R(ox+6, oy+5, 4, 6, `rgba(120,255,230,${a})`); R(ox+7, oy+7, 2, 2, '#e8fffb');
+    lights.push({x:ox+8, y:oy+8, r:12, kind:'win'});
+    break; }
+  case 'ñ': { // ronces
+    shadow(ox, oy, 12);
+    R(ox+2, oy+8, 12, 6, '#2f4a2a'); R(ox+3, oy+6, 10, 2, '#2f4a2a'); R(ox+5, oy+5, 6, 1, '#2f4a2a');
+    for (let k = 0; k < 10; k++) R(ox+2 + (hs(x,y,k+700)*12|0), oy+5 + (hs(x,y,k+710)*9|0), 1, 1, k % 3 ? '#4a6a3a' : '#6b2a4a');
+    for (let k = 0; k < 4; k++) R(ox+3 + (hs(x,y,k+720)*10|0), oy+6 + (hs(x,y,k+730)*7|0), 1, 1, '#3a1a3a');
+    break; }
+  case 'Ð': { // ruines du manoir
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.15)');
+    R(ox+1, oy+5, 3, 10, '#9a958c'); R(ox+12, oy+3, 3, 12, '#9a958c'); R(ox+4, oy+9, 8, 6, '#8a857c');
+    R(ox+5, oy+10, 2, 3, '#2b2b30'); R(ox+9, oy+10, 2, 3, '#2b2b30'); R(ox+12, oy+6, 2, 2, '#2b2b30');
+    R(ox+1, oy+5, 3, 1, '#b5b0a6'); R(ox+12, oy+3, 3, 1, '#b5b0a6'); R(ox+4, oy+8, 3, 1, '#6b4a2e');
+    for (let k = 0; k < 8; k++) R(ox+1 + (hs(x,y,k+740)*14|0), oy+4 + (hs(x,y,k+750)*10|0), 1, 2, '#3f6b3a');
+    break; }
+  case 'Æ': { // manoir
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.18)');
+    R(ox, oy+2, 16, 13, '#d9d2c2');
+    for (let k = 0; k < 8; k++) R(ox+1 + (hs(x,y,k+760)*13|0), oy+3 + (hs(x,y,k+770)*10|0), 2, 1, '#c4bca9');
+    R(ox, oy, 16, 2, '#3e4a56'); R(ox+1, oy-2, 14, 2, '#3e4a56'); R(ox+3, oy-4, 10, 2, '#3e4a56');
+    R(ox+2, oy-6, 2, 4, '#9a958c'); R(ox+12, oy-6, 2, 4, '#9a958c');
+    R(ox+5, oy-3, 2, 2, '#9cc8e8'); R(ox+9, oy-3, 2, 2, '#9cc8e8');
+    if (season === 'hiver'){ R(ox+3, oy-4, 10, 1, '#fff'); R(ox+1, oy-2, 2, 1, '#fff'); R(ox+13, oy-2, 2, 1, '#fff'); }
+    for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++){
+      const wx = ox+1 + c*4, wy = oy+4 + r*4;
+      if (r === 1 && (c === 1 || c === 2)) continue;
+      R(wx, wy, 2, 3, '#9cc8e8'); if (withLights) lights.push({x:wx, y:wy, w:2, h:3, kind:'pane'});
+    }
+    R(ox+6, oy+10, 4, 5, '#5a3c22'); R(ox+5, oy+9, 6, 1, '#b5b0a6'); R(ox+5, oy+14, 6, 1, '#b5b0a6');
+    L(ox+8, oy+8, 16, 'win');
+    break; }
+  case 'ß': { // épave
+    R(ox+1, oy+13, 14, 2, 'rgba(0,0,0,.15)');
+    for (let k = 0; k < 12; k++){ const d = Math.abs(k - 6); R(ox+2+k, oy+9 + Math.round(d*0.35), 1, 4 - Math.round(d*0.3), k % 3 === 0 ? '#5a3c22' : '#7a5434'); }
+    R(ox+3, oy+8, 10, 1, '#8a6a48');
+    R(ox+8, oy+1, 1, 8, '#5a3c22'); R(ox+9, oy+2, 3, 1, '#5a3c22'); R(ox+9, oy+3, 3, 3, 'rgba(230,220,200,.8)');
+    R(ox+4, oy+10, 2, 2, '#2b2b30'); R(ox+10, oy+11, 1, 1, '#2b2b30'); R(ox+2, oy+13, 2, 1, '#3f6b3a');
+    break; }
+  case 'ø': { // dolmen
+    R(ox+1, oy+14, 14, 2, 'rgba(0,0,0,.16)');
+    R(ox+2, oy+7, 3, 8, '#8a8f94'); R(ox+11, oy+7, 3, 8, '#8a8f94'); R(ox+4, oy+8, 1, 7, '#73787d'); R(ox+13, oy+8, 1, 7, '#73787d');
+    R(ox+1, oy+4, 14, 3, '#9aa0a5'); R(ox+1, oy+6, 14, 1, '#73787d'); R(ox+2, oy+4, 4, 1, '#b5babf');
+    R(ox+5, oy+9, 6, 6, 'rgba(20,20,30,.55)');
+    R(ox+3, oy+5, 1, 1, '#a9b56a'); R(ox+12, oy+10, 1, 1, '#a9b56a');
+    if (season === 'hiver') R(ox+1, oy+4, 14, 1, '#fff');
+    korrigans(ox+8, oy+13, 6, x);
+    break; }
+  case 'þ': { // cercle de pierres
+    R(ox+1, oy+3, 14, 12, season === 'hiver' ? 'rgba(255,255,255,.25)' : 'rgba(80,120,60,.25)');
+    for (const [sx, sy] of [[7,2],[12,5],[12,10],[7,13],[2,10],[2,5]]){ R(ox+sx, oy+sy+3, 2, 1, 'rgba(0,0,0,.18)'); R(ox+sx, oy+sy, 2, 3, '#8a8f94'); R(ox+sx, oy+sy, 1, 1, '#b5babf'); }
+    korrigans(ox+8, oy+10, 3.5, x);
+    break; }
+  case 'ð': { // korrigan
+    R(ox+4, oy+14, 8, 1, 'rgba(0,0,0,.14)');
+    R(ox+5, oy+11, 6, 3, '#7a5434'); R(ox+5, oy+11, 6, 1, '#9a7450');
+    const night = curDark > 0.4 && !iconMode, hop = night && !reduce && Math.sin(now/160) > 0 ? 1 : 0;
+    R(ox+7, oy+7-hop, 3, 4, '#6b4a2e'); R(ox+7, oy+5-hop, 3, 2, '#f1c9a5'); R(ox+7, oy+3-hop, 3, 2, '#cf453a'); R(ox+8, oy+2-hop, 1, 1, '#cf453a');
+    R(ox+7, oy+6-hop, 1, 1, '#2b2b30'); R(ox+9, oy+6-hop, 1, 1, '#2b2b30'); R(ox+6, oy+7-hop, 2, 1, '#e8dcc8');
+    R(ox+11, oy+8, 1, 3, '#5a4632'); R(ox+11, oy+7, 2, 2, night ? '#ffd36b' : '#c9a24a');
+    if (night) lights.push({x:ox+12, y:oy+8, r:8, kind:'win'});
+    break; }
+  case 'Œ': { // grotte
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.16)');
+    R(ox+1, oy+5, 14, 10, '#7f848a'); R(ox+3, oy+3, 10, 2, '#7f848a'); R(ox+5, oy+2, 6, 1, '#8f949a');
+    R(ox+2, oy+5, 3, 2, '#9aa0a5'); R(ox+11, oy+6, 3, 2, '#6f747a');
+    R(ox+5, oy+8, 6, 7, '#1e1e24'); R(ox+6, oy+7, 4, 1, '#1e1e24');
+    if (curDark > 0.4 && !iconMode && !reduce && Math.sin(now/500 + x) > 0.3) R(ox+8, oy+11, 1, 1, '#ffe28a');
+    R(ox+2, oy+4, 2, 1, '#3f6b3a'); R(ox+12, oy+5, 2, 1, '#3f6b3a');
+    if (season === 'hiver') R(ox+3, oy+3, 10, 1, '#fff');
+    break; }
+  case 'æ': { // lanterne ancienne
+    R(ox+5, oy+14, 6, 1, 'rgba(0,0,0,.15)');
+    R(ox+6, oy+8, 4, 7, '#8a8f94'); R(ox+5, oy+14, 6, 1, '#73787d');
+    R(ox+5, oy+3, 6, 5, '#73787d'); R(ox+6, oy+4, 4, 3, '#2b2b30');
+    const fl = reduce ? 0 : (Math.sin(now/90 + x) > 0 ? 1 : 0);
+    R(ox+7, oy+5 - fl, 2, 2 + fl, '#f2a530'); R(ox+7, oy+5, 1, 1, '#ffe28a');
+    R(ox+4, oy+2, 8, 1, '#5b6168'); R(ox+7, oy+1, 2, 1, '#5b6168');
+    if (season === 'hiver') R(ox+4, oy+2, 8, 1, '#fff');
+    if (withLights) lights.push({x:ox+6, y:oy+4, w:4, h:3, kind:'pane'});
+    L(ox+8, oy+6, 14, 'win');
+    break; }
+  case 'Ý': { // rocher de la sirène
+    R(ox+2, oy+12, 12, 1, 'rgba(255,255,255,.4)');
+    R(ox+3, oy+9, 10, 4, '#7f848a'); R(ox+5, oy+7, 6, 2, '#8f949a'); R(ox+4, oy+9, 3, 1, '#9aa0a5');
+    const sw = reduce ? 0 : Math.round(Math.sin(now/500));
+    R(ox+6, oy+1, 4, 1, '#c0582a'); R(ox+6, oy+2, 1, 4, '#c0582a'); R(ox+7, oy+2, 2, 2, '#f1c9a5'); R(ox+7, oy+4, 2, 2, '#f1c9a5');
+    R(ox+7, oy+6, 3, 1, '#2fa89a'); R(ox+9, oy+5 + sw, 2, 1, '#2fa89a'); R(ox+10, oy+4 + sw, 1, 1, '#2fa89a');
+    break; }
+  case 'Ÿ': { // coffre au trésor
+    R(ox+2, oy+14, 12, 1, 'rgba(0,0,0,.16)');
+    R(ox+3, oy+9, 10, 5, '#7a5434'); R(ox+3, oy+9, 10, 1, '#c9a24a'); R(ox+3, oy+12, 10, 1, '#c9a24a'); R(ox+7, oy+10, 2, 2, '#f2c14e');
+    R(ox+3, oy+5, 10, 3, '#8a5a32'); R(ox+3, oy+5, 10, 1, '#c9a24a');
+    R(ox+4, oy+8, 8, 1, '#f2c14e'); R(ox+5, oy+7, 2, 1, '#ffe28a'); R(ox+9, oy+7, 2, 1, '#ffe28a');
+    if (!reduce) for (let k = 0; k < 3; k++){ const t = (now/700 + k/3) % 1; R(ox+5 + k*3, oy+6 - Math.round(t*5), 1, 1, `rgba(255,240,160,${(1-t).toFixed(2)})`); }
+    L(ox+8, oy+8, 12, 'win');
+    break; }
   case 'é': { // hôpital
     R(ox, oy+14, 16, 2, 'rgba(0,0,0,.18)');
     R(ox+1, oy-2, 14, 17, '#f1f1ee'); R(ox+13, oy-2, 2, 17, 'rgba(0,0,0,.07)'); R(ox, oy-3, 16, 1, '#8a8f94');
@@ -1408,6 +1514,16 @@ function drawObject(o, ox, oy, x, y, withLights){
   }
 }
 let iconMode = false;
+function korrigans(cx, cy, rad, x){
+  if (curDark < 0.4 || iconMode) return;
+  const a0 = reduce ? 0 : now/700;
+  for (let k = 0; k < 3; k++){
+    const a = a0 + k*2.094 + x, kx = Math.round(cx + Math.cos(a)*rad), ky = Math.round(cy + Math.sin(a)*rad*0.5);
+    const hop = !reduce && Math.sin(now/150 + k) > 0 ? 1 : 0;
+    R(kx, ky-3-hop, 2, 3, '#6b4a2e'); R(kx, ky-5-hop, 2, 2, '#cf453a'); R(kx+1, ky-6-hop, 1, 1, '#cf453a'); R(kx, ky-4-hop, 1, 1, '#f1c9a5');
+    lights.push({x:kx+1, y:ky-3, r:6, kind:'win'});
+  }
+}
 const oAt = (x, y) => (x < 0 || y < 0 || x >= N || y >= N) ? null : O[y*N + x];
 
 /* ---------- promeneurs ---------- */
@@ -1973,6 +2089,10 @@ const TOOLS = [
   {id:'M', kind:'obj', name:'Menhir', group:'Nature'},
   {id:'5', kind:'obj', name:'Ajoncs', group:'Nature', story:true},
   {id:'Ñ', kind:'obj', name:'Bonhomme de neige', group:'Nature', story:true},
+  {id:'ø', kind:'obj', name:'Dolmen', group:'Nature', story:true},
+  {id:'þ', kind:'obj', name:'Cercle de pierres', group:'Nature', story:true},
+  {id:'ð', kind:'obj', name:'Korrigan', group:'Nature', story:true},
+  {id:'Œ', kind:'obj', name:'Grotte', group:'Nature', story:true},
   {id:'h', kind:'obj', name:'Maison', group:'Village'},
   {id:'K', kind:'obj', name:'Crêperie', group:'Village'},
   {id:'9', kind:'obj', name:'Marché', group:'Village'},
@@ -1987,6 +2107,8 @@ const TOOLS = [
   {id:'Ê', kind:'obj', name:'Bannière', group:'Village', story:true},
   {id:'Ë', kind:'obj', name:'Chalet de Noël', group:'Village', story:true},
   {id:'Â', kind:'obj', name:'Sapin de Noël', group:'Village', story:true},
+  {id:'Æ', kind:'obj', name:'Manoir', group:'Village', story:true},
+  {id:'æ', kind:'obj', name:'Lanterne ancienne', group:'Village', story:true},
   {id:'a', kind:'obj', name:'Chapelle', group:'Village', gift:true},
   {id:'D', kind:'obj', name:'Calvaire', group:'Village', gift:true},
   {id:'d', kind:'obj', name:'Montgolfière', group:'Village', gift:true},
@@ -2000,6 +2122,7 @@ const TOOLS = [
   {id:'Î', kind:'ground', name:'Digue', group:'Port', story:true},
   {id:'Û', kind:'obj', name:'Bateau pavoisé', group:'Port', story:true},
   {id:'Ö', kind:'obj', name:'Sauveteurs', group:'Port', story:true},
+  {id:'Ý', kind:'obj', name:'Rocher de la sirène', group:'Port', story:true},
   {id:'L', kind:'obj', name:'Phare', group:'Port'},
   {id:'!', kind:'ground', name:'Galets', group:'Plage'},
   {id:'Y', kind:'obj', name:'Cabine', group:'Plage'},
@@ -2008,19 +2131,21 @@ const TOOLS = [
   {id:'0', kind:'obj', name:'Char à voile', group:'Plage', story:true},
   {id:'4', kind:'obj', name:'Feu de camp', group:'Plage', story:true},
   {id:'Ô', kind:'obj', name:'Bûcher', group:'Plage', story:true},
+  {id:'ß', kind:'obj', name:'Épave', group:'Plage', story:true},
+  {id:'Ÿ', kind:'obj', name:'Coffre au trésor', group:'Plage', story:true},
   {id:'x', kind:'erase', name:'Gomme', group:'Outils'}
 ];
-const WATER_OBJ = new Set(['B','G','J','6','Û']);
+const WATER_OBJ = new Set(['B','G','J','6','Û','Ý','ý']);
 let tool = 'h', pipMode = false;
 let iconCanvases = {};
-const ICON_OY = {I:7, T:20, A:5, a:13, e:12, d:16, 'é':7, 'À':6, 'œ':6, 'â':6, 'Ê':6, 'Ô':6, 'Â':7};
+const ICON_OY = {I:7, T:20, A:5, a:13, e:12, d:16, 'é':7, 'À':6, 'œ':6, 'â':6, 'Ê':6, 'Ô':6, 'Â':7, 'Æ':8};
 function drawIconTo(t, cv){
   const c = cv.getContext('2d'), prevC = C; C = c; c.clearRect(0, 0, 16, 20);
   if (t.kind === 'erase'){
     R(3, 9, 10, 6, '#e8a0a8'); R(3, 9, 4, 6, '#5a7fb0'); R(3, 15, 10, 1, 'rgba(0,0,0,.25)');
     C = prevC; return;
   }
-  const ground = t.kind === 'ground' ? t.id : WATER_OBJ.has(t.id) ? 'w' : t.id === 'N' ? 'q' : (t.id === '0' || t.id === '4' || t.id === 'Ô') ? 's' : 'g';
+  const ground = t.kind === 'ground' ? t.id : WATER_OBJ.has(t.id) ? 'w' : t.id === 'N' ? 'q' : (t.id === '0' || t.id === '4' || t.id === 'Ô' || t.id === 'ß' || t.id === 'Ÿ') ? 's' : 'g';
   const nb = t.id === 'n' ? ((x, y) => y === 0 ? 'g' : 'w') : ((x, y) => ('cRX+'.includes(t.id) && y === 0) ? (t.id === '+' ? 'R' : t.id) : (ground === 'w' ? 'w' : 'g'));
   const oy = ICON_OY[t.id] ?? 4;
   drawGround(ground, 0, oy, 0, 0, nb);
@@ -2117,9 +2242,14 @@ undoBtn.onclick = () => {
 /* ---------- pose ---------- */
 const toastEl = document.getElementById('toast'); let toastT;
 function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), 1800); }
-const TALL1 = new Set(['t','P','L','I','T','A','m','K','h','a','e','d','é','œ','À','â','Ê','Ô','Â']), TALL2 = new Set(['T','d']);
+const TALL1 = new Set(['t','P','L','I','T','A','m','K','h','a','e','d','é','œ','À','â','Ê','Ô','Â','Æ','Ð']), TALL2 = new Set(['T','d']);
 function place(x, y, forceErase){
   const i = y*N + x, t = TOOLS.find(t => t.id === (forceErase ? 'x' : tool));
+  if (COLLECT[O[i]] && isStory()){
+    const id = O[i], key = id + '_' + glob.story.chapter, f = glob.story.found || (glob.story.found = {});
+    O[i] = null; f[key] = (f[key] || 0) + 1; saveGlob(); toast(COLLECT[id]);
+    syncWalkers(); updateStats(); queueSave(); return;
+  }
   if (t.kind === 'erase'){
     if (O[i]) O[i] = null;
     else {
@@ -2576,7 +2706,7 @@ importFile.onchange = async () => {
 };
 
 /* ---------- l'histoire ---------- */
-const STORY_LOCK = ['4','5','1','6','0','8','2','X','i','3','Î','Ê','Ô','Û','Ö','Â','Ë','Ñ','Ï'];
+const STORY_LOCK = ['4','5','1','6','0','8','2','X','i','3','Î','Ê','Ô','Û','Ö','Â','Ë','Ñ','Ï','ß','ø','þ','ð','Œ','Æ','æ','Ý','Ÿ'];
 const PEOPLE = {
   job:   {name:'Job', role:'gardien du phare', skin:'#f1c9a5', hair:'#d9d4cc', clothes:'#1f3550', hat:'cap', beard:'#eeeeee'},
   maelle:{name:'Maëlle', role:'jardinière', skin:'#f1c9a5', hair:'#c0582a', clothes:'#5a9e5a', long:true},
@@ -2585,6 +2715,9 @@ const PEOPLE = {
   erwan: {name:'Erwan', role:'ingénieur du continent', skin:'#a86f4b', hair:'#1e1e24', clothes:'#2e6fa8', glasses:true},
   anaig: {name:'Anaïg', role:'cheffe de gare', skin:'#f1c9a5', hair:'#3a2a1e', clothes:'#1f3550', hat:'chef', long:true},
   rozenn:{name:'Rozenn', role:'maire de l’île', skin:'#d8a07a', hair:'#2b2b30', clothes:'#3b434b', sash:true, long:true},
+  morgane:{name:'Morgane', role:'bibliothécaire', skin:'#f1c9a5', hair:'#a83a2c', clothes:'#5a3c6a', glasses:true, long:true},
+  fanch: {name:'Fañch', role:'conteur de l’île', skin:'#f1c9a5', hair:'#e8e4dc', clothes:'#3b4a3a', hat:'beret', beard:'#eeeeee'},
+  yuna:  {name:'Yuna', role:'plongeuse', skin:'#a86f4b', hair:'#1e1e24', clothes:'#2b5a7a', hat:'mask', long:true},
 };
 const CHAPTERS = [
   {season:1, title:'L’arrivée', who:'job',
@@ -2644,6 +2777,35 @@ const CHAPTERS = [
    intro:['Un an a passé depuis ton arrivée. Tout le monde veut fêter ça : une grande fête de l’île !', 'Pour accueillir tout le monde, il faut au moins 40 foyers, une grande place pavée de 12 cases, trois bannières et huit lampadaires. Et le soir venu… regarde bien le ciel.'],
    outro:['Le feu d’artifice a illuminé toute la baie ! On l’a vu jusque sur le continent.', 'Garde le lanceur : chaque nuit, ton île aura son feu d’artifice. Fin de la saison 2… à suivre !'],
    goals:[['Foyers', () => residents(), 40], ['Cases de pavés', () => cntG('p'), 12], ['Bannières', () => cnt('Ê'), 3], ['Lampadaires', () => cnt('l'), 8]], reward:['Ï']},
+  /* ----- saison 3 : les mystères de l'île ----- */
+  {season:3, title:'La bouteille à la mer', who:'yann', onIntro:() => spawnFor('ÿ', 3, i => G[i] === 's'),
+   intro:['Regarde ce que la marée a ramené : une vieille bouteille, avec un parchemin dedans ! Il est déchiré… on dirait un morceau de carte.', 'Il y a des éclats brillants sur les plages : sûrement d’autres indices. Touche-les pour les ramasser. Ensuite, il faudra une bibliothèque pour étudier tout ça, avec deux bancs devant pour réfléchir au calme.'],
+   outro:['La carte est signée « Capitaine Le Cam, corsaire du roi »… Un vrai corsaire, sur notre île !', 'En cherchant les indices, j’ai repéré la coque d’un vieux navire échoué. Je te la laisse, elle fera un beau décor sur la plage.'],
+   goals:[['Indices sur la plage', () => found('ÿ'), () => spawned('ÿ', 3)], ['Bibliothèque', () => cnt('à'), 1], ['Bancs près de la bibliothèque', () => nearCount('b', 'à'), 2]], reward:['ß']},
+  {season:3, title:'L’archiviste', who:'morgane',
+   intro:['Bonjour ! Je suis Morgane, la bibliothécaire. J’ai étudié la carte toute la nuit.', 'Le corsaire parle d’« un cercle de pierres levées, sous les étoiles ». Il faudrait cinq menhirs, des ajoncs autour, un lampadaire près de la bibliothèque pour mes veillées… et une nuit claire pour lire le ciel.'],
+   outro:['Sous les étoiles, les menhirs dessinent une flèche… vers un endroit où la carte montre un dolmen !', 'Je t’en ai dessiné les plans : à toi de le bâtir.'],
+   goals:[['Menhirs', () => cnt('M'), 5], ['Ajoncs près des menhirs', () => nearCount2('M', ['5']), 3], ['Lampadaire près de la bibliothèque', () => nearCount('l', 'à'), 1], ['Une nuit étoilée', () => moment('nuitEtoilee', () => curDark > 0.45), 1]], reward:['ø']},
+  {season:3, title:'Les korrigans', who:'soizic',
+   intro:['Ah, le dolmen… Ma grand-mère disait que les korrigans y dansent la nuit. Ce sont de petits lutins farceurs, mais ils gardent les secrets de l’île.', 'Bâtis le dolmen, trois menhirs tout autour, un feu de camp pour qu’ils viennent se réchauffer, et attends la nuit pour les voir danser.'],
+   outro:['Tu les as vus ? Ils ont dansé jusqu’à l’aube ! L’un d’eux a laissé tomber un petit caillou où est gravée une grotte…', 'En souvenir, voici un cercle de pierres pour leurs rondes, et une statuette de korrigan.'],
+   goals:[['Dolmen', () => cnt('ø'), 1], ['Menhirs près du dolmen', () => nearCount('M', 'ø'), 3], ['Feu de camp', () => cnt('4'), 1], ['Les korrigans dansent', () => moment('korrigans', () => curDark > 0.45 && cnt('ø') > 0), 1]], reward:['þ','ð']},
+  {season:3, title:'La grotte du corsaire', who:'fanch', give:['æ'], onIntro:() => makeCave(),
+   intro:['Bonjour, moi c’est Fañch. Ça fait soixante ans que je raconte les histoires de l’île. Cette nuit, un éboulement a ouvert une grotte sur la côte !', 'Il y a des indices tout autour. Je t’ai apporté des lanternes anciennes : places-en trois pour éclairer les environs, trace un chemin jusqu’à l’entrée de la grotte, et ramasse les indices.'],
+   outro:['Au fond de la grotte, on a trouvé le journal de bord du corsaire. Il parle d’un manoir, et d’une fille, Gwen, à qui il voulait tout laisser…', 'Je te laisse les plans de la grotte : tu pourras en creuser d’autres pour tes explorations.'],
+   goals:[['Indices près de la grotte', () => found('ÿ'), () => spawned('ÿ', 4)], ['Lanternes anciennes', () => cnt('æ'), 3], ['Chemin jusqu’à la grotte', () => touchesPath('Œ') ? 1 : 0, 1]], reward:['Œ']},
+  {season:3, title:'Le manoir oublié', who:'erwan', onIntro:() => makeRuin(), onDone:() => { for (let i = 0; i < N*N; i++) if (O[i] === 'Ð') O[i] = 'Æ'; groundDirty = true; save(); },
+   intro:['Incroyable : derrière les arbres, sous les ronces, il y a les ruines d’un manoir ! C’est sûrement celui du journal.', 'Touche les ronces pour les arracher, plante des fleurs autour des ruines, installe une fontaine juste à côté et une allée de gravier. Je m’occupe de restaurer les murs.'],
+   outro:['Le manoir a retrouvé toute sa splendeur ! Dans le grenier, une malle portait le nom de Gwen Le Cam.', 'Tu peux maintenant bâtir des manoirs partout où tu veux.'],
+   goals:[['Ronces arrachées', () => found('ñ'), () => spawned('ñ', 6)], ['Fleurs près des ruines', () => nearCount2('Ð', ['f', 'H']), 4], ['Fontaine près des ruines', () => nearCount('Q', 'Ð'), 1], ['Cases de gravier', () => cntG('~'), 4]], reward:['Æ']},
+  {season:3, title:'Les lumières sous la mer', who:'yuna', onIntro:() => spawnFor('ý', 3, i => G[i] === 'w' && isOpen(i % N, (i / N)|0)),
+   intro:['Salut, je suis Yuna, plongeuse ! Depuis quelques nuits, des lumières bleues brillent sous la mer.', 'Touche-les pour que je plonge à chaque endroit. Il me faudra deux barques, quatre bouées pour baliser, et la station des sauveteurs pour plonger en sécurité.'],
+   outro:['Sous l’eau, j’ai trouvé une vieille clé rouillée… et sur un rocher, j’aurais juré voir une sirène me faire signe !', 'Je te laisse son rocher. La clé, elle, ouvre sûrement quelque chose…'],
+   goals:[['Lumières explorées', () => found('ý'), () => spawned('ý', 3)], ['Barques', () => cnt('B'), 2], ['Bouées', () => cnt('J'), 4], ['Station des sauveteurs', () => cnt('Ö'), 1]], reward:['Ý']},
+  {season:3, title:'Le trésor du corsaire', who:'job', onIntro:() => spawnFor('ÿ', 5, i => G[i] === 'g'), onDone:() => placeTreasure(),
+   intro:['La carte, le journal, la clé… tout est réuni. Il ne reste qu’à trouver le trésor !', 'Ramasse les cinq derniers indices et prépare les trois lieux de la carte : l’épave, la grotte et le dolmen. Installe aussi cinq lanternes anciennes pour la grande nuit de recherche.'],
+   outro:['Le coffre était là, caché sous le dolmen ! Dedans : des pièces d’or, et une lettre du corsaire à sa fille Gwen…', 'Gwen Le Cam, c’était l’arrière-arrière-grand-mère de Job ! Le vieux gardien a pleuré en lisant la lettre : le vrai trésor, c’était l’histoire de sa famille. Fin de la saison 3… à suivre !'],
+   goals:[['Derniers indices', () => found('ÿ'), () => spawned('ÿ', 5)], ['Épave', () => cnt('ß'), 1], ['Grotte', () => cnt('Œ'), 1], ['Dolmen', () => cnt('ø'), 1], ['Lanternes anciennes', () => cnt('æ'), 5]], reward:['Ÿ']},
 ];
 const needOf = n => typeof n === 'function' ? n() : n;
 function seasonInfo(i){ const ch = CHAPTERS[i], list = CHAPTERS.filter(c => c.season === ch.season); return {s:ch.season, k:list.indexOf(ch) + 1, n:list.length}; }
@@ -2716,6 +2878,47 @@ function applyGrowth(i, late){
   toast(late ? 'L’île s’est agrandie pendant ton absence' : g.msg);
   return true;
 }
+const COLLECT = {'ÿ':'🔍 Indice trouvé !', 'ý':'🤿 Yuna plonge… quelque chose brille au fond !', 'ñ':'✂️ Ronces arrachées'};
+const shuffleArr = a => { for (let k = a.length - 1; k > 0; k--){ const j = (Math.random()*(k+1))|0; [a[k], a[j]] = [a[j], a[k]]; } return a; };
+function found(id){ return (glob.story.found || {})[id + '_' + glob.story.chapter] || 0; }
+function spawned(id, n){ const v = (glob.story.spawn || {})[id + '_' + glob.story.chapter]; return v == null ? n : v; }
+function spawnFor(id, n, ok, center, rad){
+  const cand = [];
+  for (let i = 0; i < N*N; i++){
+    if (O[i] || !ok(i)) continue;
+    if (center != null && Math.max(Math.abs(i % N - center % N), Math.abs(((i / N)|0) - ((center / N)|0))) > rad) continue;
+    cand.push(i);
+  }
+  const pick = shuffleArr(cand).slice(0, n);
+  for (const i of pick) O[i] = id;
+  (glob.story.spawn || (glob.story.spawn = {}))[id + '_' + glob.story.chapter] = pick.length;
+  saveGlob(); save(); syncWalkers(); updateStats();
+  return pick.length;
+}
+function makeCave(){
+  const coast = []; for (let i = 0; i < N*N; i++) if (!O[i] && (G[i] === 's' || G[i] === 'g') && near8(i, j => G[j] === 'w')) coast.push(i);
+  const c = shuffleArr(coast)[0];
+  if (c == null){ spawnFor('ÿ', 4, i => G[i] === 'g'); return; }
+  O[c] = 'Œ';
+  spawnFor('ÿ', 4, i => G[i] === 'g' || G[i] === 's', c, 4);
+  toast('🪨 Un éboulement a ouvert une grotte sur la côte !');
+}
+function makeRuin(){
+  const free = i => G[i] === 'g' && !O[i];
+  const cand = []; for (let i = 0; i < N*N; i++){ if (!free(i)) continue; let k = 0; near8(i, j => { if (free(j)) k++; return false; }); if (k >= 6) cand.push(i); }
+  let c = shuffleArr(cand)[0];
+  if (c == null){ const any = []; for (let i = 0; i < N*N; i++) if (free(i)) any.push(i); c = shuffleArr(any)[0]; }
+  if (c == null){ spawnFor('ñ', 6, i => G[i] === 'g'); return; }
+  O[c] = 'Ð';
+  spawnFor('ñ', 6, i => G[i] === 'g' || G[i] === 's', c, 2);
+  toast('🏚️ Des ruines sont apparues sous les ronces');
+}
+function placeTreasure(){
+  let spot = null;
+  for (let i = 0; i < N*N && spot == null; i++) if (O[i] === 'ø'){ const x = i % N, y = (i / N)|0; for (const [a, b] of [[0,1],[1,0],[-1,0],[0,-1],[1,1],[-1,1]]){ const j = (y+b)*N + (x+a); if (x+a >= 0 && x+a < N && y+b >= 0 && y+b < N && !O[j] && G[j] !== 'w'){ spot = j; break; } } }
+  if (spot == null){ const any = []; for (let i = 0; i < N*N; i++) if (!O[i] && (G[i] === 'g' || G[i] === 's')) any.push(i); spot = shuffleArr(any)[0]; }
+  if (spot != null){ O[spot] = 'Ÿ'; save(); syncWalkers(); }
+}
 function storm(){
   const SAFE = new Set(['h','K','I','T','A','E','L','i','a','é','ü','è','à','ù','œ','Ö','1','2','9','S','W','m','Ç','O','j','y','u','e','D','ê','â','Ë','Â']);
   const coast = i => G[i] === 's' || G[i] === 'q' || near8(i, j => G[j] === 'w');
@@ -2745,6 +2948,8 @@ function drawPortrait(cv, p){
   if (p.glasses){ R(5, 8, 2, 1, '#2b2b30'); R(8, 8, 3, 1, '#2b2b30'); R(6, 8, 1, 1, '#9cc8e8'); R(9, 8, 1, 1, '#9cc8e8'); }
   if (p.hat === 'cap' || p.hat === 'chef'){ R(4, 3, 8, 2, p.hat === 'cap' ? '#1f3550' : '#cf453a'); R(4, 5, 8, 1, '#1e1e24'); R(7, 3, 2, 1, '#f2c14e'); }
   if (p.hat === 'cire'){ R(4, 2, 8, 3, '#f2c14e'); R(3, 4, 2, 7, '#f2c14e'); R(11, 4, 2, 7, '#f2c14e'); }
+  if (p.hat === 'beret'){ R(4, 3, 8, 2, '#1e1e24'); R(10, 2, 2, 1, '#1e1e24'); }
+  if (p.hat === 'mask'){ R(4, 4, 8, 2, '#2fa89a'); R(5, 4, 2, 1, '#bfe9f5'); R(9, 4, 2, 1, '#bfe9f5'); }
   if (p.hat === 'coiffe'){ R(6, 0, 4, 4, '#fafafa'); R(5, 3, 6, 2, '#ececec'); R(7, 1, 2, 2, '#e8e0f0'); }
   C = prevC;
 }
@@ -2811,7 +3016,7 @@ function openBook(){
   const parts = [], last = Math.min(glob.story.chapter, CHAPTERS.length - 1);
   for (let i = 0; i <= last; i++){
     const ch = CHAPTERS[i], si = seasonInfo(i);
-    if (si.k === 1){ const hs2 = document.createElement('h3'); hs2.className = 'season'; hs2.textContent = si.s === 1 ? 'Saison 1 · L’île qui revit' : 'Saison 2 · Les fêtes de l’année'; parts.push(hs2); }
+    if (si.k === 1){ const hs2 = document.createElement('h3'); hs2.className = 'season'; hs2.textContent = {1:'Saison 1 · L’île qui revit', 2:'Saison 2 · Les fêtes de l’année', 3:'Saison 3 · Les mystères de l’île'}[si.s] || `Saison ${si.s}`; parts.push(hs2); }
     const h = document.createElement('h3'); h.textContent = `${si.k}. ${ch.title}`; parts.push(h);
     parts.push(...ch.intro);
     if (i < glob.story.chapter) for (const t of ch.outro){ const el = document.createElement('p'); el.className = 'outro'; el.textContent = t; parts.push(el); }
@@ -2838,6 +3043,7 @@ function startStory(){
 function completeChapter(){
   const i = glob.story.chapter, ch = CHAPTERS[i];
   glob.story.pendingOutro = i;
+  if (ch.onDone && isStory()) ch.onDone();
   glob.story.today = {d:today(), n:chaptersToday() + 1};
   for (const id of ch.reward) unlockItem(id);
   glob.hearts = (glob.hearts || 0) + (!CHAPTERS[i + 1] || CHAPTERS[i + 1].season !== ch.season ? 3 : 1);
@@ -2851,7 +3057,7 @@ function renderStoryCard(){
   const i = glob.story.chapter, ch = CHAPTERS[i];
   scGoals.innerHTML = '';
   if (!ch){
-    scTitle.textContent = 'Saison 2 terminée 💛';
+    scTitle.textContent = `Saison ${CHAPTERS[CHAPTERS.length - 1].season} terminée 💛`;
     const li = document.createElement('li'); li.className = 'free'; li.textContent = 'La suite arrive bientôt. En attendant, fais grandir ton île comme tu veux.'; scGoals.append(li);
     return;
   }
