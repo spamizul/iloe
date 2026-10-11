@@ -87,6 +87,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tabs{gap:4px}
 .tabs button{font-family:var(--f-display);font-size:13px}
 .btn:disabled{opacity:.5;cursor:default}
+#ecoBtn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
 .hdr-right{display:flex;align-items:center;gap:8px;position:relative;flex:none}
 .gear{width:44px;height:44px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:22px;line-height:1;cursor:pointer}
 .gear:hover,.gear[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
@@ -171,6 +172,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
           <button class="btn" id="newEmpty" type="button">+ Terrain vide</button>
           <button class="btn" id="newSample" type="button">+ Village d'exemple</button>
         </div>
+        <div class="label">Batterie</div>
+        <button class="btn" id="ecoBtn" type="button" aria-pressed="false">🔋 Mode économie : désactivé</button>
+        <p class="hint">Moins d'animations (vagues, feuilles, neige) et un affichage plus lent, pour que le téléphone chauffe moins.</p>
         <div class="label">Taille</div>
         <button class="btn" id="growBtn" type="button">Agrandir le terrain</button>
         <div class="label">Sauvegarde de secours</div>
@@ -305,6 +309,7 @@ camX = camY = (W - vw())/2; sizeBoard();
 const darkCv = document.createElement('canvas'); darkCv.width = W; darkCv.height = W;
 const dctx = darkCv.getContext('2d');
 let C = ctx;
+let now = 0, staticPass = false, groundDirty = true; // le décor fixe est redessiné seulement quand groundDirty est vrai
 function R(x, y, w, h, c){ C.fillStyle = c; C.fillRect(x, y, w, h); }
 function hs(x, y, k){ let n = (x*374761393 + y*668265263 + k*1442695041) | 0; n = Math.imul(n ^ (n >>> 13), 1274126177); return ((n ^ (n >>> 16)) >>> 0) / 4294967296; }
 
@@ -404,6 +409,7 @@ function loadTerrain(id){
 }
 loadTerrain(terrains.cur); S = SEASONS[season];
 function applySize(){
+  groundDirty = true;
   world.width = W; world.height = W; darkCv.width = W; darkCv.height = W;
   clampCam(); sizeBoard();
   board.setAttribute('aria-label', `Terrain de ${N} cases sur ${N} à construire`);
@@ -424,7 +430,7 @@ function drawGround(t, ox, oy, x, y, nb){
     R(ox, oy, T, T, wc);
     if (season === 'hiver'){
       R(ox + (hs(x,y,1)*10|0)+2, oy + (hs(x,y,2)*10|0)+2, 4, 1, '#d6ecf6');
-    } else {
+    } else if (!staticPass && !iconMode){
       const ph = now / 1000;
       for (let k = 0; k < 2; k++){
         const wx = ((hs(x,y,k+3)*16 + ph*(3+k)) % 16) | 0;
@@ -493,7 +499,7 @@ function drawGround(t, ox, oy, x, y, nb){
     R(ox, oy, T, T, P[0]);
     for (let r = 0; r < 5; r++) R(ox, oy + 1 + r*3, T, 1, P[1]);
     for (let k = 0; k < 7; k++) R(ox + (hs(x,y,k+200)*16|0), oy + (hs(x,y,k+210)*5|0)*3, 1, 1, P[2]);
-    if (season === 'ete' && t === 'k' && !reduce){
+    if (season === 'ete' && t === 'k' && !reduce && !staticPass && !iconMode){
       const sw = Math.round(Math.sin(now/700 + x*0.6 + y*0.3));
       for (let r = 0; r < 5; r++) R(ox + ((r*5 + sw + 16) % 16), oy + r*3, 1, 1, '#fff1b8');
     }
@@ -1289,6 +1295,7 @@ function makeWalker(cells, i){
 }
 const DOGS = ['#8a5a32','#2b2b30','#e8dcc8','#c98a4a'];
 function syncWalkers(){
+  groundDirty = true;
   const cells = walkCells();
   const want = cells.length ? Math.min(residents() + 1, Math.round(16 * N / 24)) : 0;
   walkers = walkers.filter(w => walkable(gAt(w.cx, w.cy)) && walkable(gAt(w.tx, w.ty)));
@@ -1615,8 +1622,9 @@ function updateParticles(dt){
     if (p.x > W+2) p.x = -2; if (p.x < -2) p.x = W+2; if (p.y < -2) p.y = W+2;
   }
 }
-function drawParticles(isDark){
+function drawParticles(isDark, inView){
   for (const p of parts){
+    if (inView && !inView(p.x, p.y)) continue;
     const x = Math.round(p.x), y = Math.round(p.y);
     if (season === 'hiver') R(x, y, 1, 1, '#ffffff');
     else if (season === 'printemps') R(x, y, 1, 1, ['#f7b6cc','#ffffff','#f0d2e0'][p.c]);
@@ -1630,71 +1638,108 @@ let tday = 0.42, autoTime = true;
 function darkness(t){ const d = (Math.cos(2*Math.PI*t) + 1)/2; return { dark: Math.min(1, Math.max(0, (d - 0.45)/0.42)) * 0.78, warm: Math.max(0, 1 - Math.abs(d - 0.5)/0.18) * 0.16 }; }
 
 /* ---------- rendu ---------- */
-let now = 0;
-function render(){
-  C = ctx; lights = [];
-  ctx.clearRect(0, 0, W, W);
-  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) drawGround(G[y*N+x], x*T, y*T, x, y, gAt);
-  for (let y = 0; y < N; y++){
-    for (let x = 0; x < N; x++){ const o = O[y*N+x]; if (o) drawObject(o, x*T, y*T, x, y, true); }
-    for (const w of walkers) if (Math.round((w.py - 10)/T) === y) drawWalker(w);
-    for (const c of cars) if (Math.floor(c.py / T) === y) drawCar(c);
-    for (const b of boats) if (Math.floor(b.py / T) === y) drawBoat(b);
-    for (const t of trains) if (Math.floor(t.py / T) === y) drawTrain(t);
-    for (const a of animals) if (Math.floor((a.y - 2) / T) === y) drawAnimal(a);
+/* Le décor (sols) est dessiné une seule fois dans groundCv, puis redessiné seulement quand le terrain change.
+   À chaque image, on ne dessine que ce qui est visible à l'écran. */
+const groundCv = document.createElement('canvas'), gctx = groundCv.getContext('2d');
+function buildGround(){
+  if (groundCv.width !== W){ groundCv.width = W; groundCv.height = W; }
+  const prevC = C; C = gctx; staticPass = true;
+  gctx.clearRect(0, 0, W, W);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) drawGround(G[y*N + x], x*T, y*T, x, y, gAt);
+  staticPass = false; C = prevC; groundDirty = false;
+}
+function groundAnim(x, y){
+  const g = G[y*N + x];
+  if (g === 'w' && season !== 'hiver'){
+    const ox = x*T, oy = y*T, ph = now / 1000;
+    for (let k = 0; k < 2; k++){
+      const wx = ((hs(x,y,k+3)*16 + ph*(3+k)) % 16) | 0, wy = (hs(x,y,k+5)*12 | 0) + 2;
+      R(ox + Math.min(wx, 13), oy + wy, 3, 1, 'rgba(255,255,255,.35)');
+    }
+  } else if (g === 'k' && season === 'ete'){
+    const sw = Math.round(Math.sin(now/700 + x*0.6 + y*0.3));
+    for (let r = 0; r < 5; r++) R(x*T + ((r*5 + sw + 16) % 16), y*T + r*3, 1, 1, '#fff1b8');
   }
-  for (const g of gulls) drawGull(g);
+}
+function render(full){
+  const c2 = full ? ctx : disp;
+  const s = full ? W : board.width;
+  const vx = full ? 0 : Math.round(camX), vy = full ? 0 : Math.round(camY);
+  if (groundDirty) buildGround();
+  C = c2; lights = [];
+  c2.setTransform(1, 0, 0, 1, 0, 0);
+  c2.imageSmoothingEnabled = false;
+  c2.clearRect(0, 0, s, s);
+  c2.drawImage(groundCv, vx, vy, s, s, 0, 0, s, s);
+  c2.setTransform(1, 0, 0, 1, -vx, -vy);
+  const x0 = Math.max(0, Math.floor(vx / T) - 1), x1 = Math.min(N - 1, Math.floor((vx + s) / T) + 1);
+  const y0 = Math.max(0, Math.floor(vy / T) - 1), y1 = Math.min(N - 1, Math.floor((vy + s) / T) + 2);
+  if (!eco && !reduce) for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) groundAnim(x, y);
+  const pad = 24, inView = (px, py) => px > vx - pad && px < vx + s + pad && py > vy - pad && py < vy + s + pad;
+  for (let y = y0; y <= y1; y++){
+    for (let x = x0; x <= x1; x++){ const o = O[y*N + x]; if (o) drawObject(o, x*T, y*T, x, y, true); }
+    for (const w of walkers) if (Math.round((w.py - 10)/T) === y && inView(w.px, w.py)) drawWalker(w);
+    for (const c of cars) if (Math.floor(c.py / T) === y && inView(c.px, c.py)) drawCar(c);
+    for (const b of boats) if (Math.floor(b.py / T) === y && inView(b.px, b.py)) drawBoat(b);
+    for (const t of trains) if (Math.floor(t.py / T) === y) drawTrain(t);
+    for (const a of animals) if (Math.floor((a.y - 2) / T) === y && inView(a.x, a.y)) drawAnimal(a);
+  }
+  for (const g of gulls) if (inView(g.x, g.y)) drawGull(g);
   const {dark, warm} = darkness(tday);
-  drawParticles(dark > 0.2);
-  if (warm > 0){ ctx.fillStyle = `rgba(255,140,70,${warm})`; ctx.fillRect(0, 0, W, W); }
+  if (!eco) drawParticles(dark > 0.2, inView);
+  if (warm > 0){ c2.fillStyle = `rgba(255,140,70,${warm})`; c2.fillRect(vx, vy, s, s); }
   if (dark > 0.01){
+    if (darkCv.width !== s){ darkCv.width = s; darkCv.height = s; }
+    dctx.setTransform(1, 0, 0, 1, 0, 0);
     dctx.globalCompositeOperation = 'source-over';
-    dctx.clearRect(0, 0, W, W);
-    dctx.fillStyle = `rgba(16,22,56,${dark})`; dctx.fillRect(0, 0, W, W);
+    dctx.clearRect(0, 0, s, s);
+    dctx.fillStyle = `rgba(16,22,56,${dark})`; dctx.fillRect(0, 0, s, s);
     if (dark > 0.15){
+      dctx.setTransform(1, 0, 0, 1, -vx, -vy);
       dctx.globalCompositeOperation = 'destination-out';
       for (const l of lights){ if (!l.r) continue;
         const g = dctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r);
         g.addColorStop(0, 'rgba(0,0,0,.85)'); g.addColorStop(1, 'rgba(0,0,0,0)');
         dctx.fillStyle = g; dctx.beginPath(); dctx.arc(l.x, l.y, l.r, 0, 6.29); dctx.fill(); }
     }
-    ctx.drawImage(darkCv, 0, 0);
+    c2.drawImage(darkCv, vx, vy);
     if (dark > 0.15){
       const k = Math.min(1, (dark - 0.15)/0.3);
-      ctx.save(); ctx.globalAlpha = k;
-      for (const l of lights) if (l.kind === 'pane') { ctx.fillStyle = '#ffd36b'; ctx.fillRect(l.x, l.y, l.w, l.h); }
-      ctx.globalCompositeOperation = 'lighter';
+      c2.save(); c2.globalAlpha = k;
+      for (const l of lights) if (l.kind === 'pane') { c2.fillStyle = '#ffd36b'; c2.fillRect(l.x, l.y, l.w, l.h); }
+      c2.globalCompositeOperation = 'lighter';
       for (const l of lights){
-        if (l.r){ const g = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r*0.7); g.addColorStop(0, 'rgba(255,190,90,.35)'); g.addColorStop(1, 'rgba(255,190,90,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(l.x, l.y, l.r*0.7, 0, 6.29); ctx.fill(); }
+        if (l.r){ const g = c2.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r*0.7); g.addColorStop(0, 'rgba(255,190,90,.35)'); g.addColorStop(1, 'rgba(255,190,90,0)'); c2.fillStyle = g; c2.beginPath(); c2.arc(l.x, l.y, l.r*0.7, 0, 6.29); c2.fill(); }
         if (l.kind === 'beam'){
           const a = now/1000*0.9;
-          ctx.fillStyle = 'rgba(255,230,150,.22)';
-          ctx.beginPath(); ctx.moveTo(l.x, l.y);
-          ctx.lineTo(l.x + Math.cos(a-0.1)*300, l.y + Math.sin(a-0.1)*300);
-          ctx.lineTo(l.x + Math.cos(a+0.1)*300, l.y + Math.sin(a+0.1)*300);
-          ctx.closePath(); ctx.fill();
+          c2.fillStyle = 'rgba(255,230,150,.22)';
+          c2.beginPath(); c2.moveTo(l.x, l.y);
+          c2.lineTo(l.x + Math.cos(a-0.1)*300, l.y + Math.sin(a-0.1)*300);
+          c2.lineTo(l.x + Math.cos(a+0.1)*300, l.y + Math.sin(a+0.1)*300);
+          c2.closePath(); c2.fill();
         }
       }
-      if (season === 'ete') for (const p of parts){ const b = (Math.sin(p.ph*3) + 1)/2; ctx.fillStyle = `rgba(230,255,120,${0.3 + b*0.7})`; ctx.fillRect(Math.round(p.x), Math.round(p.y), 1, 1); }
-      ctx.restore();
+      if (season === 'ete' && !eco) for (const p of parts){ if (!inView(p.x, p.y)) continue; const b = (Math.sin(p.ph*3) + 1)/2; c2.fillStyle = `rgba(230,255,120,${0.3 + b*0.7})`; c2.fillRect(Math.round(p.x), Math.round(p.y), 1, 1); }
+      c2.restore();
     }
   }
-  if (hover && !handMode){ ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 1; ctx.strokeRect(hover[0]*T + 0.5, hover[1]*T + 0.5, T-1, T-1); }
-  const s = board.width;
-  disp.imageSmoothingEnabled = false;
-  disp.clearRect(0, 0, s, s);
-  disp.drawImage(world, Math.round(camX), Math.round(camY), s, s, 0, 0, s, s);
+  if (hover && !handMode && !full){ c2.strokeStyle = 'rgba(255,255,255,.75)'; c2.lineWidth = 1; c2.strokeRect(hover[0]*T + 0.5, hover[1]*T + 0.5, T-1, T-1); }
+  c2.setTransform(1, 0, 0, 1, 0, 0);
 }
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-let last = performance.now();
+let last = performance.now(), lastDraw = 0, eco = false;
 function frame(ts){
+  requestAnimationFrame(frame);
+  if (document.hidden){ last = ts; return; }
+  // 30 images par seconde (15 en mode économie) : largement assez pour du pixel art
+  if (ts - lastDraw < (eco ? 64 : 32)) return;
+  lastDraw = ts;
   const dt = Math.min(0.1, (ts - last)/1000); last = ts;
   now = reduce ? 0 : ts;
   if (autoTime && !reduce) tday = (tday + dt/240) % 1;
-  if (!reduce){ updateWalkers(dt); updateCars(dt); updateBoats(dt); updateTrains(dt); updateAnimals(dt); updateParticles(dt); }
+  if (!reduce){ updateWalkers(dt); updateCars(dt); updateBoats(dt); updateTrains(dt); updateAnimals(dt); if (!eco) updateParticles(dt); }
   render(); updateClock();
-  requestAnimationFrame(frame);
 }
 
 /* ---------- outils ---------- */
@@ -2006,7 +2051,7 @@ handBtn.onclick = () => { handMode = !handMode; handBtn.setAttribute('aria-press
 
 /* ---------- saisons, heure, terrain ---------- */
 function setSeason(k){
-  season = k; S = SEASONS[k];
+  season = k; S = SEASONS[k]; groundDirty = true;
   document.querySelectorAll('#seasons button').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === k));
   document.getElementById('seasonName').textContent = S.name;
   TOOLS.forEach(drawIcon); renderRecent(); resetParticles(); queueSave();
@@ -2019,9 +2064,10 @@ for (const [n, v] of TIMES){ const b = document.createElement('button'); b.type 
 const autoBtn = document.getElementById('autoTime');
 autoBtn.onclick = () => { autoTime = !autoTime; autoBtn.setAttribute('aria-pressed', autoTime); };
 if (reduce){ autoTime = false; autoBtn.setAttribute('aria-pressed', 'false'); }
+let clockTxt = '';
 function updateClock(){
-  const h = Math.floor(tday*24), m = Math.floor((tday*24 % 1)*4)*15;
-  document.getElementById('clock').textContent = `${h} h ${String(m).padStart(2, '0')}`;
+  const h = Math.floor(tday*24), m = Math.floor((tday*24 % 1)*4)*15, t = `${h} h ${String(m).padStart(2, '0')}`;
+  if (t !== clockTxt){ clockTxt = t; document.getElementById('clock').textContent = t; }
 }
 function updateStats(){
   const hab = residents(), p = walkers.length, v = cars.length;
@@ -2091,7 +2137,7 @@ async function offerFile(blob, name, isPhoto){
   } catch(e){ return 'failed'; }
 }
 document.getElementById('photoBtn').onclick = async () => {
-  const keep = hover; hover = null; render(); hover = keep;
+  render(true);
   const k = 4, pad = 8*k, out = document.createElement('canvas');
   out.width = W*k + pad*2; out.height = W*k + pad*2;
   const o = out.getContext('2d'); o.imageSmoothingEnabled = false;
@@ -2540,10 +2586,20 @@ giftLater.addEventListener('click', () => setTimeout(maybeInvite, 400));
 giftBox.addEventListener('click', e => { if (e.target === giftBox) setTimeout(maybeInvite, 400); });
 giftOpen.addEventListener('click', () => { if (giftBox.hidden) setTimeout(() => { maybeInvite(); updateStats(); }, 600); });
 
+/* ---------- mode économie ---------- */
+const ecoBtn = document.getElementById('ecoBtn');
+function setEco(on){
+  eco = !!on; glob.eco = eco; saveGlob();
+  ecoBtn.setAttribute('aria-pressed', eco);
+  ecoBtn.textContent = eco ? '🔋 Mode économie : activé' : '🔋 Mode économie : désactivé';
+}
+ecoBtn.onclick = () => { setEco(!eco); toast(eco ? 'Mode économie activé' : 'Mode économie désactivé'); };
+
 /* ---------- démarrage ---------- */
 const ecv = document.createElement('canvas'); ecv.width = 16; ecv.height = 20;
 document.getElementById('eraseIcon').replaceWith(ecv); drawIconTo(TOOLS.find(t => t.id === 'x'), ecv);
 glob.recent = (glob.recent || []).filter(id => TOOLS.some(t => t.id === id));
+setEco(glob.eco);
 buildTools(); setSeason(season); syncWalkers(); renderTerrains();
 if (!reqDef()) newRequest(); else renderReq();
 updateGiftBtn(); updateStats();
