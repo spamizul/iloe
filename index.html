@@ -294,12 +294,13 @@ const board = document.getElementById('board');
 const disp = board.getContext('2d');
 const world = document.createElement('canvas'); world.width = W; world.height = W;
 const ctx = world.getContext('2d');
+let now = 0, staticPass = false, groundDirty = true, forceDraw = true; // le décor fixe est redessiné seulement quand groundDirty est vrai
 /* caméra */
 let zoom = innerWidth < 700 ? 2 : 1, camX = 0, camY = 0;
 const ZMIN = 1, zmax = () => 3 * N / 24;
 const vw = () => W / zoom;
-function clampCam(){ const v = vw(); camX = Math.max(0, Math.min(W - v, camX)); camY = Math.max(0, Math.min(W - v, camY)); }
-function sizeBoard(){ const s = Math.round(vw()); if (board.width !== s){ board.width = s; board.height = s; } }
+function clampCam(){ forceDraw = true; const v = vw(); camX = Math.max(0, Math.min(W - v, camX)); camY = Math.max(0, Math.min(W - v, camY)); }
+function sizeBoard(){ const s = Math.round(vw()); if (board.width !== s){ board.width = s; board.height = s; } forceDraw = true; }
 function setZoom(z, fx = 0.5, fy = 0.5){
   const wx = camX + fx*vw(), wy = camY + fy*vw();
   zoom = Math.max(ZMIN, Math.min(zmax(), z));
@@ -309,7 +310,6 @@ camX = camY = (W - vw())/2; sizeBoard();
 const darkCv = document.createElement('canvas'); darkCv.width = W; darkCv.height = W;
 const dctx = darkCv.getContext('2d');
 let C = ctx;
-let now = 0, staticPass = false, groundDirty = true; // le décor fixe est redessiné seulement quand groundDirty est vrai
 function R(x, y, w, h, c){ C.fillStyle = c; C.fillRect(x, y, w, h); }
 function hs(x, y, k){ let n = (x*374761393 + y*668265263 + k*1442695041) | 0; n = Math.imul(n ^ (n >>> 13), 1274126177); return ((n ^ (n >>> 16)) >>> 0) / 4294967296; }
 
@@ -1733,8 +1733,9 @@ function frame(ts){
   requestAnimationFrame(frame);
   if (document.hidden){ last = ts; return; }
   // 30 images par seconde (15 en mode économie) : largement assez pour du pixel art
-  if (ts - lastDraw < (eco ? 64 : 32)) return;
-  lastDraw = ts;
+  // pendant un zoom ou un déplacement, on redessine tout de suite pour éviter le clignotement
+  if (!forceDraw && ts - lastDraw < (eco ? 64 : 32)) return;
+  forceDraw = false; lastDraw = ts;
   const dt = Math.min(0.1, (ts - last)/1000); last = ts;
   now = reduce ? 0 : ts;
   if (autoTime && !reduce) tday = (tday + dt/240) % 1;
