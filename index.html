@@ -39,10 +39,12 @@ button{touch-action:manipulation}
 html,body{background:var(--bg);color:var(--ink)}
 body{font-family:var(--f-body);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:20px 32px}
 .wrap{max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px}
+header{display:flex;flex-direction:column;gap:6px}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;color:var(--muted);font-size:14px}
 h1{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,5vw,40px);margin:0;letter-spacing:.01em;text-wrap:balance}
 .sub{color:var(--muted);margin:2px 0 0}
-.clock{font-family:var(--f-display);font-size:22px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.clock{font-family:var(--f-display);font-size:18px;font-variant-numeric:tabular-nums;color:var(--muted)}
 .clock b{color:var(--ink);font-weight:500}
 .app{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start}
 @media (min-width:860px){.app{grid-template-columns:minmax(0,1fr) 320px}}
@@ -83,7 +85,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tabs{gap:4px}
 .tabs button{font-family:var(--f-display);font-size:13px}
 .btn:disabled{opacity:.5;cursor:default}
-.hdr-right{display:flex;align-items:center;gap:12px;position:relative}
+.hdr-right{display:flex;align-items:center;gap:8px;position:relative;flex:none}
 .gear{width:44px;height:44px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:22px;line-height:1;cursor:pointer}
 .gear:hover,.gear[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
 .menu{position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px;width:min(290px, calc(100vw - 32px));box-shadow:0 12px 32px rgba(10,20,30,.22)}
@@ -95,12 +97,10 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 <div class="wrap">
   <header>
-    <div>
+    <div class="hdr-top">
       <h1>iloe</h1>
-      <p class="sub">Un bout de côte à aménager, case par case.</p>
-    </div>
     <div class="hdr-right">
-      <div class="clock" aria-live="off"><b id="clock">10 h 00</b> · <span id="seasonName">Automne</span></div>
+      <button class="gear" id="photoBtn" type="button" aria-label="Prendre une photo">📷</button>
       <button class="gear" id="gearBtn" type="button" aria-expanded="false" aria-controls="gearMenu" aria-label="Réglages du terrain">⚙</button>
       <div class="menu" id="gearMenu" hidden>
         <div class="label">Taille</div>
@@ -118,6 +118,11 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
         <p class="hint">Ton coin est gardé dans ce navigateur. Annuler (↶) permet de revenir en arrière après un effacement.</p>
       </div>
     </div>
+    </div>
+    <div class="meta">
+      <span class="clock"><b id="clock">10 h 00</b> · <span id="seasonName">Automne</span></span>
+      <span id="stats"></span>
+    </div>
   </header>
 
   <div class="app">
@@ -128,13 +133,8 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
           <button class="qbtn" id="eraseBtn" type="button" aria-pressed="false"><span id="eraseIcon"></span>Gomme</button>
           <button class="qbtn" id="undoBtn" type="button" disabled>↶ Annuler</button>
           <button class="qbtn" id="handBtn" type="button" aria-pressed="false" title="Déplacer la vue">✋ Déplacer</button>
-          <button class="qbtn sq" id="zoomOut" type="button" aria-label="Dézoomer">−</button>
-          <button class="qbtn sq" id="zoomIn" type="button" aria-label="Zoomer">+</button>
-          <button class="qbtn" id="photoBtn" type="button">📷 Photo</button>
         </div>
-        <span id="stats"></span>
       </div>
-      <p class="hint">Sur téléphone, pince avec deux doigts pour zoomer et glisse-les pour te déplacer. Sur ordinateur, la molette zoome.</p>
     </div>
 
     <aside class="panel">
@@ -1036,8 +1036,6 @@ board.addEventListener('wheel', e => {
   const r = board.getBoundingClientRect();
   setZoom(zoom * (e.deltaY < 0 ? 1.15 : 1/1.15), (e.clientX - r.left)/r.width, (e.clientY - r.top)/r.height);
 }, {passive:false});
-document.getElementById('zoomIn').onclick = () => setZoom(zoom * 1.4);
-document.getElementById('zoomOut').onclick = () => setZoom(zoom / 1.4);
 const handBtn = document.getElementById('handBtn');
 handBtn.onclick = () => { handMode = !handMode; handBtn.setAttribute('aria-pressed', handMode); document.querySelector('.stage').classList.toggle('hand', handMode); };
 
