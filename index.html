@@ -194,6 +194,12 @@ button.fold{flex:none;width:32px;height:30px;border:1px solid var(--line);backgr
         <div class="group" id="menuTimeSlot"></div>
         <div class="label">L'histoire</div>
         <button class="btn" id="storyBtn" type="button">📖 Commencer l'histoire</button>
+        <button class="btn" id="storyRestart" type="button" hidden>↺ Recommencer l'histoire</button>
+        <div class="confirm" id="storyConfirm" hidden>
+          <span>Repartir du chapitre 1 avec une île toute neuve ?</span>
+          <button class="btn danger" id="storyYes" type="button">Oui</button>
+          <button class="btn" id="storyNo" type="button">Annuler</button>
+        </div>
         <div class="label">Mes terrains</div>
         <div class="tlist" id="tlist"></div>
         <div class="row">
@@ -456,6 +462,32 @@ const isRoad = c => c === 'R' || c === 'n' || c === '+' || c === '=';
 const isRail = c => c === 'X' || c === '=';
 
 /* ---------- dessin du sol ---------- */
+function band(ox, oy, arms, w0, w1, fill, seam, edge){
+  let {l, r, u, d} = arms;
+  if (!(l || r || u || d)){ l = r = true; }
+  const W1 = w1 - w0;
+  R(ox+w0, oy+w0, W1, W1, fill);
+  if (l) R(ox, oy+w0, w0, W1, fill); if (r) R(ox+w1, oy+w0, T-w1, W1, fill);
+  if (u) R(ox+w0, oy, W1, w0, fill); if (d) R(ox+w0, oy+w1, W1, T-w1, fill);
+  const hz = l || r, vt = u || d;
+  // jointures des planches : perpendiculaires au sens de la marche
+  if (hz && !vt){ for (let k = 3; k < T; k += 4) R(ox+k, oy+w0, 1, W1, seam); }
+  else if (vt && !hz){ for (let k = 3; k < T; k += 4) R(ox+w0, oy+k, W1, 1, seam); }
+  else {
+    if (l) for (let k = 3; k < w0; k += 4) R(ox+k, oy+w0, 1, W1, seam);
+    if (r) for (let k = w1 + 1; k < T; k += 4) R(ox+k, oy+w0, 1, W1, seam);
+    if (u) for (let k = 3; k < w0; k += 4) R(ox+w0, oy+k, W1, 1, seam);
+    if (d) for (let k = w1 + 1; k < T; k += 4) R(ox+w0, oy+k, W1, 1, seam);
+    for (let k = w0 + 3; k < w1; k += 4){ R(ox+k, oy+w0+1, 1, W1-2, seam); }
+  }
+  // bords (ou garde-corps) le long des côtés ouverts
+  if (!u) R(ox+w0, oy+w0-1, W1, 1, edge); if (!d) R(ox+w0, oy+w1, W1, 1, edge);
+  if (!l) R(ox+w0-1, oy+w0, 1, W1, edge); if (!r) R(ox+w1, oy+w0, 1, W1, edge);
+  if (l){ R(ox, oy+w0-1, w0, 1, edge); R(ox, oy+w1, w0, 1, edge); }
+  if (r){ R(ox+w1, oy+w0-1, T-w1, 1, edge); R(ox+w1, oy+w1, T-w1, 1, edge); }
+  if (u){ R(ox+w0-1, oy, 1, w0, edge); R(ox+w1, oy, 1, w0, edge); }
+  if (d){ R(ox+w0-1, oy+w1, 1, T-w1, edge); R(ox+w1, oy+w1, 1, T-w1, edge); }
+}
 function drawGround(t, ox, oy, x, y, nb){
   if (t === 'w'){
     const wc = S.water;
@@ -481,24 +513,13 @@ function drawGround(t, ox, oy, x, y, nb){
   if (t === 'n'){ // pont : de l'eau dessous, un tablier de bois dessus
     drawGround('w', ox, oy, x, y, nb);
     const solid = c => c !== null && c !== 'w';
-    const hz = solid(nb(x-1, y)) || solid(nb(x+1, y));
-    const vt = solid(nb(x, y-1)) || solid(nb(x, y+1));
-    const deck = season === 'hiver' ? '#b09a80' : '#9a7450', dk = '#7a5a3c', rail = '#5e4129';
-    if (hz || !vt){
-      R(ox, oy+12, T, 3, 'rgba(0,0,0,.18)');
-      R(ox, oy+4, T, 8, deck);
-      for (let k = 1; k < T; k += 3) R(ox+k, oy+4, 1, 8, dk);
-      R(ox, oy+3, T, 1, rail); R(ox, oy+11, T, 1, rail);
-      for (let k = 2; k < T; k += 5){ R(ox+k, oy+1, 1, 3, rail); R(ox+k, oy+11, 1, 2, rail); }
-      if (season === 'hiver') R(ox, oy+3, T, 1, '#fff');
-    } else {
-      R(ox+12, oy, 3, T, 'rgba(0,0,0,.18)');
-      R(ox+4, oy, 8, T, deck);
-      for (let k = 1; k < T; k += 3) R(ox+4, oy+k, 8, 1, dk);
-      R(ox+3, oy, 1, T, rail); R(ox+12, oy, 1, T, rail);
-      for (let k = 2; k < T; k += 5){ R(ox+2, oy+k, 1, 2, rail); R(ox+13, oy+k, 1, 2, rail); }
-      if (season === 'hiver') R(ox+3, oy, 1, T, '#fff');
-    }
+    const arms = {l:solid(nb(x-1, y)), r:solid(nb(x+1, y)), u:solid(nb(x, y-1)), d:solid(nb(x, y+1))};
+    if (!(arms.l || arms.r || arms.u || arms.d)){ arms.l = arms.r = true; }
+    const deck = season === 'hiver' ? '#b09a80' : '#9a7450', dk = '#7a5a3c', rail = season === 'hiver' ? '#e8e4dc' : '#5e4129';
+    // ombre du tablier sur l'eau
+    if (!arms.d) R(ox+4, oy+13, 8, 2, 'rgba(0,0,0,.18)');
+    if (arms.l && !arms.d) R(ox, oy+13, 4, 2, 'rgba(0,0,0,.18)'); if (arms.r && !arms.d) R(ox+12, oy+13, 4, 2, 'rgba(0,0,0,.18)');
+    band(ox, oy, arms, 4, 12, deck, dk, rail);
     return;
   }
   if (t === 'Î'){ // digue en pierres
@@ -588,10 +609,9 @@ function drawGround(t, ox, oy, x, y, nb){
   }
   if (t === '£'){ // allée en planches de bois
     R(ox, oy, T, T, S.grass[0]);
-    const vert = nb(x, y-1) === '£' || nb(x, y+1) === '£', horiz = nb(x-1, y) === '£' || nb(x+1, y) === '£';
+    for (let k = 0; k < 5; k++) R(ox + (hs(x,y,k)*15|0), oy + (hs(x,y,k+11)*14|0), 1, 2, k % 2 ? S.grass[1] : S.grass[2]);
     const wood = season === 'hiver' ? '#d6b98c' : '#c9a06a', seam = '#9a7448';
-    if (vert && !horiz){ R(ox+2, oy, 12, T, wood); for (let k = 0; k < 4; k++) R(ox+2, oy + k*4 + 3, 12, 1, seam); R(ox+2, oy, 1, T, seam); R(ox+13, oy, 1, T, seam); }
-    else { R(ox, oy+2, T, 12, wood); for (let k = 0; k < 4; k++) R(ox + k*4 + 3, oy+2, 1, 12, seam); R(ox, oy+2, T, 1, seam); R(ox, oy+13, T, 1, seam); }
+    band(ox, oy, {l:walkable(nb(x-1, y)), r:walkable(nb(x+1, y)), u:walkable(nb(x, y-1)), d:walkable(nb(x, y+1))}, 3, 13, wood, seam, seam);
     if (season === 'hiver') for (let k = 0; k < 3; k++) R(ox + 3 + (hs(x,y,k+810)*9|0), oy + 3 + (hs(x,y,k+820)*9|0), 2, 1, '#fff');
     return;
   }
@@ -681,9 +701,21 @@ function drawGround(t, ox, oy, x, y, nb){
     const bal = season === 'hiver' ? '#c4c1b9' : '#9a958c', sl = '#6b4a2e', rail = '#5b6168';
     const H = (x0, len) => { R(ox+x0, oy+5, len, 6, bal); for (let k = x0 + 1; k < x0 + len; k += 3) R(ox+k, oy+4, 1, 8, sl); R(ox+x0, oy+6, len, 1, rail); R(ox+x0, oy+9, len, 1, rail); };
     const V = (y0, len) => { R(ox+5, oy+y0, 6, len, bal); for (let k = y0 + 1; k < y0 + len; k += 3) R(ox+4, oy+k, 8, 1, sl); R(ox+6, oy+y0, 1, len, rail); R(ox+9, oy+y0, 1, len, rail); };
-    R(ox+5, oy+5, 6, 6, bal);
-    if (!(l || r || u || d)) H(0, 16);
-    else { if (l) H(0, 8); if (r) H(8, 8); if (u) V(0, 8); if (d) V(8, 8); }
+    const corner = (l && d && !r && !u) ? [0, 16] : (r && d && !l && !u) ? [16, 16] : (l && u && !r && !d) ? [0, 0] : (r && u && !l && !d) ? [16, 0] : null;
+    if (corner){
+      const [cx, cy] = corner;
+      for (let py = 0; py < T; py++) for (let px = 0; px < T; px++){
+        const dx = px + 0.5 - cx, dy = py + 0.5 - cy, dist = Math.hypot(dx, dy);
+        if (dist < 4.5 || dist > 11.5) continue;
+        const ang = Math.atan2(Math.abs(dy), Math.abs(dx)) * 180 / Math.PI;
+        const col = (Math.abs(dist - 6.5) < 0.55 || Math.abs(dist - 9.5) < 0.55) ? rail : (ang % 15 < 3.5 ? sl : (dist >= 5 && dist <= 11 ? bal : null));
+        if (col) R(ox+px, oy+py, 1, 1, col);
+      }
+    } else {
+      R(ox+5, oy+5, 6, 6, bal);
+      if (!(l || r || u || d)) H(0, 16);
+      else { if (l) H(0, 8); if (r) H(8, 8); if (u) V(0, 8); if (d) V(8, 8); }
+    }
   } else if (t === 'p'){
     const a = season === 'hiver' ? '#d2d0cb' : '#bbb6ad', b = season === 'hiver' ? '#bcb9b2' : '#a29c92';
     R(ox, oy, T, T, a);
@@ -2462,7 +2494,7 @@ updateGrowBtn();
 
 /* ---------- roue crantée ---------- */
 const gearBtn = document.getElementById('gearBtn'), gearMenu = document.getElementById('gearMenu');
-function setMenu(open){ gearMenu.hidden = !open; gearBtn.setAttribute('aria-expanded', open); if (!open){ confirmRow.hidden = true; resetRow.hidden = false; } }
+function setMenu(open){ gearMenu.hidden = !open; gearBtn.setAttribute('aria-expanded', open); if (!open){ confirmRow.hidden = true; resetRow.hidden = false; const sc = document.getElementById('storyConfirm'); if (sc){ sc.hidden = true; updateStoryBtn(); } } }
 gearBtn.onclick = e => { e.stopPropagation(); setMenu(gearMenu.hidden); };
 document.addEventListener('pointerdown', e => { if (!gearMenu.hidden && !gearMenu.contains(e.target) && e.target !== gearBtn) setMenu(false); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
@@ -3075,7 +3107,7 @@ function maybeInvite(){
 }
 function startStory(){
   if (glob.story.started && terrains.list.some(t => t.id === glob.story.terrain)){ switchTerrain(glob.story.terrain); return; }
-  save();
+  if (terrains.cur && terrains.list.some(t => t.id === terrains.cur)) save();
   const id = 'story' + newId();
   terrains.list.unshift({id, name:'L’île de l’histoire', story:true});
   terrains.cur = id; writeJSON(IDX, terrains);
@@ -3132,7 +3164,24 @@ function updateStoryBtn(){
   const b = document.getElementById('storyBtn');
   const has = glob.story.started && terrains.list.some(t => t.id === glob.story.terrain);
   b.textContent = !has ? '📖 Commencer l’histoire' : isStory() ? '📖 Carnet de l’île' : '📖 Aller sur l’île';
+  const sc = document.getElementById('storyConfirm');
+  document.getElementById('storyRestart').hidden = !has || !sc.hidden;
 }
+function restartStory(){
+  const old = glob.story.terrain;
+  terrains.list = terrains.list.filter(t => t.id !== old);
+  try { localStorage.removeItem(tKey(old)); } catch(e){}
+  if (terrains.cur === old) terrains.cur = null;
+  writeJSON(IDX, terrains);
+  Object.assign(glob.story, {started:false, terrain:null, chapter:0, pendingOutro:null, introSeen:-1, moments:{}, events:{}, debris:0, grown:{}, found:{}, spawn:{}, today:null});
+  saveGlob();
+  walkers = [];
+  startStory(); syncWalkers(); updateStats(); renderTerrains(); updateStoryBtn();
+  toast('📖 Nouvelle île, nouvelle histoire !');
+}
+document.getElementById('storyRestart').onclick = () => { document.getElementById('storyConfirm').hidden = false; document.getElementById('storyRestart').hidden = true; };
+document.getElementById('storyNo').onclick = () => { document.getElementById('storyConfirm').hidden = true; updateStoryBtn(); };
+document.getElementById('storyYes').onclick = () => { document.getElementById('storyConfirm').hidden = true; restartStory(); };
 document.getElementById('storyBtn').onclick = () => {
   const has = glob.story.started && terrains.list.some(t => t.id === glob.story.terrain);
   if (!has){ setMenu(false); startStory(); }
