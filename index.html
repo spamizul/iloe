@@ -959,9 +959,18 @@ undoBtn.onclick = () => {
 /* ---------- pose ---------- */
 const toastEl = document.getElementById('toast'); let toastT;
 function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), 1800); }
+const TALL1 = new Set(['t','P','L','I','T','A','m','K','h']), TALL2 = new Set(['T']);
 function place(x, y, forceErase){
   const i = y*N + x, t = TOOLS.find(t => t.id === (forceErase ? 'x' : tool));
-  if (t.kind === 'erase'){ if (O[i]) O[i] = null; else G[i] = 'g'; }
+  if (t.kind === 'erase'){
+    if (O[i]) O[i] = null;
+    else {
+      // le haut d'un arbre, d'une maison ou d'une tour dépasse sur la case du dessus : on efface l'objet qu'on voit
+      const below = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x]));
+      if (below) O[below[0]*N + x] = null;
+      else G[i] = 'g';
+    }
+  }
   else if (t.kind === 'ground'){
     G[i] = t.id;
     if (t.id === 'w' && O[i] && O[i] !== 'B') O[i] = null;
