@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#2b3a44">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -36,7 +36,9 @@ button{touch-action:manipulation}
 :root[data-theme="dark"]{
   --bg:#11171c; --surface:#1a2229; --ink:#e4eaee; --muted:#93a1aa; --line:#2c3842;
   --accent:#7cb0e0; --accent-soft:#22364a; --glow:#f0b850; color-scheme:dark}
-html,body{background:var(--bg);color:var(--ink)}
+html,body{background:var(--bg);color:var(--ink);overflow-x:hidden;overscroll-behavior:none;max-width:100%}
+body{touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.photo-card img{-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
 body{font-family:var(--f-body);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:20px 32px}
 .wrap{max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 header{display:flex;flex-direction:column;gap:6px}
@@ -987,6 +989,11 @@ function startStroke(ev, erase){ const c = cellOf(ev); if (!c) return; snapshot(
 function continueStroke(ev){ const c = cellOf(ev); if (!c) return; const k = c.join(); if (k !== stroke.last){ stroke.last = k; place(c[0], c[1], stroke.erase); } }
 function twoPts(){ const [a, b] = [...pts.values()]; return {d: Math.hypot(a.x-b.x, a.y-b.y) || 1, mx:(a.x+b.x)/2, my:(a.y+b.y)/2}; }
 board.addEventListener('contextmenu', e => e.preventDefault());
+/* la page elle-même ne zoome pas et ne glisse pas : seuls les gestes sur le terrain comptent */
+['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault(), {passive:false}));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, {passive:false});
+let lastTouchEnd = 0;
+document.addEventListener('touchend', e => { const t = Date.now(); if (t - lastTouchEnd < 300 && e.target.closest && !e.target.closest('input,textarea')) e.preventDefault(); lastTouchEnd = t; }, {passive:false});
 board.addEventListener('pointerdown', e => {
   try { board.setPointerCapture(e.pointerId); } catch(err){}
   pts.set(e.pointerId, {x:e.clientX, y:e.clientY});
