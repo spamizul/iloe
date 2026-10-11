@@ -994,7 +994,14 @@ function cellOf(e){
 }
 const pts = new Map();
 let stroke = null, pendingTouch = null, panDrag = null, gesture = null, lockUntilUp = false;
-function startStroke(ev, erase){ const c = cellOf(ev); if (!c) return; snapshot(); stroke = {erase, last:c.join()}; place(c[0], c[1], erase); }
+function startStroke(ev, erase){ const c = cellOf(ev); if (!c) return; snapshot(); stroke = {erase, last:c.join(), t:performance.now(), touch:!!ev.touch}; place(c[0], c[1], erase); }
+/* si un deuxième doigt arrive juste après le premier, c'était un geste pour bouger : on annule ce qui vient d'être posé */
+function revertStroke(){
+  const s = history.pop(); if (!s) return;
+  G = s.g.split(''); O = s.o.split('').map(c => c === '.' ? null : c);
+  undoBtn.disabled = !history.length;
+  syncWalkers(); updateStats(); queueSave();
+}
 function continueStroke(ev){ const c = cellOf(ev); if (!c) return; const k = c.join(); if (k !== stroke.last){ stroke.last = k; place(c[0], c[1], stroke.erase); } }
 function twoPts(){ const [a, b] = [...pts.values()]; return {d: Math.hypot(a.x-b.x, a.y-b.y) || 1, mx:(a.x+b.x)/2, my:(a.y+b.y)/2}; }
 board.addEventListener('contextmenu', e => e.preventDefault());
@@ -1008,6 +1015,7 @@ board.addEventListener('pointerdown', e => {
   pts.set(e.pointerId, {x:e.clientX, y:e.clientY});
   if (pts.size === 2){
     if (pendingTouch){ clearTimeout(pendingTouch.t); pendingTouch = null; }
+    if (stroke && stroke.touch && performance.now() - stroke.t < 700) revertStroke();
     stroke = null; panDrag = null; lockUntilUp = true;
     const p = twoPts(); gesture = {...p, z:zoom, cx:camX, cy:camY};
     return;
@@ -1016,8 +1024,8 @@ board.addEventListener('pointerdown', e => {
   if (handMode || e.button === 1){ panDrag = {x:e.clientX, y:e.clientY}; board.style.cursor = 'grabbing'; return; }
   const erase = e.button === 2;
   if (e.pointerType === 'touch'){
-    const ev = {clientX:e.clientX, clientY:e.clientY};
-    pendingTouch = {ev, erase, t:setTimeout(() => { if (pendingTouch){ const p = pendingTouch; pendingTouch = null; startStroke(p.ev, p.erase); } }, 90)};
+    const ev = {clientX:e.clientX, clientY:e.clientY, touch:true};
+    pendingTouch = {ev, erase, t:setTimeout(() => { if (pendingTouch){ const p = pendingTouch; pendingTouch = null; startStroke(p.ev, p.erase); } }, 160)};
   } else startStroke(e, erase);
 });
 board.addEventListener('pointermove', e => {
@@ -1036,7 +1044,10 @@ board.addEventListener('pointermove', e => {
     camX -= (e.clientX - panDrag.x) * vw()/r.width; camY -= (e.clientY - panDrag.y) * vw()/r.height;
     panDrag = {x:e.clientX, y:e.clientY}; clampCam(); return;
   }
-  if (pendingTouch){ clearTimeout(pendingTouch.t); const p = pendingTouch; pendingTouch = null; startStroke(p.ev, p.erase); }
+  if (pendingTouch){
+    if (Math.hypot(e.clientX - pendingTouch.ev.clientX, e.clientY - pendingTouch.ev.clientY) < 12) return;
+    clearTimeout(pendingTouch.t); const p = pendingTouch; pendingTouch = null; startStroke(p.ev, p.erase);
+  }
   if (stroke) continueStroke(e);
 });
 function endPointer(e){
