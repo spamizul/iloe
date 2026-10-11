@@ -1485,7 +1485,7 @@ let boats = [];
 function syncBoats(){
   const water = []; for (let i = 0; i < N*N; i++) if (G[i] === 'w') water.push(i);
   const quais = G.filter(c => c === 'q').length;
-  const want = water.length >= 12 ? Math.min(Math.round(7 * N / 24), Math.floor(water.length / 60) + Math.ceil(quais / 3)) : 0;
+  const want = water.length >= 12 ? Math.min(Math.round(5 * N / 24), Math.floor(water.length / 90) + 1 + Math.ceil(quais / 3)) : 0;
   boats = boats.filter(b => gAt(b.cx, b.cy) === 'w' && gAt(b.tx, b.ty) === 'w');
   while (boats.length > want) boats.pop();
   while (boats.length < want){
@@ -2225,8 +2225,8 @@ function updateGrowBtn(){
   if (N >= NMAX){ growBtn.textContent = `Taille maximale (${N}×${N})`; growBtn.disabled = true; }
   else { growBtn.textContent = `Agrandir : ${N}×${N} → ${N+8}×${N+8}`; growBtn.disabled = false; }
 }
-growBtn.onclick = () => {
-  if (N >= NMAX) return;
+function growTerrain(){
+  if (N >= NMAX) return false;
   const n0 = N, g = G.join(''), o = [...O], off = 4, sh = off*T;
   N += 8; W = N*T;
   expand(g, o, n0, off, true);
@@ -2237,8 +2237,9 @@ growBtn.onclick = () => {
   boats = []; animals = []; gulls = []; trains = [];
   history = []; undoBtn.disabled = true;
   resetParticles(); syncWalkers(); updateStats(); updateGrowBtn(); save();
-  toast(`Ton terrain fait maintenant ${N}×${N}`);
-};
+  return true;
+}
+growBtn.onclick = () => { if (growTerrain()) toast(`Ton terrain fait maintenant ${N}×${N}`); };
 updateGrowBtn();
 
 /* ---------- roue crantée ---------- */
@@ -2545,7 +2546,7 @@ const CHAPTERS = [
    goals:[['Maisons', () => cnt('h'), 3], ['Puits', () => cnt('W'), 1], ['Massifs de fleurs', () => cnt('f') + cnt('H'), 4]], reward:['1']},
   {season:1, title:'Le port', who:'yann',
    intro:['Salut ! Je suis pêcheur, comme mon père et son père avant lui.', 'Si l’île avait un vrai port, je pourrais y amarrer mon bateau. Il faudrait un quai d’au moins trois cases, une barque et un chalutier.'],
-   outro:['Les bateaux sont rentrés, et les mouettes ont suivi !', 'Avec ce port, on va pouvoir élever des huîtres. Et regarde ce que les gamins ont bricolé avec une vieille voile : un char à voile !'],
+   outro:['Les bateaux sont rentrés, et les mouettes ont suivi !', 'Avec ce port, on va pouvoir élever des huîtres. Et regarde ce que les gamins ont bricolé avec une vieille voile : un char à voile !', 'Oh, et regarde au sud : la grande marée a découvert un banc de sable. L’île s’agrandit !'],
    goals:[['Cases de quai', () => cntG('q'), 3], ['Barque', () => cnt('B'), 1], ['Chalutier', () => cnt('G'), 1]], reward:['6','0']},
   {season:1, title:'La fête du village', who:'soizic',
    intro:['Oh, à mon âge, j’en ai vu, des fêtes ! Mais ici, jamais.', 'Un fest-noz, voilà ce qu’il nous faut. Une crêperie pour les galettes, une place pavée pour danser, trois lampadaires pour y voir clair et deux bancs pour les anciens comme moi.'],
@@ -2553,7 +2554,7 @@ const CHAPTERS = [
    goals:[['Crêperie', () => cnt('K'), 1], ['Cases de pavés', () => cntG('p'), 4], ['Lampadaires', () => cnt('l'), 3], ['Bancs', () => cnt('b'), 2]], reward:['8','2']},
   {season:1, title:'Le pont vers le continent', who:'erwan',
    intro:['Bonjour ! Je viens du continent. Tout le monde parle de votre île, mais pour venir, il faut prendre le bateau.', 'Construisons un pont d’au moins trois cases et une route de six cases : les voitures pourront enfin passer.'],
-   outro:['Le pont tient bon ! Les premières voitures arrivent déjà.', 'Prochaine étape : le train. Voici des rails et les plans d’une gare.'],
+   outro:['Le pont tient bon ! Les premières voitures arrivent déjà.', 'Prochaine étape : le train. Voici des rails et les plans d’une gare.', 'Et de l’autre côté du pont, un bout de côte sauvage t’attend à l’ouest : une forêt, un champ… À toi de l’aménager !'],
    goals:[['Cases de pont', () => cntG('n'), 3], ['Cases de route', () => cntG('R'), 6]], reward:['X','i']},
   {season:1, title:'Le petit train', who:'anaig',
    intro:['Tchou tchou ! Je serai ta cheffe de gare.', 'Pose une gare et au moins dix cases de rails, et le petit train fera le tour de l’île. Il s’arrêtera à chaque fois qu’il passe devant la gare.'],
@@ -2578,7 +2579,7 @@ const CHAPTERS = [
    goals:[['Chalutiers le long du quai', () => O.filter((o, i) => o === 'G' && near8(i, j => G[j] === 'q')).length, 2], ['Bouées', () => cnt('J'), 2], ['Phare', () => cnt('L'), 1]], reward:['Û']},
   {season:2, title:'La tempête', who:'job', give:['Î'], onIntro:() => storm(),
    intro:['Quelle nuit… Une tempête d’automne a frappé l’île. Le vent a tout emporté : il y a des débris partout sur la côte.', 'Ramasse les débris avec la gomme, puis construis une digue d’au moins six cases pour protéger le port. Je te confie les pierres.'],
-   outro:['La digue tient bon, et l’île est plus belle que jamais. Tu as fait du bon travail, matelot.', 'Pour qu’on ne soit plus jamais pris au dépourvu, les sauveteurs en mer installent leur station sur l’île.'],
+   outro:['La digue tient bon, et l’île est plus belle que jamais. Tu as fait du bon travail, matelot.', 'Pour qu’on ne soit plus jamais pris au dépourvu, les sauveteurs en mer installent leur station sur l’île.', 'Et grâce à ta digue, la mer s’est retirée à l’est : une jolie anse est apparue.'],
    goals:[['Débris ramassés', () => Math.max(0, (glob.story.debris || 0) - cnt('Ó')), () => glob.story.debris || 0], ['Cases de digue', () => cntG('Î'), 6]], reward:['Ö']},
   {season:2, title:'Le marché de Noël', who:'anaig', give:['Ë','Â'],
    intro:['L’hiver arrive, et avec lui le marché de Noël ! Le petit train amènera les visiteurs du continent.', 'Je t’ai fait livrer des chalets et un grand sapin. Installe trois chalets et le sapin, puis passe l’île en Hiver pour qu’il neige.'],
@@ -2607,6 +2608,45 @@ function unlockItem(id){
   if (GIFTS.includes(id) && !glob.gifts.includes(id)){ glob.gifts.push(id); return true; }
   if (STORY_LOCK.includes(id) && !glob.story.unlocked.includes(id)){ glob.story.unlocked.push(id); return true; }
   return false;
+}
+/* l'île grandit avec l'histoire : après le port (sud), le pont (ouest) et la tempête (est) */
+const GROWTH = {2:{side:'south', msg:'🏝️ Un banc de sable est apparu au sud'}, 4:{side:'west', msg:'🌲 Une côte sauvage est apparue à l’ouest'}, 10:{side:'east', msg:'🌊 Une anse est apparue à l’est'}};
+function storyGrow(side){
+  growTerrain();
+  const fresh = [], free = i => G[i] === 'w' && !O[i];
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++){
+    const i = y*N + x; if (!free(i)) continue;
+    const nz = (hs(x, y, 901) - 0.5);
+    let land = false;
+    if (side === 'south'){ const d = ((x - N/2)/(N*0.28))**2 + ((y - (N - 6.5))/3.3)**2 + nz*0.3; land = d < 1; }
+    else if (side === 'west'){ land = x < 5 + Math.round(Math.sin(y*0.7)*1.2 + nz*1.5); }
+    else { const bay = Math.hypot(x - (N - 1), (y - N/2)*0.8) < 4.5; land = !bay && x >= N - 7 + Math.round(Math.sin(y*0.6) + nz*1.2); }
+    if (land){ G[i] = 'g'; fresh.push(i); }
+  }
+  for (const i of fresh) if (near8(i, j => G[j] === 'w')) G[i] = 's';
+  for (const i of fresh){
+    if (G[i] !== 'g') { if (hs(i, 3, 902) < 0.05) O[i] = 'r'; continue; }
+    const x = i % N, y = (i / N)|0, r = hs(x, y, 903);
+    if (side === 'west'){
+      if (y > N/2 - 3 && y < N/2 + 2 && x >= 1 && x <= 3) G[i] = 'k';
+      else O[i] = r < 0.22 ? 't' : r < 0.42 ? 'P' : r < 0.47 ? 'f' : null;
+    } else O[i] = r < 0.08 ? 't' : r < 0.12 ? 'P' : r < 0.18 ? 'f' : r < 0.2 ? 'r' : null;
+  }
+  const v = vw();
+  if (side === 'south'){ camY = W - v; camX = (W - v)/2; }
+  else if (side === 'west'){ camX = 0; camY = (W - v)/2; }
+  else { camX = W - v; camY = (W - v)/2; }
+  clampCam(); syncWalkers(); updateStats(); save();
+}
+function applyGrowth(i, late){
+  const g = GROWTH[i];
+  if (!g || !isStory()) return false;
+  const grown = glob.story.grown || (glob.story.grown = {});
+  if (grown[i]) return false;
+  grown[i] = true; saveGlob();
+  storyGrow(g.side);
+  toast(late ? 'L’île s’est agrandie pendant ton absence' : g.msg);
+  return true;
 }
 function storm(){
   const SAFE = new Set(['h','K','I','T','A','E','L','i','a','é','ü','è','à','ù','œ','Ö','1','2','9','S','W','m','Ç','O','j','y','u','e','D','ê','â','Ë','Â']);
@@ -2661,7 +2701,7 @@ const storyKicker = document.getElementById('storyKicker'), storyTitle = documen
 const storyBody = document.getElementById('storyBody'), storyRewards = document.getElementById('storyRewards');
 const storyGo = document.getElementById('storyGo'), storyAlt = document.getElementById('storyAlt');
 const storyCard = document.getElementById('storyCard'), scTitle = document.getElementById('scTitle'), scGoals = document.getElementById('scGoals');
-let storyMode = null;
+let storyMode = null, storyHold = 0; // storyHold : laisse le temps de voir les nouvelles terres avant le chapitre suivant
 function openStoryModal({mode, who, kicker, title, paras, rewards, go, alt}){
   storyMode = mode;
   const p = who && PEOPLE[who];
@@ -2756,8 +2796,9 @@ function renderStoryCard(){
 function checkStory(){
   if (!isStory()) { storyCard.hidden = true; return; }
   renderStoryCard();
-  if (!storyBox.hidden || !giftBox.hidden) return;
+  if (!storyBox.hidden || !giftBox.hidden || Date.now() < storyHold) return;
   if (glob.story.pendingOutro != null){ openChapter('outro', glob.story.pendingOutro); return; }
+  for (const k of Object.keys(GROWTH)) if (+k < glob.story.chapter && applyGrowth(+k, true)) return;
   const ch = CHAPTERS[glob.story.chapter];
   if (ch && (glob.story.introSeen ?? -1) < glob.story.chapter){ openChapter('intro', glob.story.chapter); return; }
   if (ch && ch.goals.every(([, f, n]) => f() >= needOf(n))) completeChapter();
@@ -2776,9 +2817,14 @@ document.getElementById('storyBtn').onclick = () => {
 document.getElementById('scBook').onclick = openBook;
 storyGo.onclick = () => {
   if (storyMode === 'outro'){
-    glob.story.chapter = (glob.story.pendingOutro ?? glob.story.chapter) + 1; glob.story.pendingOutro = null; saveGlob();
-    storyBox.hidden = true; renderStoryCard(); updateStoryBtn();
-    if (CHAPTERS[glob.story.chapter]) setTimeout(() => openChapter('intro', glob.story.chapter), 300);
+    const done = glob.story.pendingOutro ?? glob.story.chapter;
+    glob.story.chapter = done + 1; glob.story.pendingOutro = null; saveGlob();
+    storyBox.hidden = true;
+    storyHold = Date.now() + 2700;
+    const grew = applyGrowth(done);
+    if (!grew) storyHold = 0;
+    renderStoryCard(); updateStoryBtn();
+    if (CHAPTERS[glob.story.chapter]) setTimeout(() => openChapter('intro', glob.story.chapter), grew ? 2600 : 300);
     else setTimeout(updateStats, 300);
     return;
   }
