@@ -122,6 +122,15 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .sc-goals li.ok{color:var(--ink)}
 .sc-goals li.ok::before{content:"✓ ";color:#3f8f5a;font-weight:700}
 .sc-goals li.free::before{content:""}
+.sc-head{gap:6px}
+.sc-head .sc-title{flex:1}
+button.fold{flex:none;width:32px;height:30px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px;font:inherit;font-size:14px;line-height:1;cursor:pointer;padding:0;text-decoration:none}
+.storycard.min{padding-block:4px}
+.storycard.min .sc-goals{display:none}
+.storycard.min .sc-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.storycard.min #scBook{display:none}
+.req.min{padding-block:4px}
+.req.min p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .story-card{width:min(440px,100%);max-height:calc(100svh - 32px);overflow-y:auto;align-items:stretch;text-align:left;gap:12px;padding:16px}
 .story-top{display:flex;gap:12px;align-items:center}
 #storyFace{width:64px;height:64px;image-rendering:pixelated;background:var(--accent-soft);border-radius:12px;flex:none}
@@ -227,9 +236,10 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
       <span aria-hidden="true">💬</span>
       <p id="reqText"></p>
       <button type="button" id="reqSkip">Autre idée</button>
+      <button type="button" class="fold" id="reqFold" aria-expanded="true" aria-label="Replier l’idée">▾</button>
     </div>
     <div class="storycard" id="storyCard" hidden>
-      <div class="sc-head"><span class="sc-title" id="scTitle"></span><button type="button" id="scBook">📖 Carnet</button></div>
+      <div class="sc-head"><span class="sc-title" id="scTitle"></span><button type="button" id="scBook">📖 Carnet</button><button type="button" class="fold" id="scFold" aria-expanded="true" aria-label="Replier les objectifs">▾</button></div>
       <ul class="sc-goals" id="scGoals"></ul>
     </div>
   </header>
@@ -378,7 +388,7 @@ function expand(g, o, n0, OFF, extras){
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++){
     const sx = Math.max(0, Math.min(n0-1, x - OFF)), sy = Math.max(0, Math.min(n0-1, y - OFF));
     const inside = x - OFF === sx && y - OFF === sy;
-    let gr = g[sy*n0 + sx]; if (!inside && 'cpR#*~+%&X'.includes(gr)) gr = 'g'; if (!inside && (gr === 'n' || gr === 'q' || gr === 'Î')) gr = 'w';
+    let gr = g[sy*n0 + sx]; if (!inside && 'cpR#*~+%&X='.includes(gr)) gr = 'g'; if (!inside && (gr === 'n' || gr === 'q' || gr === 'Î')) gr = 'w';
     G.push(gr);
     let ob = inside ? o[sy*n0 + sx] : null;
     if (!inside && extras){
@@ -442,7 +452,8 @@ function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(save, 300)
 
 const gAt = (x, y) => (x < 0 || y < 0 || x >= N || y >= N) ? null : G[y*N + x];
 const walkable = c => c === 'c' || c === 'p' || c === 'q' || c === 'n' || c === '#' || c === '*' || c === '~' || c === '+' || c === 'Î';
-const isRoad = c => c === 'R' || c === 'n' || c === '+';
+const isRoad = c => c === 'R' || c === 'n' || c === '+' || c === '=';
+const isRail = c => c === 'X' || c === '=';
 
 /* ---------- dessin du sol ---------- */
 function drawGround(t, ox, oy, x, y, nb){
@@ -598,7 +609,7 @@ function drawGround(t, ox, oy, x, y, nb){
     if (con(nb(x-1, y))) R(ox, oy+4, 4, 8, pc);
     if (con(nb(x+1, y))) R(ox+12, oy+4, 4, 8, pc);
     for (let k = 0; k < 3; k++) R(ox+5+(hs(x,y,k+20)*6|0), oy+5+(hs(x,y,k+30)*6|0), 1, 1, pd);
-  } else if (t === 'R' || t === '+'){
+  } else if (t === 'R' || t === '+' || t === '='){
     const as = season === 'hiver' ? '#6f757c' : '#5b6168', edge = '#4b5157', line = '#f2efe0';
     const isR = isRoad;
     const l = isR(nb(x-1, y)), r = isR(nb(x+1, y)), u = isR(nb(x, y-1)), d = isR(nb(x, y+1));
@@ -608,7 +619,15 @@ function drawGround(t, ox, oy, x, y, nb){
     if (!u) R(ox+1, oy+1, 14, 1, edge); if (!d) R(ox+1, oy+14, 14, 1, edge);
     if (!l) R(ox+1, oy+1, 1, 14, edge); if (!r) R(ox+14, oy+1, 1, 14, edge);
     const horiz = l || r, vert = u || d;
-    if (t === '+'){
+    if (t === '='){
+      const rl = isRail(nb(x-1, y)) || isRail(nb(x+1, y)), rv = isRail(nb(x, y-1)) || isRail(nb(x, y+1));
+      const railH = rl || !rv, rc = '#8a8f94';
+      if (railH){ R(ox, oy+6, T, 1, rc); R(ox, oy+9, T, 1, rc); R(ox, oy+5, T, 1, 'rgba(0,0,0,.15)'); }
+      else { R(ox+6, oy, 1, T, rc); R(ox+9, oy, 1, T, rc); R(ox+5, oy, 1, T, 'rgba(0,0,0,.15)'); }
+      // croix de Saint-André aux coins
+      for (const [cx, cy] of [[1, 1], [13, 12]]){ R(ox+cx, oy+cy, 1, 3, '#f4f2ec'); R(ox+cx+1, oy+cy, 1, 1, '#cf453a'); R(ox+cx-1, oy+cy, 1, 1, '#cf453a'); }
+    }
+    else if (t === '+'){
       if (vert && !horiz) for (let k = 0; k < 5; k++) R(ox+2 + k*3, oy+2, 2, 12, '#f4f2ec');
       else for (let k = 0; k < 5; k++) R(ox+2, oy+2 + k*3, 12, 2, '#f4f2ec');
     }
@@ -617,7 +636,7 @@ function drawGround(t, ox, oy, x, y, nb){
     else if (!horiz && !vert){ R(ox+6, oy+7, 4, 1, line); }
     if (season === 'hiver'){ R(ox+1, oy+1, 2, 1, '#fff'); R(ox+13, oy+14, 2, 1, '#fff'); }
   } else if (t === 'X'){ // rails
-    const isX = c => c === 'X';
+    const isX = isRail;
     const l = isX(nb(x-1, y)), r = isX(nb(x+1, y)), u = isX(nb(x, y-1)), d = isX(nb(x, y+1));
     const bal = season === 'hiver' ? '#c4c1b9' : '#9a958c', sl = '#6b4a2e', rail = '#5b6168';
     const H = (x0, len) => { R(ox+x0, oy+5, len, 6, bal); for (let k = x0 + 1; k < x0 + len; k += 3) R(ox+k, oy+4, 1, 8, sl); R(ox+x0, oy+6, len, 1, rail); R(ox+x0, oy+9, len, 1, rail); };
@@ -1543,9 +1562,9 @@ function drawBoat(b){
 /* ---------- petit train ---------- */
 let trains = [];
 function syncTrains(){
-  const cells = []; for (let i = 0; i < N*N; i++) if (G[i] === 'X') cells.push(i);
+  const cells = []; for (let i = 0; i < N*N; i++) if (isRail(G[i])) cells.push(i);
   const want = cells.length >= 6 ? (cells.length >= 40 ? 2 : 1) : 0;
-  trains = trains.filter(t => gAt(t.cx, t.cy) === 'X' && gAt(t.tx, t.ty) === 'X');
+  trains = trains.filter(t => isRail(gAt(t.cx, t.cy)) && isRail(gAt(t.tx, t.ty)));
   while (trains.length > want) trains.pop();
   while (trains.length < want){
     const i = cells[(Math.random()*cells.length)|0], x = i % N, y = (i / N)|0, k = trains.length % 2;
@@ -1560,8 +1579,8 @@ function updateTrains(dt){
     if (d <= sp){
       t.px = gx; t.py = gy; t.prev = [t.cx, t.cy]; t.cx = t.tx; t.cy = t.ty;
       const atGare = near8(t.cy*N + t.cx, j => O[j] === 'i');
-      let opts = [[1,0],[-1,0],[0,1],[0,-1]].filter(([a,b]) => gAt(t.cx+a, t.cy+b) === 'X' && !(t.cx+a === t.prev[0] && t.cy+b === t.prev[1]));
-      if (!opts.length && gAt(t.prev[0], t.prev[1]) === 'X' && (t.prev[0] !== t.cx || t.prev[1] !== t.cy)) opts = [[t.prev[0]-t.cx, t.prev[1]-t.cy]];
+      let opts = [[1,0],[-1,0],[0,1],[0,-1]].filter(([a,b]) => isRail(gAt(t.cx+a, t.cy+b)) && !(t.cx+a === t.prev[0] && t.cy+b === t.prev[1]));
+      if (!opts.length && isRail(gAt(t.prev[0], t.prev[1])) && (t.prev[0] !== t.cx || t.prev[1] !== t.cy)) opts = [[t.prev[0]-t.cx, t.prev[1]-t.cy]];
       const straight = opts.find(([a,b]) => a === t.dx && b === t.dy);
       const n = (straight && Math.random() < 0.6) ? straight : opts[(Math.random()*opts.length)|0];
       if (n){ t.dx = n[0]; t.dy = n[1]; t.tx = t.cx + n[0]; t.ty = t.cy + n[1]; }
@@ -1786,6 +1805,12 @@ function groundAnim(x, y){
     for (let k = 0; k < 2; k++){
       const wx = ((hs(x,y,k+3)*16 + ph*(3+k)) % 16) | 0, wy = (hs(x,y,k+5)*12 | 0) + 2;
       R(ox + Math.min(wx, 13), oy + wy, 3, 1, 'rgba(255,255,255,.35)');
+    }
+  } else if (g === '='){
+    if (trains.some(t => Math.abs(t.cx - x) <= 2 && Math.abs(t.cy - y) <= 2)){
+      const on = Math.floor(now/300) % 2;
+      R(x*T + 1, y*T, 1, 1, on ? '#ff4b3e' : '#5a2020'); R(x*T + 14, y*T + 11, 1, 1, on ? '#5a2020' : '#ff4b3e');
+      lights.push({x:x*T + 1, y:y*T, r:6, kind:'win'});
     }
   } else if (g === 'k' && season === 'ete'){
     const sw = Math.round(Math.sin(now/700 + x*0.6 + y*0.3));
@@ -2072,7 +2097,7 @@ pipBtn.onclick = () => {
 function pickAt(x, y){
   const i = y*N + x; let id = O[i];
   if (!id){ const below = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x])); if (below) id = O[below[0]*N + x]; }
-  if (!id) id = G[i];
+  if (!id) id = G[i] === '=' ? 'X' : G[i];
   pipMode = false; pipBtn.setAttribute('aria-pressed', 'false');
   const t = TOOLS.find(t => t.id === id);
   if (t && unlocked(id)){ selectTool(id); openTab(t.group); toast(`Outil choisi : ${t.name}`); }
@@ -2108,16 +2133,17 @@ function place(x, y, forceErase){
   }
   else if (t.kind === 'ground'){
     if (t.id === 'n' && G[i] !== 'w' && G[i] !== 'n'){ toast("Le pont se pose sur l'eau"); return; }
-    G[i] = t.id;
+    if ((t.id === 'X' && (G[i] === 'R' || G[i] === '=')) || (t.id === 'R' && (G[i] === 'X' || G[i] === '='))) G[i] = '=';
+    else G[i] = t.id;
     if (t.id === 'w' && O[i] && !WATER_OBJ.has(O[i])) O[i] = null;
     if (t.id !== 'w' && WATER_OBJ.has(O[i])) O[i] = null;
-    if ('cRnX+'.includes(t.id)) O[i] = null;
+    if ('cRnX+='.includes(G[i])) O[i] = null;
   } else {
     if (WATER_OBJ.has(t.id)){ if (G[i] !== 'w'){ toast(`${t.name} : à poser sur l'eau`); return; } }
     else if (G[i] === 'w' || G[i] === 'n'){ toast('Pose-le sur la terre ferme'); return; }
     else if (G[i] === 'c'){ toast('Les chemins restent libres pour les promeneurs'); return; }
     else if (G[i] === 'R' || G[i] === '+'){ toast('Les routes restent libres pour les voitures'); return; }
-    else if (G[i] === 'X'){ toast('Les rails restent libres pour le train'); return; }
+    else if (G[i] === 'X' || G[i] === '='){ toast('Les rails restent libres pour le train'); return; }
     O[i] = t.id;
   }
   syncWalkers(); updateStats(); queueSave();
@@ -2414,14 +2440,21 @@ function newRequest(){
   glob.req = {id:r.id, name:NAMES[(Math.random()*NAMES.length)|0], base:r.base ? r.base() : null, terrain:terrains.cur};
   reqThanks = false; saveGlob(); renderReq();
 }
+const reqFold = document.getElementById('reqFold'), scFold = document.getElementById('scFold');
+function setFold(btn, min){ btn.textContent = min ? '▸' : '▾'; btn.setAttribute('aria-expanded', !min); btn.setAttribute('aria-label', min ? 'Déplier' : 'Replier'); }
+function toggleFold(key){ glob.ui = glob.ui || {}; glob.ui[key] = !glob.ui[key]; saveGlob(); renderReq(); renderStoryCard(); }
+reqFold.onclick = () => toggleFold('reqMin');
+scFold.onclick = () => toggleFold('storyMin');
 function renderReq(){
   const r = reqDef();
   if (!r){ reqCard.hidden = true; return; }
   reqCard.hidden = isStory(); reqCard.classList.toggle('thanks', reqThanks);
   reqText.textContent = '';
   const b = document.createElement('b'); b.textContent = glob.req.name;
-  reqText.append(b, reqThanks ? ' te dit merci ! 💛' : ` aimerait ${r.txt}.`);
-  reqSkip.hidden = reqThanks;
+  const min = !!(glob.ui && glob.ui.reqMin);
+  reqCard.classList.toggle('min', min); setFold(reqFold, min);
+  reqText.append(b, reqThanks ? ' te dit merci ! 💛' : min ? ' a une idée pour l’île' : ` aimerait ${r.txt}.`);
+  reqSkip.hidden = reqThanks || min;
   const h = glob.hearts;
   document.getElementById('hearts').textContent = h ? `💛 ${h} idée${h > 1 ? 's' : ''} réalisée${h > 1 ? 's' : ''}` : '';
 }
@@ -2573,11 +2606,11 @@ const CHAPTERS = [
   {season:1, title:'Le pont vers le continent', who:'erwan',
    intro:['Bonjour ! Je viens du continent. Tout le monde parle de votre île, mais pour venir, il faut prendre le bateau.', 'Construisons un pont d’au moins quatre cases et une route de dix cases : les voitures pourront enfin passer. Ajoute un passage piéton et un arrêt de bus au bord de la route pour les habitants.'],
    outro:['Le pont tient bon ! Les premières voitures arrivent déjà.', 'Prochaine étape : le train. Voici des rails et les plans d’une gare.', 'Et de l’autre côté du pont, un bout de côte sauvage t’attend à l’ouest : une forêt, un champ… À toi de l’aménager !'],
-   goals:[['Cases de pont', () => cntG('n'), 4], ['Cases de route', () => cntG('R'), 10], ['Passage piéton', () => cntG('+'), 1], ['Arrêt de bus au bord de la route', () => nearG('ç', 'R') ? 1 : 0, 1]], reward:['X','i']},
+   goals:[['Cases de pont', () => cntG('n'), 4], ['Cases de route', () => cntG('R') + cntG('='), 10], ['Passage piéton', () => cntG('+'), 1], ['Arrêt de bus au bord de la route', () => nearG('ç', 'R') ? 1 : 0, 1]], reward:['X','i']},
   {season:1, title:'Le petit train', who:'anaig',
    intro:['Tchou tchou ! Je serai ta cheffe de gare.', 'Pose une gare, au moins seize cases de rails, et le petit train fera le tour de l’île. Il s’arrêtera à chaque fois qu’il passe devant la gare. Les voyageurs auront faim : une boulangerie tout près de la gare serait parfaite, et un petit parking pour les voitures.'],
    outro:['Le train siffle, tout le monde se met à la fenêtre !', 'Avec tous ces visiteurs, le marché du samedi déborde ! Et pour les enfants, voici une aire de jeux.'],
-   goals:[['Gare', () => cnt('i'), 1], ['Cases de rails', () => cntG('X'), 16], ['Boulangerie près de la gare', () => withinR('1', 'i', 3) ? 1 : 0, 1], ['Cases de parking', () => cntG('%'), 2]], reward:['3']},
+   goals:[['Gare', () => cnt('i'), 1], ['Cases de rails', () => cntG('X') + cntG('='), 16], ['Boulangerie près de la gare', () => withinR('1', 'i', 3) ? 1 : 0, 1], ['Cases de parking', () => cntG('%'), 2]], reward:['3']},
   {season:1, title:'La grande ville', who:'rozenn',
    intro:['Je m’appelle Rozenn, et les habitants viennent de m’élire maire. L’île grandit si vite !', 'Pour en faire une vraie petite ville, il nous faut une mairie, une école, un hôpital, trois bacs à fleurs et de quoi loger 30 foyers. Les immeubles et les tours t’aideront.'],
    outro:['L’île est devenue une ville, et c’est grâce à toi.', 'Le vieux Job a rallumé son phare en ton honneur. Fin de la première saison… mais l’année ne fait que commencer !'],
@@ -2822,8 +2855,10 @@ function renderStoryCard(){
     const li = document.createElement('li'); li.className = 'free'; li.textContent = 'La suite arrive bientôt. En attendant, fais grandir ton île comme tu veux.'; scGoals.append(li);
     return;
   }
-  const si = seasonInfo(i);
-  scTitle.textContent = `S${si.s} · Chapitre ${si.k} · ${ch.title}`;
+  const si = seasonInfo(i), min = !!(glob.ui && glob.ui.storyMin);
+  storyCard.classList.toggle('min', min); setFold(scFold, min);
+  const okCount = ch.goals.filter(([, f, n]) => f() >= needOf(n)).length;
+  scTitle.textContent = `S${si.s} · Ch. ${si.k} · ${ch.title}` + (min ? `  ·  ${okCount}/${ch.goals.length} ✓` : '');
   if ((glob.story.introSeen ?? -1) < i && !chapterReady()){
     const li = document.createElement('li'); li.className = 'free'; li.textContent = '🌙 Ce chapitre arrive demain. En attendant, construis librement !'; scGoals.append(li);
     return;
