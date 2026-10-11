@@ -2537,65 +2537,82 @@ const PEOPLE = {
 };
 const CHAPTERS = [
   {season:1, title:'L’arrivée', who:'job',
-   intro:['Te voilà enfin ! Ça fait des années que plus personne ne débarque sur l’île. Il n’y a que moi, mon phare et les mouettes…', 'Si tu veux rester, il te faudra un toit : une maison, un chemin pour la rejoindre et un potager pour te nourrir. Je compte sur toi !'],
+   intro:['Te voilà enfin ! Ça fait des années que plus personne ne débarque sur l’île. Il n’y a que moi, mon phare et les mouettes…', 'Si tu veux rester, il te faudra un toit : une maison, un chemin pour la rejoindre, un potager pour te nourrir et quelques fleurs pour égayer tout ça. Je compte sur toi !'],
    outro:['Une maison, un chemin, un potager… L’île respire à nouveau !', 'Ce soir, on fera un feu sur la plage. Je t’ai mis de côté de quoi l’allumer, et quelques ajoncs pour fleurir la lande.'],
-   goals:[['Maison', () => cnt('h'), 1], ['Cases de chemin', () => cntG('c'), 5], ['Potager', () => cnt('V'), 1]], reward:['4','5']},
+   goals:[['Maison', () => cnt('h'), 1], ['Cases de chemin', () => cntG('c'), 8], ['Potager', () => cnt('V'), 1], ['Massifs de fleurs', () => cnt('f') + cnt('H'), 2]], reward:['4','5']},
   {season:1, title:'Les premiers voisins', who:'maelle',
-   intro:['Bonjour ! J’ai vu la fumée de ton feu depuis le continent.', 'Ma famille et moi, on aimerait s’installer ici. Il nous faudrait trois maisons en tout, un puits pour l’eau et quelques massifs de fleurs, pour que ce soit joli.'],
+   intro:['Bonjour ! J’ai vu la fumée de ton feu depuis le continent.', 'Ma famille et moi, on aimerait s’installer ici. Il nous faudrait quatre maisons en tout, dont trois au bord d’un chemin, un puits pour l’eau, un banc et des massifs de fleurs, pour que ce soit joli.'],
    outro:['On est chez nous ! Les enfants courent déjà sur la plage.', 'Pour fêter ça, mon cousin ouvre une boulangerie : rien de tel que le pain chaud pour attirer du monde.'],
-   goals:[['Maisons', () => cnt('h'), 3], ['Puits', () => cnt('W'), 1], ['Massifs de fleurs', () => cnt('f') + cnt('H'), 4]], reward:['1']},
+   goals:[['Maisons', () => cnt('h'), 4], ['Maisons au bord d’un chemin', () => countTouchPath('h'), 3], ['Puits', () => cnt('W'), 1], ['Banc', () => cnt('b'), 1], ['Massifs de fleurs', () => cnt('f') + cnt('H'), 6]], reward:['1']},
   {season:1, title:'Le port', who:'yann',
-   intro:['Salut ! Je suis pêcheur, comme mon père et son père avant lui.', 'Si l’île avait un vrai port, je pourrais y amarrer mon bateau. Il faudrait un quai d’au moins trois cases, une barque et un chalutier.'],
+   intro:['Salut ! Je suis pêcheur, comme mon père et son père avant lui.', 'Si l’île avait un vrai port, je pourrais y amarrer mon bateau. Il faudrait un quai d’au moins cinq cases, deux barques, un chalutier, des casiers pour les homards et un lampadaire au bord de l’eau pour rentrer de nuit.'],
    outro:['Les bateaux sont rentrés, et les mouettes ont suivi !', 'Avec ce port, on va pouvoir élever des huîtres. Et regarde ce que les gamins ont bricolé avec une vieille voile : un char à voile !', 'Oh, et regarde au sud : la grande marée a découvert un banc de sable. L’île s’agrandit !'],
-   goals:[['Cases de quai', () => cntG('q'), 3], ['Barque', () => cnt('B'), 1], ['Chalutier', () => cnt('G'), 1]], reward:['6','0']},
+   goals:[['Cases de quai', () => cntG('q'), 5], ['Barques', () => cnt('B'), 2], ['Chalutier', () => cnt('G'), 1], ['Casiers', () => cnt('N'), 1], ['Lampadaire au bord de l’eau', () => nearG('l', 'w') || nearG('l', 'q') ? 1 : 0, 1]], reward:['6','0']},
   {season:1, title:'La fête du village', who:'soizic',
-   intro:['Oh, à mon âge, j’en ai vu, des fêtes ! Mais ici, jamais.', 'Un fest-noz, voilà ce qu’il nous faut. Une crêperie pour les galettes, une place pavée pour danser, trois lampadaires pour y voir clair et deux bancs pour les anciens comme moi.'],
+   intro:['Oh, à mon âge, j’en ai vu, des fêtes ! Mais ici, jamais.', 'Un fest-noz, voilà ce qu’il nous faut. Une crêperie pour les galettes, une place pavée de huit cases pour danser avec une fontaine au milieu, quatre lampadaires pour y voir clair et trois bancs pour les anciens comme moi.'],
    outro:['Quelle soirée ! On a dansé la gavotte jusqu’au bout de la nuit.', 'Je t’offre les guirlandes de la fête, garde-les. Et la petite Nolwenn ouvre un café en terrasse.'],
-   goals:[['Crêperie', () => cnt('K'), 1], ['Cases de pavés', () => cntG('p'), 4], ['Lampadaires', () => cnt('l'), 3], ['Bancs', () => cnt('b'), 2]], reward:['8','2']},
+   goals:[['Crêperie', () => cnt('K'), 1], ['Cases de pavés', () => cntG('p'), 8], ['Fontaine sur la place', () => cntOn('Q', 'p'), 1], ['Lampadaires', () => cnt('l'), 4], ['Bancs', () => cnt('b'), 3]], reward:['8','2']},
   {season:1, title:'Le pont vers le continent', who:'erwan',
-   intro:['Bonjour ! Je viens du continent. Tout le monde parle de votre île, mais pour venir, il faut prendre le bateau.', 'Construisons un pont d’au moins trois cases et une route de six cases : les voitures pourront enfin passer.'],
+   intro:['Bonjour ! Je viens du continent. Tout le monde parle de votre île, mais pour venir, il faut prendre le bateau.', 'Construisons un pont d’au moins quatre cases et une route de dix cases : les voitures pourront enfin passer. Ajoute un passage piéton et un arrêt de bus au bord de la route pour les habitants.'],
    outro:['Le pont tient bon ! Les premières voitures arrivent déjà.', 'Prochaine étape : le train. Voici des rails et les plans d’une gare.', 'Et de l’autre côté du pont, un bout de côte sauvage t’attend à l’ouest : une forêt, un champ… À toi de l’aménager !'],
-   goals:[['Cases de pont', () => cntG('n'), 3], ['Cases de route', () => cntG('R'), 6]], reward:['X','i']},
+   goals:[['Cases de pont', () => cntG('n'), 4], ['Cases de route', () => cntG('R'), 10], ['Passage piéton', () => cntG('+'), 1], ['Arrêt de bus au bord de la route', () => nearG('ç', 'R') ? 1 : 0, 1]], reward:['X','i']},
   {season:1, title:'Le petit train', who:'anaig',
-   intro:['Tchou tchou ! Je serai ta cheffe de gare.', 'Pose une gare et au moins dix cases de rails, et le petit train fera le tour de l’île. Il s’arrêtera à chaque fois qu’il passe devant la gare.'],
+   intro:['Tchou tchou ! Je serai ta cheffe de gare.', 'Pose une gare, au moins seize cases de rails, et le petit train fera le tour de l’île. Il s’arrêtera à chaque fois qu’il passe devant la gare. Les voyageurs auront faim : une boulangerie tout près de la gare serait parfaite, et un petit parking pour les voitures.'],
    outro:['Le train siffle, tout le monde se met à la fenêtre !', 'Avec tous ces visiteurs, le marché du samedi déborde ! Et pour les enfants, voici une aire de jeux.'],
-   goals:[['Gare', () => cnt('i'), 1], ['Cases de rails', () => cntG('X'), 10]], reward:['3']},
+   goals:[['Gare', () => cnt('i'), 1], ['Cases de rails', () => cntG('X'), 16], ['Boulangerie près de la gare', () => withinR('1', 'i', 3) ? 1 : 0, 1], ['Cases de parking', () => cntG('%'), 2]], reward:['3']},
   {season:1, title:'La grande ville', who:'rozenn',
-   intro:['Je m’appelle Rozenn, et les habitants viennent de m’élire maire. L’île grandit si vite !', 'Pour en faire une vraie petite ville, il nous faut une mairie, une école et de quoi loger 30 foyers. Les immeubles et les tours t’aideront, et tu peux agrandir l’île depuis la ⚙.'],
+   intro:['Je m’appelle Rozenn, et les habitants viennent de m’élire maire. L’île grandit si vite !', 'Pour en faire une vraie petite ville, il nous faut une mairie, une école, un hôpital, trois bacs à fleurs et de quoi loger 30 foyers. Les immeubles et les tours t’aideront.'],
    outro:['L’île est devenue une ville, et c’est grâce à toi.', 'Le vieux Job a rallumé son phare en ton honneur. Fin de la première saison… mais l’année ne fait que commencer !'],
-   goals:[['Mairie', () => cnt('A'), 1], ['École', () => cnt('E'), 1], ['Foyers', () => residents(), 30]], reward:[]},
+   goals:[['Mairie', () => cnt('A'), 1], ['École', () => cnt('E'), 1], ['Hôpital', () => cnt('é'), 1], ['Bacs à fleurs', () => cnt('î'), 3], ['Foyers', () => residents(), 30]], reward:[]},
   /* ----- saison 2 : les fêtes de l'année ----- */
   {season:2, title:'Le pardon de la chapelle', who:'soizic', give:['a','D'],
-   intro:['Te revoilà ! Au printemps, chaque village de la côte fait son pardon : une procession jusqu’à la chapelle, avec les bannières et les cantiques.', 'Je t’ai fait apporter de quoi bâtir une chapelle et un calvaire. Il faudra aussi un chemin qui arrive juste devant la chapelle, pour la procession.'],
+   intro:['Te revoilà ! Au printemps, chaque village de la côte fait son pardon : une procession jusqu’à la chapelle, avec les bannières et les cantiques.', 'Je t’ai fait apporter de quoi bâtir une chapelle et un calvaire. Il faudra aussi un chemin qui arrive juste devant la chapelle pour la procession, et des fleurs autour, c’est la tradition.'],
    outro:['Quelle belle procession ! Même Job avait sorti son plus beau caban.', 'Garde les bannières brodées : elles feront la fierté de l’île à chaque fête.'],
-   goals:[['Chapelle', () => cnt('a'), 1], ['Calvaire', () => cnt('D'), 1], ['Chemin jusqu’à la chapelle', () => touchesPath('a') ? 1 : 0, 1]], reward:['Ê']},
+   goals:[['Chapelle', () => cnt('a'), 1], ['Calvaire', () => cnt('D'), 1], ['Chemin jusqu’à la chapelle', () => touchesPath('a') ? 1 : 0, 1], ['Fleurs autour de la chapelle', () => nearCount2('a', ['f', 'H']), 2]], reward:['Ê']},
   {season:2, title:'Les feux de la Saint-Jean', who:'maelle',
-   intro:['Le 24 juin, on allume les feux de la Saint-Jean et on danse autour jusqu’au bout de la nuit !', 'Il nous faut trois feux de camp, un banc juste à côté d’un feu pour les anciens… et une vraie nuit d’été : passe l’île en Été et attends que la nuit tombe.'],
+   intro:['Le 24 juin, on allume les feux de la Saint-Jean et on danse autour jusqu’au bout de la nuit !', 'Il nous faut trois feux de camp, un banc juste à côté d’un feu pour les anciens, trois guirlandes pour décorer… et une vraie nuit d’été : passe l’île en Été et attends que la nuit tombe.'],
    outro:['Les flammes montaient jusqu’aux étoiles ! Les enfants ont sauté par-dessus les braises… enfin, les plus petites.', 'Pour l’an prochain, voici un vrai bûcher de la Saint-Jean.'],
-   goals:[['Feux de camp', () => cnt('4'), 3], ['Banc près d’un feu', () => adjO('b', '4') ? 1 : 0, 1], ['Une nuit d’été', () => moment('nuitEte', () => season === 'ete' && curDark > 0.4), 1]], reward:['Ô']},
+   goals:[['Feux de camp', () => cnt('4'), 3], ['Banc près d’un feu', () => adjO('b', '4') ? 1 : 0, 1], ['Guirlandes', () => cnt('8'), 3], ['Une nuit d’été', () => moment('nuitEte', () => season === 'ete' && curDark > 0.4), 1]], reward:['Ô']},
   {season:2, title:'La fête de la mer', who:'yann',
-   intro:['Chaque été, on fête la mer : les bateaux sont bénis et décorés de fanions, et tout le monde vient les admirer depuis le quai.', 'Il faudrait deux chalutiers amarrés le long du quai, deux bouées pour baliser le chenal, et ton phare pour guider le cortège.'],
+   intro:['Chaque été, on fête la mer : les bateaux sont bénis et décorés de fanions, et tout le monde vient les admirer depuis le quai.', 'Il faudrait deux chalutiers amarrés le long du quai, trois bouées pour baliser le chenal, des casiers sur le quai et ton phare pour guider le cortège.'],
    outro:['Tous les bateaux ont défilé, fanions au vent. Même les mouettes avaient l’air fières !', 'Je t’offre un bateau pavoisé, pour que la fête dure toute l’année.'],
-   goals:[['Chalutiers le long du quai', () => O.filter((o, i) => o === 'G' && near8(i, j => G[j] === 'q')).length, 2], ['Bouées', () => cnt('J'), 2], ['Phare', () => cnt('L'), 1]], reward:['Û']},
+   goals:[['Chalutiers le long du quai', () => O.filter((o, i) => o === 'G' && near8(i, j => G[j] === 'q')).length, 2], ['Bouées', () => cnt('J'), 3], ['Casiers sur le quai', () => cntOn('N', 'q'), 2], ['Phare', () => cnt('L'), 1]], reward:['Û']},
   {season:2, title:'La tempête', who:'job', give:['Î'], onIntro:() => storm(),
-   intro:['Quelle nuit… Une tempête d’automne a frappé l’île. Le vent a tout emporté : il y a des débris partout sur la côte.', 'Ramasse les débris avec la gomme, puis construis une digue d’au moins six cases pour protéger le port. Je te confie les pierres.'],
+   intro:['Quelle nuit… Une tempête d’automne a frappé l’île. Le vent a tout emporté : il y a des débris partout sur la côte.', 'Ramasse les débris avec la gomme, remets deux barques à l’eau, puis construis une digue d’au moins huit cases pour protéger le port. Je te confie les pierres.'],
    outro:['La digue tient bon, et l’île est plus belle que jamais. Tu as fait du bon travail, matelot.', 'Pour qu’on ne soit plus jamais pris au dépourvu, les sauveteurs en mer installent leur station sur l’île.', 'Et grâce à ta digue, la mer s’est retirée à l’est : une jolie anse est apparue.'],
-   goals:[['Débris ramassés', () => Math.max(0, (glob.story.debris || 0) - cnt('Ó')), () => glob.story.debris || 0], ['Cases de digue', () => cntG('Î'), 6]], reward:['Ö']},
+   goals:[['Débris ramassés', () => Math.max(0, (glob.story.debris || 0) - cnt('Ó')), () => glob.story.debris || 0], ['Barques à l’eau', () => cnt('B'), 2], ['Cases de digue', () => cntG('Î'), 8]], reward:['Ö']},
   {season:2, title:'Le marché de Noël', who:'anaig', give:['Ë','Â'],
-   intro:['L’hiver arrive, et avec lui le marché de Noël ! Le petit train amènera les visiteurs du continent.', 'Je t’ai fait livrer des chalets et un grand sapin. Installe trois chalets et le sapin, puis passe l’île en Hiver pour qu’il neige.'],
+   intro:['L’hiver arrive, et avec lui le marché de Noël ! Le petit train amènera les visiteurs du continent.', 'Je t’ai fait livrer des chalets et un grand sapin. Installe trois chalets, le sapin et un marché, puis passe l’île en Hiver pour qu’il neige.'],
    outro:['Vin chaud, crêpes et chants de Noël : tout le continent est venu ! Le train n’a pas arrêté de la journée.', 'Pour les enfants, voici de quoi faire des bonshommes de neige.'],
-   goals:[['Chalets de Noël', () => cnt('Ë'), 3], ['Sapin de Noël', () => cnt('Â'), 1], ['L’hiver sur l’île', () => moment('hiver', () => season === 'hiver'), 1]], reward:['Ñ']},
+   goals:[['Chalets de Noël', () => cnt('Ë'), 3], ['Sapin de Noël', () => cnt('Â'), 1], ['Marché', () => cnt('9'), 1], ['L’hiver sur l’île', () => moment('hiver', () => season === 'hiver'), 1]], reward:['Ñ']},
   {season:2, title:'Les 90 ans de Soizic', who:'rozenn', give:['O'],
-   intro:['Chut… Soizic va fêter ses 90 ans, et on lui prépare une surprise !', 'Il faut un kiosque à musique pour le bagad, quatre guirlandes et un café pour le goûter. Je t’ai fait livrer le kiosque.'],
+   intro:['Chut… Soizic va fêter ses 90 ans, et on lui prépare une surprise !', 'Il faut un kiosque à musique pour le bagad, deux bancs juste à côté pour que Soizic profite du concert, quatre guirlandes et un café pour le goûter. Je t’ai fait livrer le kiosque.'],
    outro:['Soizic a pleuré de joie en entendant le bagad. Elle a même dansé une gavotte avec Job !', 'Et pour ses arrière-petits-enfants, voici un manège.'],
-   goals:[['Kiosque', () => cnt('O'), 1], ['Guirlandes', () => cnt('8'), 4], ['Café', () => cnt('2'), 1]], reward:['j']},
+   goals:[['Kiosque', () => cnt('O'), 1], ['Bancs près du kiosque', () => nearCount('b', 'O'), 2], ['Guirlandes', () => cnt('8'), 4], ['Café', () => cnt('2'), 1]], reward:['j']},
   {season:2, title:'La grande fête de l’île', who:'job',
-   intro:['Un an a passé depuis ton arrivée. Tout le monde veut fêter ça : une grande fête de l’île !', 'Pour accueillir tout le monde, il faut au moins 40 foyers, une grande place pavée de 12 cases et trois bannières. Et le soir venu… regarde bien le ciel.'],
+   intro:['Un an a passé depuis ton arrivée. Tout le monde veut fêter ça : une grande fête de l’île !', 'Pour accueillir tout le monde, il faut au moins 40 foyers, une grande place pavée de 12 cases, trois bannières et huit lampadaires. Et le soir venu… regarde bien le ciel.'],
    outro:['Le feu d’artifice a illuminé toute la baie ! On l’a vu jusque sur le continent.', 'Garde le lanceur : chaque nuit, ton île aura son feu d’artifice. Fin de la saison 2… à suivre !'],
-   goals:[['Foyers', () => residents(), 40], ['Cases de pavés', () => cntG('p'), 12], ['Bannières', () => cnt('Ê'), 3]], reward:['Ï']},
+   goals:[['Foyers', () => residents(), 40], ['Cases de pavés', () => cntG('p'), 12], ['Bannières', () => cnt('Ê'), 3], ['Lampadaires', () => cnt('l'), 8]], reward:['Ï']},
 ];
 const needOf = n => typeof n === 'function' ? n() : n;
 function seasonInfo(i){ const ch = CHAPTERS[i], list = CHAPTERS.filter(c => c.season === ch.season); return {s:ch.season, k:list.indexOf(ch) + 1, n:list.length}; }
+/* rythme : deux chapitres par jour au maximum */
+const PER_DAY = 2;
+function chaptersToday(){ const t = glob.story.today; return t && t.d === today() ? t.n : 0; }
+function chapterReady(){ return chaptersToday() < PER_DAY; }
+function countTouchPath(id){
+  return O.filter((o, i) => o === id && [[1,0],[-1,0],[0,1],[0,-1]].some(([a, b]) => walkable(gAt(i % N + a, ((i / N)|0) + b)))).length;
+}
+function nearCount(a, b){ return O.filter((o, i) => o === a && near8(i, j => O[j] === b)).length; }
+function nearCount2(center, ids){ let n = 0; for (let i = 0; i < N*N; i++) if (ids.includes(O[i]) && near8(i, j => O[j] === center)) n++; return n; }
+function withinR(a, b, r){
+  for (let i = 0; i < N*N; i++){
+    if (O[i] !== a) continue;
+    const x = i % N, y = (i / N)|0;
+    for (let yy = Math.max(0, y - r); yy <= Math.min(N - 1, y + r); yy++) for (let xx = Math.max(0, x - r); xx <= Math.min(N - 1, x + r); xx++) if (O[yy*N + xx] === b) return true;
+  }
+  return false;
+}
 function touchesPath(id){
   return O.some((o, i) => o === id && [[1,0],[-1,0],[0,1],[0,-1]].some(([a, b]) => walkable(gAt(i % N + a, ((i / N)|0) + b))));
 }
@@ -2736,7 +2753,7 @@ function openChapter(kind, i){
   } else {
     const next = CHAPTERS[i + 1];
     openStoryModal({mode:'outro', who:ch.who, kicker:`Saison ${si.s} · chapitre ${si.k} terminé 💛`, title:ch.title, paras:ch.outro, rewards:ch.reward,
-      go: !next ? 'Merci !' : next.season !== ch.season ? `Vers la saison ${next.season}` : 'Chapitre suivant'});
+      go: !next ? 'Merci !' : !chapterReady() ? 'À demain !' : next.season !== ch.season ? `Vers la saison ${next.season}` : 'Chapitre suivant'});
   }
 }
 function openBook(){
@@ -2770,6 +2787,7 @@ function startStory(){
 function completeChapter(){
   const i = glob.story.chapter, ch = CHAPTERS[i];
   glob.story.pendingOutro = i;
+  glob.story.today = {d:today(), n:chaptersToday() + 1};
   for (const id of ch.reward) unlockItem(id);
   glob.hearts = (glob.hearts || 0) + (!CHAPTERS[i + 1] || CHAPTERS[i + 1].season !== ch.season ? 3 : 1);
   saveGlob(); buildTools(); renderRecent(); renderReq();
@@ -2788,6 +2806,10 @@ function renderStoryCard(){
   }
   const si = seasonInfo(i);
   scTitle.textContent = `S${si.s} · Chapitre ${si.k} · ${ch.title}`;
+  if ((glob.story.introSeen ?? -1) < i && !chapterReady()){
+    const li = document.createElement('li'); li.className = 'free'; li.textContent = '🌙 Ce chapitre arrive demain. En attendant, construis librement !'; scGoals.append(li);
+    return;
+  }
   for (const [label, f, need] of ch.goals){
     const nd = needOf(need), cur = Math.min(f(), nd), li = document.createElement('li');
     li.className = cur >= nd ? 'ok' : ''; li.textContent = `${label} ${cur}/${nd}`; scGoals.append(li);
@@ -2800,7 +2822,7 @@ function checkStory(){
   if (glob.story.pendingOutro != null){ openChapter('outro', glob.story.pendingOutro); return; }
   for (const k of Object.keys(GROWTH)) if (+k < glob.story.chapter && applyGrowth(+k, true)) return;
   const ch = CHAPTERS[glob.story.chapter];
-  if (ch && (glob.story.introSeen ?? -1) < glob.story.chapter){ openChapter('intro', glob.story.chapter); return; }
+  if (ch && (glob.story.introSeen ?? -1) < glob.story.chapter){ if (chapterReady()) openChapter('intro', glob.story.chapter); return; }
   if (ch && ch.goals.every(([, f, n]) => f() >= needOf(n))) completeChapter();
 }
 function updateStoryBtn(){
@@ -2824,7 +2846,8 @@ storyGo.onclick = () => {
     const grew = applyGrowth(done);
     if (!grew) storyHold = 0;
     renderStoryCard(); updateStoryBtn();
-    if (CHAPTERS[glob.story.chapter]) setTimeout(() => openChapter('intro', glob.story.chapter), grew ? 2600 : 300);
+    if (CHAPTERS[glob.story.chapter] && chapterReady()) setTimeout(() => openChapter('intro', glob.story.chapter), grew ? 2600 : 300);
+    else if (CHAPTERS[glob.story.chapter]) setTimeout(() => toast('🌙 Le prochain chapitre arrive demain'), grew ? 2600 : 300);
     else setTimeout(updateStats, 300);
     return;
   }
