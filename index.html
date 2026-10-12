@@ -293,6 +293,7 @@ canvas#board{border-radius:0;outline:1px solid var(--line2)}
 .req.min .bubble button.fold{width:26px;height:26px}
 @media (max-width:859px){.req,.req.min{padding:0}}
 .frame-card{max-width:340px;text-align:center}
+.rw-label{flex-basis:100%;text-align:center}
 .story-body p.carnet-line{font-family:var(--f-display);font-style:italic;font-size:17px;color:var(--accent);border-left:2px solid var(--line2);padding-left:10px}
 .name-in{width:100%;box-sizing:border-box;font-size:18px;padding:10px 12px;border-color:var(--line2);background:var(--surface2);color:var(--ink);border-radius:6px}
 .frame-opts{display:flex;flex-direction:column;gap:8px;width:100%}
@@ -1613,6 +1614,7 @@ function drawObject(o, ox, oy, x, y, withLights){
     R(ox+5, oy+14, 6, 1, 'rgba(0,0,0,.15)');
     R(ox+6, oy+8, 4, 7, '#8a8f94'); R(ox+5, oy+14, 6, 1, '#73787d');
     R(ox+5, oy+3, 6, 5, '#73787d'); R(ox+6, oy+4, 4, 3, '#2b2b30');
+    if (glob.story.v === 2 && !glob.story.lanternLit && isStory()){ R(ox+4, oy+2, 8, 1, '#5b6168'); R(ox+7, oy+1, 2, 1, '#5b6168'); R(ox+6, oy+4, 1, 1, '#4a5058'); break; }
     const fl = reduce ? 0 : (Math.sin(now/90 + x) > 0 ? 1 : 0);
     R(ox+7, oy+5 - fl, 2, 2 + fl, '#f2a530'); R(ox+7, oy+5, 1, 1, '#ffe28a');
     R(ox+4, oy+2, 8, 1, '#5b6168'); R(ox+7, oy+1, 2, 1, '#5b6168');
@@ -2630,6 +2632,10 @@ function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('on'); cle
 const TALL1 = new Set(['t','P','L','I','T','A','m','K','h','a','e','d','é','œ','À','â','Ê','Ô','Â','Æ','Ð']), TALL2 = new Set(['T','d']);
 function place(x, y, forceErase){
   const i = y*N + x, t = TOOLS.find(t => t.id === (forceErase ? 'x' : tool));
+  if (O[i] === 'æ' && glob.story.v === 2 && isStory() && !glob.story.lanternLit){
+    glob.story.lanternLit = true; unlockItem('æ'); saveGlob(); buildTools(); renderRecent();
+    toast('🏮 La vieille lanterne se rallume… Tu sais maintenant en fabriquer !'); forceDraw = true; updateStats(); return;
+  }
   if (fogAt(x, y)){ const n = performance.now(); if (n - busyT > 1500){ busyT = n; toast('🌫️ La brume est trop épaisse par ici…'); } return; }
   if (COLLECT[O[i]] && isStory()){
     const id = O[i], key = id + '_' + glob.story.chapter, f = glob.story.found || (glob.story.found = {});
@@ -3019,9 +3025,14 @@ document.getElementById('confirmYes').onclick = () => {
 const GIFTS = ['u','e','O','a','y','j','D','d'];
 const GIFT_TXT = {u:'Des ruches', e:'Une éolienne', O:'Un kiosque à musique', a:'Une chapelle', y:'Une serre', j:'Un manège', D:'Un calvaire breton', d:'Une montgolfière'};
 function today(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+const V2_BASE = new Set(['g','s','w','t','P','f','r','x']);
 function unlocked(id){
+  if (glob.story.v === 2 && isStory()) return V2_BASE.has(id) || (glob.story.unlocked2 || []).includes(id);
   if (GIFTS.includes(id) && !glob.gifts.includes(id)) return false;
-  if (STORY_LOCK.includes(id) && !glob.story.unlocked.includes(id)) return false;
+  if (STORY_LOCK.includes(id)){
+    // sur l'île de la nouvelle histoire, seuls les objets gagnés dans cette histoire
+    if (!glob.story.unlocked.includes(id)) return false;
+  }
   return true;
 }
 const giftBox = document.getElementById('giftBox'), giftBtn = document.getElementById('giftBtn'), giftCv = document.getElementById('giftCv');
@@ -3169,6 +3180,7 @@ function afterTerrainChange(){
   zoom = (innerWidth < 700 ? 2 : 1) * N / 24; camX = camY = (W - vw())/2; applySize();
   walkers = []; cars = []; boats = []; animals = []; gulls = []; trains = []; history = []; undoBtn.disabled = true;
   setSeason(season); syncWalkers(); renderReq(); updateStats(); updateGrowBtn(); renderTerrains();
+  try { buildTools(); renderRecent(); } catch(e){}
 }
 function switchTerrain(id){
   if (id === terrains.cur) return;
@@ -3415,52 +3427,52 @@ function fogAt(x, y){
   return (glob.story.fogs || []).some(f => (f.a ?? f.to) > 0.4 && ((x - f.cx)/f.rx)**2 + ((y - f.cy)/f.ry)**2 < 0.8);
 }
 const CHAPTERS_V2 = [
-  {season:1, title:'L’arrivée', who:'toi', give:['4'],
+  {season:1, title:'L’arrivée', who:'toi', give:['h','4','V'],
    intro:['{nom}. Ton nom est maintenant écrit sur la couverture. Le carnet sous le bras, tu fais le tour de l’île : elle est déserte.', 'Il va falloir t’installer : un toit pour dormir, un feu pour te réchauffer, un potager pour manger, et quelques fleurs pour te sentir chez toi.'],
-   outro:['Le feu crépite. Pour la première fois, tu te sens un peu chez toi.', 'Au nord de l’île, une grande silhouette se dresse dans la brume : un phare. Éteint.'],
-   goals:[['Ta maison', () => cnt('h'), 1], ['Feu de camp', () => cnt('4'), 1], ['Potager', () => cnt('V'), 1], ['Massifs de fleurs', () => cnt('f') + cnt('H'), 2]], reward:['æ']},
-  {season:1, title:'Le phare éteint', who:'toi',
-   intro:['Le phare est vieux, mais solide. Pour l’atteindre sans te perdre, il te faut un chemin, et quelques lanternes pour le soir, quand la brume s’épaissit.'],
+   outro:['Le feu crépite. Pour la première fois, tu te sens un peu chez toi.', 'Au nord de l’île, une grande silhouette se dresse dans la brume : un phare. Éteint. À son pied, une vieille lanterne rouillée, éteinte elle aussi.'],
+   goals:[['Ta maison', () => cnt('h'), 1], ['Feu de camp', () => cnt('4'), 1], ['Potager', () => cnt('V'), 1], ['Massifs de fleurs', () => cnt('f') + cnt('H'), 2]], reward:[]},
+  {season:1, title:'Le phare éteint', who:'toi', give:['c'],
+   intro:['Le phare est vieux, mais solide. Pour l’atteindre sans te perdre, trace un chemin jusqu’à lui.', 'Au pied du phare, la vieille lanterne attend. Va la rallumer (touche-la) : en la regardant de près, tu comprendras comment en fabriquer d’autres pour éclairer le chemin.'],
    outro:['En haut du phare, une table couverte de poussière, une lampe à huile… et gravé dans le bois, le même dessin que sur la couverture de ton carnet.', 'Tu ouvres le carnet. Sur la première page, un mot est apparu, d’une écriture qui n’est pas la tienne : « Iloe ».'],
    onDone:() => addPage('Iloe.'),
-   goals:[['Cases de chemin', () => cntG('c'), 8], ['Chemin jusqu’au phare', () => nearG('L', 'c') ? 1 : 0, 1], ['Lanternes anciennes', () => cnt('æ'), 3]], reward:['Ô']},
-  {season:1, title:'Rallumer la lumière', who:'carnet',
+   goals:[['Cases de chemin', () => cntG('c'), 8], ['Chemin jusqu’au phare', () => nearG('L', 'c') ? 1 : 0, 1], ['Vieille lanterne rallumée', () => glob.story.lanternLit ? 1 : 0, 1], ['Lanternes le long du chemin', () => cnt('æ'), 3]], reward:[]},
+  {season:1, title:'Rallumer la lumière', who:'carnet', give:['Ô','b'],
    intro:['Tu as posé le carnet ouvert sur la table. Là-haut, la lampe du phare n’attend qu’une flamme.', 'Allume un grand bûcher près du phare pour y porter le feu, et installe de quoi regarder la mer.'],
    outro:['La lumière tourne à nouveau au-dessus de la mer. Une petite lueur bleue danse autour du phare, puis file vers le nord-est…', 'Là-bas, dans la brume, on devine une forme. Une autre île ?'],
    onDone:() => { glob.story.lit = true; saveGlob(); },
    after:() => { v2Grow(); addIsle('ilot', N - 7, 7, 4.2, 3.2, 'galets', {}); lookAt(N - 9, 9); save(); syncWalkers(); toast('🌫️ Au nord-est, une île se devine dans la brume…'); },
-   goals:[['Bûcher près du phare', () => withinR('Ô', 'L', 3) ? 1 : 0, 1], ['Bancs', () => cnt('b'), 2], ['Massifs de fleurs', () => cnt('f') + cnt('H'), 4]], reward:['6']},
-  {season:1, title:'La première voile', who:'tomas',
-   intro:['Ohé ! J’ai vu ta lumière depuis le large. Je croyais qu’il n’y avait plus rien, par ici…', 'Je m’appelle Tomas, je suis pêcheur. Si tu me construis un ponton et une petite maison, je reste un moment. On ne sait jamais, il y a peut-être du poisson.'],
+   goals:[['Bûcher près du phare', () => withinR('Ô', 'L', 3) ? 1 : 0, 1], ['Bancs', () => cnt('b'), 2], ['Massifs de fleurs', () => cnt('f') + cnt('H'), 4]], reward:[]},
+  {season:1, title:'La première voile', who:'tomas', give:['q','B','W'],
+   intro:['Ohé ! J’ai vu ta lumière depuis le large. Je croyais qu’il n’y avait plus rien, par ici…', 'Je m’appelle Tomas, je suis pêcheur. Si tu me construis un ponton, une petite maison et un puits pour l’eau douce, je reste un moment. J’ai une barque en plus dans ma cale, elle est pour toi.'],
    outro:['Tomas a posé son sac. Il regarde longtemps la brume au nord-est.', '« C’est bizarre… J’ai l’impression de connaître ce coin. »'],
-   goals:[['Cases de quai', () => cntG('q'), 4], ['Barques (la tienne et celle de Tomas)', () => cnt('B'), 2], ['Maisons', () => cnt('h'), 2]], reward:['Û']},
-  {season:1, title:'L’îlot des pêcheurs', who:'tomas',
+   goals:[['Cases de quai', () => cntG('q'), 4], ['Barques (la tienne et celle de Tomas)', () => cnt('B'), 2], ['Maisons', () => cnt('h'), 2], ['Puits', () => cnt('W'), 1]], reward:[]},
+  {season:1, title:'L’îlot des pêcheurs', who:'tomas', give:['N','G'],
    onIntro:() => { revealIsle('ilot'); toast('🌫️ La brume se lève sur l’îlot !'); },
-   intro:['La brume s’est levée d’un coup ! Regarde : un îlot de galets, et pas si loin.', 'Aide-moi à m’y installer : une cabane de pêche, des casiers et une jetée pour accoster.'],
+   intro:['La brume s’est levée d’un coup ! Regarde : un îlot de galets, et pas si loin.', 'Aide-moi à m’y installer : une cabane de pêche, des casiers et une jetée pour accoster. Je vais faire venir mon chalutier !'],
    outro:['Sous les galets, Tomas a trouvé de vieux casiers en bois. Il en retourne un : un nom est gravé dessus. Celui de son grand-père.', '« Il ne m’a jamais dit qu’il était venu ici… »', 'Ce soir-là, une phrase de plus est apparue dans le carnet : « On revient toujours là où on a été heureux. »'],
    onDone:() => addPage('On revient toujours là où on a été heureux.'),
-   goals:[['Cabane sur l’îlot', () => cntIn('h', 'ilot'), 1], ['Casiers sur l’îlot', () => cntIn('N', 'ilot'), 3], ['Cases de quai sur l’îlot', () => cntGIn('q', 'ilot'), 2]], reward:['1']},
-  {season:1, title:'Du pain frais', who:'lina',
-   intro:['Bonjour ! Je m’appelle Lina, je suis boulangère. Mon bateau ne fait escale ici que pour une nuit…', 'Mais tant qu’à faire, donne-moi un four et je fais du pain pour tout le monde ! Il me faudrait un moulin, un champ de blé, et quelques maisons pour les gens qui viendront.'],
+   goals:[['Cabane sur l’îlot', () => cntIn('h', 'ilot'), 1], ['Casiers sur l’îlot', () => cntIn('N', 'ilot'), 3], ['Cases de quai sur l’îlot', () => cntGIn('q', 'ilot'), 2], ['Chalutier', () => cnt('G'), 1]], reward:[]},
+  {season:1, title:'Du pain frais', who:'lina', give:['1','m','k','F'],
+   intro:['Bonjour ! Je m’appelle Lina, je suis boulangère. Mon bateau ne fait escale ici que pour une nuit…', 'Mais tant qu’à faire, donne-moi un four et je fais du pain pour tout le monde ! Il me faudrait un moulin, un champ de blé avec des clôtures autour, et quelques maisons pour les gens qui viendront.'],
    outro:['Le premier pain sort du four. Lina en goûte un morceau et reste silencieuse.', '« C’est drôle. Cette recette, je la tiens de ma mère. Elle disait qu’elle venait d’une île qui n’existe plus. »', 'Le lendemain, son bateau repart sans elle.'],
-   goals:[['Boulangerie', () => cnt('1'), 1], ['Moulin', () => cnt('m'), 1], ['Cases de blé', () => cntG('k'), 6], ['Maisons', () => cnt('h'), 4]], reward:['Î']},
-  {season:1, title:'La tempête', who:'tomas',
+   goals:[['Boulangerie', () => cnt('1'), 1], ['Moulin', () => cnt('m'), 1], ['Cases de blé', () => cntG('k'), 6], ['Clôtures', () => cnt('F'), 4], ['Maisons', () => cnt('h'), 4]], reward:[]},
+  {season:1, title:'La tempête', who:'tomas', give:['Î','Ö'],
    onIntro:() => storm(),
-   intro:['Quelle nuit ! Le vent a tout secoué, il y a des débris partout sur la côte.', 'Ramasse-les avec la pioche, construis une digue pour protéger le port, et trois barques doivent être à l’eau.'],
+   intro:['Quelle nuit ! Le vent a tout secoué, il y a des débris partout sur la côte.', 'Ramasse-les avec la pioche, construis une digue pour protéger le port, et une station de sauveteurs pour la prochaine fois. Il faut aussi trois barques à l’eau.'],
    outro:['L’île est réparée. En rangeant le phare, tu remarques que le carnet s’est ouvert tout seul.', 'Une nouvelle phrase est apparue, d’une écriture fine : « Elles reviendront si tu les éclaires. »'],
    outroWho:'carnet', onDone:() => addPage('Elles reviendront si tu les éclaires.'),
-   goals:[['Débris ramassés', () => Math.max(0, (glob.story.debris || 0) - cnt('Ó')), () => glob.story.debris || 0], ['Cases de digue', () => cntG('Î'), 6], ['Barques', () => cnt('B'), 3]], reward:['8']},
-  {season:1, title:'L’île aux oiseaux', who:'lina',
+   goals:[['Débris ramassés', () => Math.max(0, (glob.story.debris || 0) - cnt('Ó')), () => glob.story.debris || 0], ['Cases de digue', () => cntG('Î'), 6], ['Sauveteurs', () => cnt('Ö'), 1], ['Barques', () => cnt('B'), 3]], reward:[]},
+  {season:1, title:'L’île aux oiseaux', who:'lina', give:['!','J'],
    onIntro:() => { v2Grow(); addIsle('oiseaux', 6, N - 7, 3.6, 2.8, 'oiseaux', null); lookAt(8, N - 9); save(); syncWalkers(); toast('🐦 Une île est sortie de la brume, sans prévenir !'); },
    intro:['Tu as vu ?! Ce matin, une île est apparue au sud-ouest. Hier, il n’y avait que de la brume !', 'Elle est couverte d’oiseaux. Pose un banc pour les observer, un petit chemin de galets, et des bouées pour guider les barques.'],
    outro:['Assise sur le banc, Lina compte les oiseaux.', '« Ils se tournent tous vers l’ouest, tu as remarqué ? Comme s’ils attendaient quelque chose. »'],
-   goals:[['Banc sur l’île aux oiseaux', () => cntIn('b', 'oiseaux'), 1], ['Cases de galets sur l’île', () => cntGIn('!', 'oiseaux'), 4], ['Bouées', () => cnt('J'), 2]], reward:['Ê']},
-  {season:1, title:'Le feu de la plage', who:'tomas',
-   intro:['Lina et moi, on voudrait fêter ton arrivée. Après tout, sans ta lumière, on ne serait pas là !', 'Il faut un grand feu de joie sur la plage, des bancs pour tout le monde, des guirlandes et des bannières.'],
+   goals:[['Banc sur l’île aux oiseaux', () => cntIn('b', 'oiseaux'), 1], ['Cases de galets sur l’île', () => cntGIn('!', 'oiseaux'), 4], ['Bouées', () => cnt('J'), 2]], reward:[]},
+  {season:1, title:'Le feu de la plage', who:'tomas', give:['8','Ê','Ï'],
+   intro:['Lina et moi, on voudrait fêter ton arrivée. Après tout, sans ta lumière, on ne serait pas là !', 'Il faut deux grands feux de joie sur la plage, des bancs pour tout le monde, des guirlandes, des bannières… et un feu d’artifice !'],
    outro:['Pendant la fête, la brume s’illumine à l’ouest. Des dizaines de lueurs bleues flottent au-dessus de l’eau, puis s’éteignent une à une.', 'Plus tard, seul·e dans le phare, tu vois le carnet s’ouvrir. Une phrase s’écrit sous tes yeux, lettre après lettre :', '« Si tu lis ceci, {nom}, c’est que tu es enfin arrivé·e. Je t’attendais. — M. »'],
    outroWho:'carnet', onDone:() => addPage('Si tu lis ceci, {nom}, c’est que tu es enfin arrivé·e. Je t’attendais. — M.'),
    after:() => { v2Grow(); addIsle('vents', 4, Math.round(N/2), 6, 8.5, 'vents', {cx:2}); lookAt(6, Math.round(N/2)); save(); syncWalkers(); toast('🌫️ À l’ouest, la pointe d’une île dépasse de la brume…'); },
-   goals:[['Bûchers', () => cnt('Ô'), 2], ['Bancs', () => cnt('b'), 6], ['Guirlandes', () => cnt('8'), 3], ['Bannières', () => cnt('Ê'), 2]], reward:['Ï']},
+   goals:[['Bûchers', () => cnt('Ô'), 2], ['Bancs', () => cnt('b'), 6], ['Guirlandes', () => cnt('8'), 3], ['Bannières', () => cnt('Ê'), 2], ['Feu d’artifice', () => cnt('Ï'), 1]], reward:[]},
 ];
 let CHAPTERS = CHAPTERS_V1;
 function pickChapters(){ CHAPTERS = glob.story.v === 2 ? CHAPTERS_V2 : CHAPTERS_V1; }
@@ -3500,6 +3512,7 @@ function moment(id, cond){
 }
 function unlockItem(id){
   if (GIFTS.includes(id) && !glob.gifts.includes(id)){ glob.gifts.push(id); return true; }
+  if (glob.story.v === 2 && isStory()){ const u2 = glob.story.unlocked2 || (glob.story.unlocked2 = []); const fresh = !u2.includes(id); if (fresh) u2.push(id); if (!glob.story.unlocked.includes(id)) glob.story.unlocked.push(id); return fresh; }
   if (STORY_LOCK.includes(id) && !glob.story.unlocked.includes(id)){ glob.story.unlocked.push(id); return true; }
   return false;
 }
@@ -3638,7 +3651,11 @@ function makeIsland2(){
     if (G[i] === 'g' && dc > 3.5) O[i] = r < 0.08 ? 't' : r < 0.12 ? 'P' : r > 0.17 && r < 0.19 ? 'r' : null;
     else if (G[i] === 's') O[i] = r < 0.06 ? 'r' : null;
   }
-  if (bi >= 0) O[bi] = 'L';
+  if (bi >= 0){
+    O[bi] = 'L';
+    const bx = bi % N, by0 = (bi / N)|0;
+    for (const [a, b] of [[0,1],[-1,1],[1,1],[-1,0],[1,0],[0,2]]){ const j = (by0 + b)*N + bx + a; if ((G[j] === 's' || G[j] === 'g') && !O[j]){ O[j] = 'æ'; break; } }
+  }
   // ta barque, échouée au bord de la plage du sud
   let bb = -1, by = -1;
   for (let i = 0; i < N*N; i++){ const x = i % N, y = (i / N)|0; if (G[i] === 'w' && Math.abs(x - 15) < 4 && near8(i, j => G[j] === 's') && y > by){ by = y; bb = i; } }
@@ -3694,6 +3711,7 @@ function openStoryModal({mode, who, kicker, title, paras, rewards, go, alt}){
   storyBody.innerHTML = '';
   for (const t of paras){ if (typeof t === 'string'){ const el = document.createElement('p'); el.textContent = t.replace(/\{nom\}/g, glob.story.name || 'toi'); if (/^« .* »$/.test(el.textContent) && mode !== 'intro') el.className = 'carnet-line'; storyBody.append(el); } else storyBody.append(t); }
   storyRewards.innerHTML = ''; storyRewards.hidden = !(rewards && rewards.length);
+  if (rewards && rewards.length){ const lb = document.createElement('div'); lb.className = 'label rw-label'; lb.textContent = mode === 'intro' ? 'Pour cette mission' : 'Tu as gagné'; storyRewards.append(lb); }
   for (const id of rewards || []){
     const t = TOOLS.find(t => t.id === id), d = document.createElement('div'); d.className = 'rw';
     const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; drawIconTo(t, cv);
@@ -3764,7 +3782,7 @@ function startStory(){
   terrains.list.unshift({id, name:'L’île de l’histoire', story:true});
   terrains.cur = id; writeJSON(IDX, terrains);
   Object.assign(glob.story, {started:true, asked:true, terrain:id, chapter:0, pendingOutro:null, introSeen:-1, moments:{}, events:{}, debris:0,
-    v:2, name:null, isles:{}, fogs:[], pages:[], lit:false, grown:{}, found:{}, spawn:{}}); saveGlob();
+    v:2, name:null, isles:{}, fogs:[], pages:[], lit:false, lanternLit:false, unlocked2:[], grown:{}, found:{}, spawn:{}}); saveGlob();
   pickChapters();
   makeIsland2(); save();
   afterTerrainChange(); setMenu(false);
@@ -3849,7 +3867,7 @@ function restartStory(){
   try { localStorage.removeItem(tKey(old)); } catch(e){}
   if (terrains.cur === old) terrains.cur = null;
   writeJSON(IDX, terrains);
-  Object.assign(glob.story, {started:false, terrain:null, chapter:0, pendingOutro:null, introSeen:-1, moments:{}, events:{}, debris:0, grown:{}, found:{}, spawn:{}, today:null, v:2, isles:{}, fogs:[], pages:[], lit:false});
+  Object.assign(glob.story, {started:false, terrain:null, chapter:0, pendingOutro:null, introSeen:-1, moments:{}, events:{}, debris:0, grown:{}, found:{}, spawn:{}, today:null, v:2, isles:{}, fogs:[], pages:[], lit:false, lanternLit:false, unlocked2:[]});
   saveGlob();
   walkers = [];
   startStory(); syncWalkers(); updateStats(); renderTerrains(); updateStoryBtn();
