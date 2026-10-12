@@ -3659,7 +3659,7 @@ const cntGIn = (g, key) => { let n = 0; for (let i = 0; i < N*N; i++) if (G[i] =
 function addPage(t){ const p = glob.story.pages || (glob.story.pages = []); if (!p.includes(t)){ p.push(t); saveGlob(); } }
 function shiftStoryGeo(off){
   if (glob.story.v !== 2 || !isStory()) return;
-  if (glob.story.cont != null) glob.story.cont += off;
+  const ct = glob.story.cont; if (ct && typeof ct === 'object'){ ct.r += off*1.45; ct.row += off; }
   if (glob.story.sap){ const n0 = N - 2*off, m = {}; for (const [k, t] of Object.entries(glob.story.sap)){ const x = k % n0, y = (k / n0)|0; m[(y + off)*N + x + off] = t; } glob.story.sap = m; }
   for (const g of Object.values(glob.story.isles || {})){ g.cx += off; g.cy += off; }
   for (const f of glob.story.fogs || []){ f.cx += off; f.cy += off; }
@@ -3691,36 +3691,46 @@ function revealIsle(key){
   saveGlob(); const g = (glob.story.isles || {})[key]; if (g) lookAt(g.cx, g.cy);
 }
 function v2Grow(){ growTerrain(true, false); fillContinent(); }
-/* le continent : une bande de terre sur le bord est, avec sa voie ferrée */
+/* le continent : un bout de terre qui dépasse dans le coin en bas à droite, avec sa voie ferrée */
+function inCont(i){
+  const ct = glob.story.cont; if (!ct || typeof ct !== 'object') return false;
+  const x = i % N, y = (i / N)|0;
+  return Math.hypot(N + 1 - x, N + 1 - y) + (hs(x, y, 515) - 0.5)*1.6 <= ct.r;
+}
 function fillContinent(){
-  const x0 = glob.story.cont; if (x0 == null) return;
-  for (let y = 0; y < N; y++) for (let x = x0; x < N; x++){
-    const i = y*N + x;
-    if (x === x0){ if (G[i] === 'w'){ G[i] = 's'; O[i] = null; } continue; }
-    if (x === x0 + 1){ G[i] = 'X'; O[i] = null; continue; }
-    if (G[i] === 'w'){ G[i] = 'g'; O[i] = hs(x, y, 313) < 0.25 ? (hs(x, y, 314) < 0.5 ? 't' : 'P') : null; }
+  const ct = glob.story.cont; if (!ct || typeof ct !== 'object') return;
+  for (let i = 0; i < N*N; i++){
+    if (!inCont(i)) continue;
+    const x = i % N, y = (i / N)|0, d = Math.hypot(N + 1 - x, N + 1 - y);
+    if (G[i] === 's' && d <= ct.r - 1.6 && !O[i]){ G[i] = 'g'; continue; }
+    if (G[i] !== 'w') continue;
+    if (d > ct.r - 1.6){ G[i] = 's'; O[i] = null; }
+    else { G[i] = 'g'; O[i] = hs(x, y, 313) < 0.22 ? (hs(x, y, 314) < 0.5 ? 't' : 'P') : null; }
   }
+  // la voie ferrée du continent : de la côte jusqu'au bord de la carte
+  const y = ct.row; let west = -1;
+  for (let x = 0; x < N; x++){ const i = y*N + x; if (inCont(i)){ if (west < 0) west = x; G[i] = 'X'; if (O[i] !== 'i') O[i] = null; } }
+  if (west >= 0){ const gi = (y - 1)*N + west + 1; if (inCont(gi) && !O.some((o, k) => o === 'i' && inCont(k))){ G[gi] = 'g'; O[gi] = 'i'; } }
   groundDirty = true;
 }
 function makeContinent(){
-  if (glob.story.cont == null){ glob.story.cont = N - 4; saveGlob(); }
+  if (!glob.story.cont || typeof glob.story.cont !== 'object'){ glob.story.cont = {r:8.5, row:N - 3}; saveGlob(); }
   fillContinent();
-  const y = N >> 1, i = y*N + glob.story.cont + 2; O[i] = 'i';
   save(); syncWalkers(); updateStats();
 }
 const isRailG = g => g === 'X' || g === '¤' || g === '=';
 function railToContinent(){
-  const x0 = glob.story.cont; if (x0 == null) return false;
+  if (!glob.story.cont) return false;
   const seen = new Set(), q = [];
-  for (let i = 0; i < N*N; i++) if (isRailG(G[i]) && i % N < x0 && near8(i, j => O[j] === 'i' && j % N < x0)){ seen.add(i); q.push(i); }
+  for (let i = 0; i < N*N; i++) if (isRailG(G[i]) && !inCont(i) && near8(i, j => O[j] === 'i' && !inCont(j))){ seen.add(i); q.push(i); }
   while (q.length){
     const i = q.shift(), x = i % N, y = (i / N)|0;
-    if (x >= x0) return true;
+    if (inCont(i)) return true;
     for (const [a, b] of [[1,0],[-1,0],[0,1],[0,-1]]){ const xx = x + a, yy = y + b; if (xx < 0 || yy < 0 || xx >= N || yy >= N) continue; const j = yy*N + xx; if (!seen.has(j) && isRailG(G[j])){ seen.add(j); q.push(j); } }
   }
   return false;
 }
-const islandGare = () => O.reduce((n, o, i) => n + (o === 'i' && (glob.story.cont == null || i % N < glob.story.cont) ? 1 : 0), 0);
+const islandGare = () => O.reduce((n, o, i) => n + (o === 'i' && !inCont(i) ? 1 : 0), 0);
 function fogAt(x, y){
   if (glob.story.v !== 2 || !isStory()) return false;
   return (glob.story.fogs || []).some(f => { if ((f.a ?? f.to) <= 0.4) return false; const d = ((x - f.cx)/f.rx)**2 + ((y - f.cy)/f.ry)**2; return f.inv ? d > 1.05 : d < 0.8; });
@@ -3789,12 +3799,12 @@ const CHAPTERS_V2 = [
    after:() => { addIsle('oiseaux', 6, N - 6, 3.6, 2.8, 'oiseaux', {}); save(); syncWalkers(); toast('🌫️ Au sud-ouest, une forme dans la brume… À suivre !'); },
    goals:[['Ramasse la page envolée', () => found('ƥ'), () => spawned('ƥ', 1)], ['Marché', () => cnt('9'), 1], ['Feux sur la plage', () => cnt('Ô'), 2], ['Bannières', () => cnt('Ê'), 3], ['Foyers', () => residents(), 20], ['Feu d’artifice', () => cnt('Ï'), 1]], reward:[]},
   {season:2, title:'Le train du continent', who:'ines', give:['i','X'],
-   onIntro:() => { v2Grow(); makeContinent(); spawnSmart('Ŧ', 1, i => G[i] === 's' && !fogAt(i % N, (i / N)|0) && (glob.story.cont == null || i % N < glob.story.cont)); lookAt(N - 10, N >> 1); },
-   intro:['Bonjour ! Inès, cheffe de gare. Vous avez entendu le sifflet, le soir de la fête ? C’était mon train. Il ne lui manque plus qu’une chose : des rails jusqu’à chez vous !', 'Construis une gare sur ton île et relie-la au quai du continent, à l’est. Il faudra passer au-dessus de la mer : les rails posés sur l’eau deviennent un viaduc. Et prévois quelques maisons, les premiers voyageurs voudront rester !', 'Ah… et j’ai encore perdu mon ticket. Il doit être sur une plage.'],
+   onIntro:() => { v2Grow(); makeContinent(); spawnSmart('Ŧ', 1, i => G[i] === 's' && !fogAt(i % N, (i / N)|0) && !inCont(i)); lookAt(N - 12, N - 10); },
+   intro:['Bonjour ! Inès, cheffe de gare. Vous avez entendu le sifflet, le soir de la fête ? C’était mon train. Il ne lui manque plus qu’une chose : des rails jusqu’à chez vous !', 'Construis une gare sur ton île et relie-la à la voie du continent, qui dépasse au sud-est. Il faudra passer au-dessus de la mer : les rails posés sur l’eau deviennent un viaduc. Et prévois quelques maisons, les premiers voyageurs voudront rester !', 'Ah… et j’ai encore perdu mon ticket. Il doit être sur une plage.'],
    outro:['Le premier train traverse la mer dans un nuage de vapeur. Toute l’île l’attend sur le quai, Tomas en tête, sa casquette à la main.', 'Parmi les voyageurs descend une petite femme chargée de rouleaux de papier. Elle regarde le phare, puis l’horizon, puis toi. « Alors c’est vrai… Iloe existe encore. »'],
    goals:[['Ramasse le ticket d’Inès', () => found('Ŧ'), () => spawned('Ŧ', 1)], ['Ta gare sur l’île', islandGare, 1], ['Rails jusqu’au continent', () => railToContinent() ? 1 : 0, 1], ['Foyers', () => residents(), 24]], reward:[]},
   {season:2, title:'La cartographe', who:'aiko', give:['à','l'],
-   onIntro:() => spawnSmart('ƈ', 3, i => G[i] === 'g' && !fogAt(i % N, (i / N)|0) && (glob.story.cont == null || i % N < glob.story.cont)),
+   onIntro:() => spawnSmart('ƈ', 3, i => G[i] === 'g' && !fogAt(i % N, (i / N)|0) && !inCont(i)),
    intro:['Je m’appelle Aiko. Je dessine des cartes, et je collectionne les vieilles. Celle-ci date d’il y a soixante ans… Regarde : Iloe n’y est pas une île, mais six. Et au centre, un nom effacé.', 'Le vent m’a arraché trois morceaux en descendant du train : ramasse-les. Il me faudrait aussi un endroit au calme pour l’étudier : une bibliothèque, avec des bancs devant, et des lampadaires pour travailler tard.'],
    outro:['Les morceaux recollés, Aiko pose le doigt au sud-ouest. « Ici. Une île couverte d’oiseaux. Elle devrait être juste… là. »', 'Au même moment, la brume du sud-ouest se déchire.'],
    after:() => { revealIsle('oiseaux'); toast('🌫️ La brume s’est levée sur l’île aux oiseaux !'); },
@@ -3810,7 +3820,7 @@ const CHAPTERS_V2 = [
    outro:['Quand le dernier menhir est debout, le vent se lève et passe entre les pierres. On dirait une voix. Une chanson.', 'Lina, qui t’avait suivie, s’arrête net. « Cette chanson… c’est la berceuse que ma mère me chantait. »'],
    goals:[['Relève les pierres couchées', () => found('ƚ'), () => spawned('ƚ', 5)], ['Menhirs sur l’île des vents', () => cntIn('M', 'vents'), 5], ['Ajoncs', () => cnt('5'), 6], ['Éoliennes', () => cnt('e'), 3]], reward:[]},
   {season:2, title:'Le marché du port', who:'tomas', give:['S'],
-   onIntro:() => spawnSmart('ƀ', 4, i => G[i] === 's' && !fogAt(i % N, (i / N)|0) && (glob.story.cont == null || i % N < glob.story.cont)),
+   onIntro:() => spawnSmart('ƀ', 4, i => G[i] === 's' && !fogAt(i % N, (i / N)|0) && !inCont(i)),
    intro:['Avec le train, les gens du continent viennent acheter mon poisson ! Il nous faut un vrai port de commerce.', 'La grande marée a déposé des caisses sur la plage : ramasse-les, elles serviront d’étals. Ensuite : un magasin, un deuxième marché, un entrepôt pour le poisson, et un quai d’au moins dix cases. Et de la place pour tout ce monde : trente foyers.'],
    outro:['Le samedi, le port déborde : poissons de Tomas, pains de Lina, photos de Mei, cartes d’Aiko… et des voyageurs qui ne repartent plus.', 'Dans une des caisses, Tomas a trouvé une vieille étiquette : « Expédié d’Iloe — 6 îles ». Il la garde dans sa poche, sans rien dire.'],
    goals:[['Ramasse les caisses', () => found('ƀ'), () => spawned('ƀ', 4)], ['Magasin', () => cnt('S'), 1], ['Marchés', () => cnt('9'), 2], ['Entrepôts (granges)', () => cnt('Ç'), 2], ['Cases de quai', () => cntG('q'), 10], ['Foyers', () => residents(), 30]], reward:[]},
@@ -3831,12 +3841,12 @@ const CHAPTERS_V2 = [
    outro:['Le pont est le plus long que Kofi ait jamais bâti. Ce soir-là, tout le monde le traverse en chantant la berceuse des menhirs, que Lina a apprise à tout le village.', 'Aiko, elle, reste penchée sur sa carte. « Cinq îles. Il en manque une. Et ce nom, au centre… on dirait qu’il revient, un peu plus chaque jour. »'],
    goals:[['Ramasse les pierres taillées', () => found('Ŝ'), () => spawned('Ŝ', 6)], ['Un pont jusqu’à l’île des jardins', () => bridgeTo('jardins') ? 1 : 0, 1], ['Kiosque sur la place', () => O.some((o, i) => o === 'O' && near8(i, j => G[j] === 'p')) ? 1 : 0, 1], ['Foyers', () => residents(), 40]], reward:[]},
   {season:2, title:'La nuit des lueurs', who:'aiko', give:['d'],
-   onIntro:() => spawnSmart('ƨ', 5, i => (G[i] === 'g' || G[i] === 's') && !fogAt(i % N, (i / N)|0) && (glob.story.cont == null || i % N < glob.story.cont)),
+   onIntro:() => spawnSmart('ƨ', 5, i => (G[i] === 'g' || G[i] === 's') && !fogAt(i % N, (i / N)|0) && !inCont(i)),
    intro:['Dans la marge de ma carte, il y a une fête dessinée : la nuit des lueurs. Une lanterne sur chaque île, et une grande lumière dans le ciel.', 'Le vent a déjà dispersé les lanternes de papier qu’on avait préparées : ramasse-les. Puis pose une lanterne sur chaque île, des guirlandes… et une montgolfière, pour porter la lumière tout en haut !'],
    outro:['Tout est prêt. Demain soir, toutes les îles s’allumeront en même temps.', 'Cette nuit-là, les lueurs ne restent pas au-dessus de la mer. Elles viennent tourner autour du village, doucement, comme si elles attendaient, elles aussi.'],
    goals:[['Ramasse les lanternes de papier', () => found('ƨ'), () => spawned('ƨ', 5)], ['Îles éclairées (une lanterne sur chacune)', () => ['ilot', 'oiseaux', 'vents', 'jardins'].filter(k => cntIn('æ', k) > 0).length, 4], ['Guirlandes', () => cnt('8'), 6], ['Montgolfière', () => cnt('d'), 1]], reward:[]},
   {season:2, title:'Ce que montre la carte', who:'carnet', give:[], outroWho:'carnet',
-   onIntro:() => spawnSmart('ƥ', 1, i => G[i] === 's' && !fogAt(i % N, (i / N)|0) && (glob.story.cont == null || i % N < glob.story.cont)),
+   onIntro:() => spawnSmart('ƥ', 1, i => G[i] === 's' && !fogAt(i % N, (i / N)|0) && !inCont(i)),
    intro:['Le soir de la fête, le carnet s’ouvre tout seul sur une page vierge. Au milieu, trois mots apparaissent, puis s’effacent : « Allume-les toutes. »', 'Une page s’est envolée vers la plage. Et pour la fête : vingt lanternes en tout, des guirlandes partout, et deux feux d’artifice.'],
    outro:['À minuit, toutes les îles s’allument en même temps. Les lueurs montent de la mer par centaines et dansent au-dessus de l’archipel.', 'Sur la carte d’Aiko, le nom effacé réapparaît, lettre après lettre : MIRA.', 'Au même moment, une vieille photo glisse du carnet. Une femme, devant le phare, un bébé dans les bras. Au dos, une date… et un prénom : le tien.'],
    after:() => { addIsle('coeur', 9, 9, 4, 3, 'galets', {}); save(); syncWalkers(); toast('🌫️ Tout au nord-ouest, une sixième île se devine dans la brume… À suivre !'); },
@@ -3944,7 +3954,7 @@ function spawnFor(id, n, ok, center, rad){
 }
 /* fait apparaître n objets à ramasser : d'abord là où l'histoire le veut, sinon n'importe où sur l'archipel */
 function spawnSmart(id, n, ok){
-  const gen = i => !O[i] && (G[i] === 'g' || G[i] === 's' || G[i] === '!') && !fogAt(i % N, (i / N)|0) && (glob.story.cont == null || i % N < glob.story.cont);
+  const gen = i => !O[i] && (G[i] === 'g' || G[i] === 's' || G[i] === '!') && !fogAt(i % N, (i / N)|0) && !inCont(i);
   const pref = [], rest = [];
   for (let i = 0; i < N*N; i++){ if (O[i]) continue; if (ok(i)) pref.push(i); else if (gen(i)) rest.push(i); }
   const pick = [...shuffleArr(pref), ...shuffleArr(rest)].slice(0, n);
