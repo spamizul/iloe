@@ -1953,7 +1953,7 @@ function syncWalkers(){
 }
 const RES = {h:1, K:1, I:3, T:6, 'Ĉ':1};
 const LETTERS_M = ['Le phare tient bon. Les îles aussi, pour l’instant.', 'La brume avance un peu plus chaque hiver. Les lueurs, elles, ont peur.', 'J’ai caché le carnet là où personne ne le cherchera.', 'Si quelqu’un revient un jour, le carnet le reconnaîtra.', 'Elle a tes yeux, tu sais.'];
-const PAGES_M = ['La lumière les appelle. Elles n’oublient rien.', 'Autrefois, on dansait sur cette place jusqu’au matin.', 'Je n’ai jamais voulu partir.', 'Le grand-père de Tomas gardait mes lettres dans ses casiers.', 'La brume n’est pas venue seule.', 'Ceux qui reviennent ne savent pas encore pourquoi.', 'Le phare, c’est moi qui l’ai éteint.', 'Je m’appelle Mira.'];
+const PAGES_M = ['La lumière les appelle. Elles n’oublient rien.', 'Autrefois, à chaque printemps, on dansait sur la plage jusqu’au matin.', 'Je n’ai jamais voulu partir.', 'Le grand-père de Tomas gardait mes lettres dans ses casiers.', 'La brume n’est pas venue seule.', 'Ceux qui reviennent ne savent pas encore pourquoi.', 'Le phare, c’est moi qui l’ai éteint.', 'Je m’appelle Mira.'];
 function residents(){ let n = 0; for (const o of O) if (o && RES[o]) n += RES[o]; return n; }
 // habitants : 2 à 4 par maison, plus pour les immeubles et les tours
 const PEOPLE_IN = {h:0, K:2, I:12, T:24, 'Æ':5, L:1, 'Ĉ':1};
@@ -3752,7 +3752,7 @@ const CHAPTERS_V2 = [
   {season:1, title:'La fête des premières voiles', who:'sami', give:['p','Q','2','l','8'],
    onIntro:() => spawnSmart('ƥ', 2, i => G[i] === 'g' && !fogAt(i % N, (i / N)|0)),
    intro:['Tomas dit qu’autrefois, quand les bateaux reprenaient la mer au printemps, toute l’île faisait la fête. On recommence ? Jonas a déjà promis de grimper en haut du mât pour accrocher les guirlandes !', 'Il faudrait une place pavée, une fontaine au milieu, un café, des lampadaires et des guirlandes. Et ouvre l’œil : en fouillant dans les vieilles décorations, Mei a trouvé des papiers qui ressemblent aux pages de ton carnet… et le vent les a éparpillés.'],
-   outro:['Quelle fête ! Tomas a dansé avec Lina, Mei a pris cent photos, Jonas a mangé trop de brioche, et la fontaine a fini pleine de pétales.', 'Tard dans la nuit, tu relis les pages retrouvées. Quelqu’un a dansé sur cette place, il y a longtemps.'],
+   outro:['Quelle fête ! Tomas a dansé avec Lina, Mei a pris cent photos, Jonas a mangé trop de brioche, et la fontaine a fini pleine de pétales.', 'Tard dans la nuit, tu relis les pages retrouvées. Il y a longtemps, quelqu’un a fêté les premières voiles sur cette île, exactement comme vous ce soir.'],
    goals:[['Ramasse les pages arrachées', () => found('ƥ'), () => spawned('ƥ', 2)], ['Cases de pavés', () => cntG('p'), 12], ['Fontaine sur la place', () => O.some((o, i) => o === 'Q' && near8(i, j => G[j] === 'p')) ? 1 : 0, 1], ['Café', () => cnt('2'), 1], ['Lampadaires', () => cnt('l'), 4], ['Guirlandes', () => cnt('8'), 3]], reward:[]},
   {season:1, title:'La tempête', who:'tomas', give:['Î','Ö'],
    onIntro:() => storm(),
@@ -4110,6 +4110,8 @@ function openChapter(kind, i){
   const ch = CHAPTERS[i]; if (!ch) return;
   const si = seasonInfo(i);
   if (kind === 'intro'){
+    // un nouveau chapitre commence de jour : s'il fait nuit, on passe au lendemain matin
+    if (isStory() && i > 0){ const hh = tday*24; if (hh >= 20 || hh < 6.5){ tday = 8/24; forceDraw = true; if (typeof updateClock === 'function') updateClock(); setTimeout(() => toast('☀️ Le lendemain matin…'), 400); } }
     glob.story.introSeen = Math.max(glob.story.introSeen ?? -1, i);
     let given = false; for (const id of ch.give || []) given = unlockItem(id) || given;
     saveGlob(); if (given){ buildTools(); renderRecent(); }
