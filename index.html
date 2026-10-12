@@ -262,6 +262,14 @@ h1::after{content:none}
 .board-frame::after{content:"";position:absolute;top:9px;bottom:9px;left:0;width:5px;background:repeating-linear-gradient(180deg,var(--tick) 0 1px,transparent 1px 24px);pointer-events:none}
 canvas#board{border-radius:0;outline:1px solid var(--line2)}
 @media (max-width:600px){.board-frame{padding:8px}}
+.pad{position:absolute;right:14px;bottom:14px;display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:2px;z-index:3;opacity:.88;touch-action:none;user-select:none;-webkit-user-select:none}
+.pad button{all:unset;box-sizing:border-box;display:grid;place-items:center;border-radius:6px;background:color-mix(in srgb,var(--surface) 82%,transparent);border:1px solid var(--line2);color:var(--ink);cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent}
+.pad button:active,.pad button.on{background:var(--accent);color:var(--on-amber);border-color:var(--accent)}
+.pad button svg{width:16px;height:16px}
+.pad .u{grid-column:2;grid-row:1}.pad .l{grid-column:1;grid-row:2}.pad .r{grid-column:3;grid-row:2}.pad .d{grid-column:2;grid-row:3}
+.pad.hide{display:none}
+@media (max-width:600px){.pad{right:12px;bottom:12px;grid-template-columns:repeat(3,28px);grid-template-rows:repeat(3,28px)}}
+body.hand .tool[aria-pressed="true"],body.hand #recent .tb[aria-pressed="true"]{opacity:.5}
 .sc-title span{font-family:var(--f-display);font-style:italic;font-weight:600;font-size:19px}
 .storycard.min .sc-title{font-family:var(--f-mono);font-size:12.5px;font-style:normal}
 .sc-kick{font-family:var(--f-mono);font-weight:500;font-size:10.5px;letter-spacing:.1em}
@@ -399,7 +407,8 @@ canvas#board{border-radius:0;outline:1px solid var(--line2)}
 
   <div class="app">
     <div class="stage">
-      <div class="board-frame"><canvas id="board" aria-label="Terrain de 24 cases sur 24 à construire"></canvas></div>
+      <div class="board-frame"><canvas id="board" aria-label="Terrain de 24 cases sur 24 à construire"></canvas>
+        <div class="pad" id="pad" aria-label="Déplacer la vue"><button class="u" type="button" data-dx="0" data-dy="-1" aria-label="Haut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button><button class="l" type="button" data-dx="-1" data-dy="0" aria-label="Gauche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><button class="r" type="button" data-dx="1" data-dy="0" aria-label="Droite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button><button class="d" type="button" data-dx="0" data-dy="1" aria-label="Bas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button></div></div>
     </div>
 
     <aside class="panel">
@@ -427,7 +436,7 @@ canvas#board{border-radius:0;outline:1px solid var(--line2)}
         <span>Pipette</span></button>
       <button class="tb" id="eraseBtn" type="button" aria-pressed="false"><span id="eraseIcon"></span><span>Pioche</span></button>
       <button class="tb" id="undoBtn" type="button" disabled><b class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6L4 11l5 5"/><path d="M4 11h10a5 5 0 0 1 0 10h-2"/></svg></b><span>Annuler</span></button>
-      <button class="tb" id="handBtn" type="button" aria-pressed="false" title="Déplacer la vue"><b class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V6a1.5 1.5 0 0 1 3 0v5M11 11V4.5a1.5 1.5 0 0 1 3 0V11M14 11V6a1.5 1.5 0 0 1 3 0v7c0 4-2.5 7-6 7-2.6 0-4.2-1.6-5.5-3.7L3.3 12.6a1.4 1.4 0 0 1 2.3-1.6L8 13.5"/></svg></b><span>Bouger</span></button>
+      <button class="tb" id="handBtn" type="button" aria-pressed="false" title="Main : déplacer la vue, ramasser, allumer"><b class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V6a1.5 1.5 0 0 1 3 0v5M11 11V4.5a1.5 1.5 0 0 1 3 0V11M14 11V6a1.5 1.5 0 0 1 3 0v7c0 4-2.5 7-6 7-2.6 0-4.2-1.6-5.5-3.7L3.3 12.6a1.4 1.4 0 0 1 2.3-1.6L8 13.5"/></svg></b><span>Main</span></button>
     </div>
   </div>
 </nav>
@@ -1530,6 +1539,33 @@ function drawObject(o, ox, oy, x, y, withLights){
     R(ox+2, oy+10, 8, 2, '#8a6a48'); R(ox+5, oy+8, 7, 2, '#a8845c'); R(ox+9, oy+11, 4, 2, '#6b4a2e');
     R(ox+3, oy+12, 3, 1, '#3f6b3a'); R(ox+11, oy+9, 2, 1, '#3f6b3a'); R(ox+7, oy+12, 2, 1, '#5a7a4a'); R(ox+4, oy+9, 1, 1, '#cf453a');
     break; }
+  case 'ř': { // gros rochers qui encombrent la plage (tuto)
+    R(ox+1, oy+13, 14, 2, 'rgba(0,0,0,.18)');
+    R(ox+1, oy+7, 9, 7, '#7d848a'); R(ox+2, oy+6, 7, 1, '#7d848a'); R(ox+2, oy+7, 6, 2, '#a3aab0'); R(ox+1, oy+12, 9, 2, '#5f666c');
+    R(ox+8, oy+9, 7, 5, '#8c9399'); R(ox+9, oy+8, 5, 1, '#8c9399'); R(ox+9, oy+9, 4, 1, '#b2b9be'); R(ox+8, oy+13, 7, 1, '#62696f');
+    R(ox+4, oy+10, 2, 1, '#5f666c'); R(ox+11, oy+11, 1, 1, '#62696f');
+    R(ox+3, oy+13, 1, 1, '#4f7a3f'); R(ox+13, oy+12, 1, 1, '#4f7a3f');
+    break; }
+  case 'ŵ': { // bois flotté
+    R(ox+2, oy+12, 12, 1, 'rgba(0,0,0,.14)');
+    R(ox+2, oy+9, 11, 3, '#9a7c56'); R(ox+3, oy+9, 9, 1, '#c4a77e'); R(ox+2, oy+11, 11, 1, '#6e5538');
+    R(ox+12, oy+8, 2, 2, '#b49a78'); R(ox+5, oy+10, 1, 1, '#7a6246'); R(ox+9, oy+10, 1, 1, '#7a6246');
+    R(ox+4, oy+6, 7, 2, '#a88c68'); R(ox+5, oy+6, 5, 1, '#c8b08c');
+    { const tw = reduce ? 1 : (Math.sin(now/300 + x*3 + y*2)*0.5 + 0.5), al = (0.35 + tw*0.65).toFixed(2);
+      R(ox+12, oy+2, 1, 5, `rgba(255,236,170,${al})`); R(ox+10, oy+4, 5, 1, `rgba(255,236,170,${al})`); R(ox+12, oy+4, 1, 1, '#ffffff'); }
+    break; }
+  case 'Ĉ': { // cabane en bois flotté
+    R(ox+1, oy+14, 14, 2, 'rgba(0,0,0,.16)');
+    R(ox+3, oy+7, 10, 7, '#9a7a56');
+    for (let k = 0; k < 3; k++) R(ox+3, oy+8 + k*2, 10, 1, '#7d5f40');
+    for (let k = 0; k < 7; k++) R(ox+8 - k, oy+1 + k, 1 + k*2 > 14 ? 14 : 1 + k*2, 1, k % 2 ? '#6b5236' : '#7f6444');
+    R(ox+1, oy+7, 14, 1, '#5a4430');
+    if (season === 'hiver'){ R(ox+5, oy+3, 6, 1, '#fff'); R(ox+2, oy+6, 12, 1, '#fff'); }
+    R(ox+7, oy+10, 3, 4, '#4a3524');
+    R(ox+4, oy+9, 2, 2, '#e8c27a');
+    L(ox+5, oy+10, 9, 'win');
+    if (withLights) lights.push({x:ox+4, y:oy+9, w:2, h:2, kind:'pane'});
+    break; }
   case 'ÿ': { // indice qui scintille
     const tw = reduce ? 1 : (Math.sin(now/260 + x*3 + y*2)*0.5 + 0.5), a = (0.45 + tw*0.55).toFixed(2);
     R(ox+5, oy+13, 6, 1, 'rgba(0,0,0,.12)');
@@ -1614,7 +1650,6 @@ function drawObject(o, ox, oy, x, y, withLights){
     R(ox+5, oy+14, 6, 1, 'rgba(0,0,0,.15)');
     R(ox+6, oy+8, 4, 7, '#8a8f94'); R(ox+5, oy+14, 6, 1, '#73787d');
     R(ox+5, oy+3, 6, 5, '#73787d'); R(ox+6, oy+4, 4, 3, '#2b2b30');
-    if (glob.story.v === 2 && !glob.story.lanternLit && isStory()){ R(ox+4, oy+2, 8, 1, '#5b6168'); R(ox+7, oy+1, 2, 1, '#5b6168'); R(ox+6, oy+4, 1, 1, '#4a5058'); break; }
     const fl = reduce ? 0 : (Math.sin(now/90 + x) > 0 ? 1 : 0);
     R(ox+7, oy+5 - fl, 2, 2 + fl, '#f2a530'); R(ox+7, oy+5, 1, 1, '#ffe28a');
     R(ox+4, oy+2, 8, 1, '#5b6168'); R(ox+7, oy+1, 2, 1, '#5b6168');
@@ -1822,11 +1857,11 @@ function syncWalkers(){
   while (walkers.length < want) walkers.push(makeWalker(cells, walkers.length));
   syncCars(); syncBoats(); syncTrains(); syncAnimals();
 }
-const RES = {h:1, K:1, I:3, T:6};
+const RES = {h:1, K:1, I:3, T:6, 'Ĉ':1};
 function residents(){ let n = 0; for (const o of O) if (o && RES[o]) n += RES[o]; return n; }
 // habitants : 2 à 4 par maison, plus pour les immeubles et les tours
-const PEOPLE_IN = {h:0, K:2, I:12, T:24, 'Æ':5, L:1};
-function inhabitants(){ let n = 0; for (let i = 0; i < N*N; i++){ const o = O[i]; if (o === 'h') n += 2 + (hs(i % N, (i / N)|0, 555)*3|0); else if (o && PEOPLE_IN[o]) n += PEOPLE_IN[o]; } return n; }
+const PEOPLE_IN = {h:0, K:2, I:12, T:24, 'Æ':5, L:1, 'Ĉ':1};
+function inhabitants(){ let n = 0; for (let i = 0; i < N*N; i++){ const o = O[i]; if (o === 'h') n += 2 + (hs(i % N, (i / N)|0, 555)*3|0); else if (o === 'L' && glob.story.v === 2 && isStory() && !glob.story.lit) continue; else if (o && PEOPLE_IN[o]) n += PEOPLE_IN[o]; } return n; }
 
 /* ---------- voitures ---------- */
 const CAR_COLS = ['#cf453a','#2e6fa8','#f2b134','#f4f4f4','#3f8f5a','#2b2b30','#8a5aa8'];
@@ -2228,6 +2263,11 @@ function drawMist(c2){
     if (f.a <= 0) continue;
     const col = dk > 0.4 ? '150,165,188' : '232,238,244';
     c2.save(); c2.translate(f.cx*T + 8, f.cy*T + 8); c2.scale(f.rx*T, f.ry*T);
+    if (f.inv){
+      const g = c2.createRadialGradient(0, 0, 0, 0, 0, 1.35);
+      g.addColorStop(0, `rgba(${col},0)`); g.addColorStop(0.62, `rgba(${col},0)`); g.addColorStop(0.86, `rgba(${col},${(0.8*f.a).toFixed(3)})`); g.addColorStop(1, `rgba(${col},${(0.93*f.a).toFixed(3)})`);
+      c2.fillStyle = g; c2.fillRect(-60, -60, 120, 120); c2.restore(); continue;
+    }
     const g = c2.createRadialGradient(0, 0, 0, 0, 0, 1);
     g.addColorStop(0, `rgba(${col},${(0.9*f.a).toFixed(3)})`); g.addColorStop(0.62, `rgba(${col},${(0.82*f.a).toFixed(3)})`); g.addColorStop(1, `rgba(${col},0)`);
     c2.fillStyle = g; c2.beginPath(); c2.arc(0, 0, 1, 0, 6.29); c2.fill(); c2.restore();
@@ -2235,7 +2275,7 @@ function drawMist(c2){
   if (changed){ glob.story.fogs = fogs.filter(f => f.to > 0 || f.a > 0); saveGlob(); }
   // lueurs : de petites lumières bleues autour de la brume, et autour du phare une fois rallumé
   if (reduce) return;
-  const spots = fogs.filter(f => f.a > 0.3).map(f => [f.cx, f.cy, f.rx*0.7, f.ry*0.6, 4]);
+  const spots = fogs.filter(f => f.a > 0.3).map(f => f.inv ? [f.cx, f.cy, f.rx*1.15, f.ry*1.1, 5] : [f.cx, f.cy, f.rx*0.7, f.ry*0.6, 4]);
   if (glob.story.lit){ const li = O.indexOf('L'); if (li >= 0) spots.push([li % N, ((li / N)|0) - 1, 1.6, 1.2, 1]); }
   const alpha = 0.25 + dk*0.75;
   c2.save(); c2.globalCompositeOperation = 'lighter';
@@ -2423,6 +2463,7 @@ const TOOLS = [
   {id:'û', kind:'obj', name:'Terrain de foot', group:'Loisirs'},
   {id:'ë', kind:'obj', name:'Piscine', group:'Loisirs'},
   {id:'ï', kind:'obj', name:'Tente', group:'Loisirs'},
+  {id:'Ĉ', kind:'obj', name:'Cabane', group:'Habitations'},
   {id:'3', kind:'obj', name:'Aire de jeux', group:'Loisirs', story:true},
   {id:'O', kind:'obj', name:'Kiosque', group:'Loisirs', gift:true},
   {id:'j', kind:'obj', name:'Manège', group:'Loisirs', gift:true},
@@ -2510,7 +2551,7 @@ let activeGroup = 'Habitations';
 const GROUP_ORDER = ['Habitations', 'Commerces', 'Services', 'Mobilier', 'Loisirs', 'Campagne', 'Nature', 'Eau et port', 'Sols', 'Voies'];
 const REGROUP = {
   'Sols':'gpµ¶±£#*~&%s!', 'Voies':'cR+Xn', 'Eau et port':'wqÎGBJN6ÛÖÝLß',
-  'Campagne':'kz^voVmÇÉuey', 'Habitations':'hITÆï', 'Commerces':'SK129üùË',
+  'Campagne':'kz^voVmÇÉuey', 'Habitations':'ĈhITÆï', 'Commerces':'SK129üùË',
   'Services':'AEéèàœiaD', 'Mobilier':'QçâêîôblFWæ8ÊÂ', 'Loisirs':'ûë3OjÏ4ÔYUZ0dÑŸ', 'Nature':'tPÀfHrM5øþðŒC'};
 for (const t of TOOLS) for (const [g, ids] of Object.entries(REGROUP)) if ([...ids].includes(t.id)) t.group = g;
 try { const a = readJSON('iloe-tab'); if (a && GROUP_ORDER.includes(a)) activeGroup = a; } catch(e){}
@@ -2591,6 +2632,7 @@ function renderRecent(){
 }
 let prevTool = 'h';
 function selectTool(id, fromBar){
+  try { if (handMode) setHand(false); } catch(err){}
   if (id !== 'x') prevTool = id;
   tool = id;
   if (pipMode){ pipMode = false; document.getElementById('pipBtn').setAttribute('aria-pressed', 'false'); }
@@ -2603,6 +2645,7 @@ document.getElementById('eraseBtn').onclick = () => selectTool(tool === 'x' ? pr
 /* pipette : on touche un objet du terrain pour reprendre le même outil */
 const pipBtn = document.getElementById('pipBtn');
 pipBtn.onclick = () => {
+  if (handMode) setHand(false);
   pipMode = !pipMode; pipBtn.setAttribute('aria-pressed', pipMode);
   if (pipMode) toast('Touche un objet ou un sol du terrain');
 };
@@ -2630,20 +2673,39 @@ undoBtn.onclick = () => {
 const toastEl = document.getElementById('toast'); let toastT;
 function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), 1800); }
 const TALL1 = new Set(['t','P','L','I','T','A','m','K','h','a','e','d','é','œ','À','â','Ê','Ô','Â','Æ','Ð']), TALL2 = new Set(['T','d']);
+/* ce qui se ramasse ou s'allume à la main */
+function handTarget(i){
+  if (!isStory()) return false;
+  return !!COLLECT[O[i]] || O[i] === 'Ó';
+}
+function hintT(msg){ const n = performance.now(); if (n - busyT > 1500){ busyT = n; toast(msg); } }
+function interact(x, y){
+  const i = y*N + x;
+  if (fogAt(x, y)){ hintT('🌫️ La brume est trop épaisse par ici…'); return; }
+  if (!handTarget(i)) return;
+  if (O[i] === 'Ó'){ O[i] = null; toast('🧺 Débris ramassé'); syncWalkers(); updateStats(); queueSave(); return; }
+  const id = O[i], key = id + '_' + glob.story.chapter, f = glob.story.found || (glob.story.found = {});
+  O[i] = null; f[key] = (f[key] || 0) + 1; saveGlob(); toast(COLLECT[id]);
+  tutoCheck();
+  syncWalkers(); updateStats(); queueSave();
+}
+/* tuto du début : quand le bois est ramassé et la plage dégagée, on sait construire une cabane */
+function tutoCheck(){
+  if (glob.story.v !== 2 || !isStory() || (glob.story.unlocked2 || []).includes('Ĉ')) return;
+  const ch = CHAPTERS_V2[glob.story.chapter]; if (!ch || ch.title !== 'L’arrivée') return;
+  const wood = found('ŵ') >= spawned('ŵ', 6), rocks = !O.includes('ř');
+  if (wood && rocks){
+    unlockItem('Ĉ'); unlockItem('4'); saveGlob(); buildTools(); renderRecent();
+    setTimeout(() => toast('🪵 La plage est dégagée et tu as assez de bois : construis ta cabane !'), 1200);
+  }
+}
 function place(x, y, forceErase){
   const i = y*N + x, t = TOOLS.find(t => t.id === (forceErase ? 'x' : tool));
-  if (O[i] === 'æ' && glob.story.v === 2 && isStory() && !glob.story.lanternLit){
-    glob.story.lanternLit = true; unlockItem('æ'); saveGlob(); buildTools(); renderRecent();
-    toast('🏮 La vieille lanterne se rallume… Tu sais maintenant en fabriquer !'); forceDraw = true; updateStats(); return;
-  }
-  if (fogAt(x, y)){ const n = performance.now(); if (n - busyT > 1500){ busyT = n; toast('🌫️ La brume est trop épaisse par ici…'); } return; }
-  if (COLLECT[O[i]] && isStory()){
-    const id = O[i], key = id + '_' + glob.story.chapter, f = glob.story.found || (glob.story.found = {});
-    O[i] = null; f[key] = (f[key] || 0) + 1; saveGlob(); toast(COLLECT[id]);
-    syncWalkers(); updateStats(); queueSave(); return;
-  }
+  if (fogAt(x, y)){ hintT('🌫️ La brume est trop épaisse par ici…'); return; }
+  if (handTarget(i)){ hintT(O[i] === 'æ' ? '✋ Prends la main pour rallumer la lanterne' : '✋ Prends la main pour ramasser'); return; }
   if (t.kind === 'erase'){
-    if (O[i]) O[i] = null;
+    if (O[i] === 'ř'){ O[i] = null; toast('⛏️ Rocher cassé'); setTimeout(tutoCheck, 0); }
+    else if (O[i]) O[i] = null;
     else {
       // le haut d'un arbre, d'une maison ou d'une tour dépasse sur la case du dessus : on efface l'objet qu'on voit
       const below = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x]));
@@ -2712,7 +2774,7 @@ board.addEventListener('pointerdown', e => {
     return;
   }
   if (pts.size > 2 || lockUntilUp) return;
-  if (handMode || e.button === 1){ panDrag = {x:e.clientX, y:e.clientY}; board.style.cursor = 'grabbing'; return; }
+  if (handMode || e.button === 1){ panDrag = {x:e.clientX, y:e.clientY, sx:e.clientX, sy:e.clientY, tap:handMode && e.button !== 1}; board.style.cursor = 'grabbing'; return; }
   const erase = e.button === 2;
   if (e.pointerType === 'touch'){
     const ev = {clientX:e.clientX, clientY:e.clientY, touch:true};
@@ -2733,7 +2795,9 @@ board.addEventListener('pointermove', e => {
   }
   if (panDrag){
     camX -= (e.clientX - panDrag.x) * vw()/r.width; camY -= (e.clientY - panDrag.y) * vw()/r.height;
-    panDrag = {x:e.clientX, y:e.clientY}; clampCam(); return;
+    panDrag.x = e.clientX; panDrag.y = e.clientY;
+    if (Math.hypot(e.clientX - panDrag.sx, e.clientY - panDrag.sy) > 9) panDrag.tap = false;
+    clampCam(); return;
   }
   if (pendingTouch){
     if (Math.hypot(e.clientX - pendingTouch.ev.clientX, e.clientY - pendingTouch.ev.clientY) < 12) return;
@@ -2742,6 +2806,7 @@ board.addEventListener('pointermove', e => {
   if (stroke) continueStroke(e);
 });
 function endPointer(e){
+  if (panDrag && panDrag.tap && e.type === 'pointerup' && pts.size === 1){ panDrag.tap = false; const c = cellOf(e); if (c) interact(c[0], c[1]); }
   pts.delete(e.pointerId);
   if (pendingTouch){ clearTimeout(pendingTouch.t); const p = pendingTouch; pendingTouch = null; startStroke(p.ev, p.erase); }
   if (pts.size < 2) gesture = null;
@@ -2755,7 +2820,27 @@ board.addEventListener('wheel', e => {
   setZoom(zoom * (e.deltaY < 0 ? 1.15 : 1/1.15), (e.clientX - r.left)/r.width, (e.clientY - r.top)/r.height);
 }, {passive:false});
 const handBtn = document.getElementById('handBtn');
-handBtn.onclick = () => { handMode = !handMode; handBtn.setAttribute('aria-pressed', handMode); document.querySelector('.stage').classList.toggle('hand', handMode); };
+function setHand(on){ handMode = on; handBtn.setAttribute('aria-pressed', on); document.querySelector('.stage').classList.toggle('hand', on); document.body.classList.toggle('hand', on); }
+handBtn.onclick = () => setHand(!handMode);
+/* pavé de flèches et touches du clavier : bouger sans toucher le terrain */
+const padKeys = {dx:0, dy:0}; let padRaf = 0, padLast = 0;
+function padLoop(t){
+  if (!padKeys.dx && !padKeys.dy){ padRaf = 0; return; }
+  const dt = Math.min(0.05, (t - (padLast || t))/1000); padLast = t;
+  const sp = vw()*0.9; camX += padKeys.dx*sp*dt; camY += padKeys.dy*sp*dt; clampCam(); forceDraw = true;
+  padRaf = requestAnimationFrame(padLoop);
+}
+function padGo(dx, dy){ padKeys.dx = dx; padKeys.dy = dy; if (!padRaf && (dx || dy)){ padLast = 0; padRaf = requestAnimationFrame(padLoop); } }
+document.querySelectorAll('#pad button').forEach(b => {
+  const dx = +b.dataset.dx, dy = +b.dataset.dy;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch(err){} b.classList.add('on'); padGo(dx, dy); });
+  const stop = () => { b.classList.remove('on'); padGo(0, 0); };
+  b.addEventListener('pointerup', stop); b.addEventListener('pointercancel', stop); b.addEventListener('lostpointercapture', stop);
+  b.addEventListener('contextmenu', e => e.preventDefault());
+});
+const KEYDIR = {ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0]};
+document.addEventListener('keydown', e => { const d = KEYDIR[e.key]; if (!d || e.target.closest('input,textarea,select')) return; e.preventDefault(); padGo(d[0], d[1]); });
+document.addEventListener('keyup', e => { if (KEYDIR[e.key]) padGo(0, 0); });
 
 /* ---------- saisons, heure, terrain ---------- */
 function setSeason(k){
@@ -3339,7 +3424,7 @@ const CHAPTERS_V1 = [
    outro:['Tous les bateaux ont défilé, fanions au vent. Même les mouettes avaient l’air fières !', 'Je t’offre un bateau pavoisé, pour que la fête dure toute l’année.'],
    goals:[['Chalutiers le long du quai', () => O.filter((o, i) => o === 'G' && near8(i, j => G[j] === 'q')).length, 2], ['Bouées', () => cnt('J'), 3], ['Casiers sur le quai', () => cntOn('N', 'q'), 2], ['Phare', () => cnt('L'), 1]], reward:['Û']},
   {season:2, title:'La tempête', who:'job', give:['Î'], onIntro:() => storm(),
-   intro:['Quelle nuit… Une tempête d’automne a frappé l’île. Le vent a tout emporté : il y a des débris partout sur la côte.', 'Ramasse les débris avec la pioche, remets deux barques à l’eau, puis construis une digue d’au moins huit cases pour protéger le port. Je te confie les pierres.'],
+   intro:['Quelle nuit… Une tempête d’automne a frappé l’île. Le vent a tout emporté : il y a des débris partout sur la côte.', 'Ramasse les débris à la main ✋, remets deux barques à l’eau, puis construis une digue d’au moins huit cases pour protéger le port. Je te confie les pierres.'],
    outro:['La digue tient bon, et l’île est plus belle que jamais. Tu as fait du bon travail, matelot.', 'Pour qu’on ne soit plus jamais pris au dépourvu, les sauveteurs en mer installent leur station sur l’île.', 'Et grâce à ta digue, la mer s’est retirée à l’est : une jolie anse est apparue.'],
    goals:[['Débris ramassés', () => Math.max(0, (glob.story.debris || 0) - cnt('Ó')), () => glob.story.debris || 0], ['Barques à l’eau', () => cnt('B'), 2], ['Cases de digue', () => cntG('Î'), 8]], reward:['Ö']},
   {season:2, title:'Le marché de Noël', who:'anaig', give:['Ë','Â'],
@@ -3424,41 +3509,43 @@ function revealIsle(key){
 function v2Grow(){ growTerrain(true, false); }
 function fogAt(x, y){
   if (glob.story.v !== 2 || !isStory()) return false;
-  return (glob.story.fogs || []).some(f => (f.a ?? f.to) > 0.4 && ((x - f.cx)/f.rx)**2 + ((y - f.cy)/f.ry)**2 < 0.8);
+  return (glob.story.fogs || []).some(f => { if ((f.a ?? f.to) <= 0.4) return false; const d = ((x - f.cx)/f.rx)**2 + ((y - f.cy)/f.ry)**2; return f.inv ? d > 1.05 : d < 0.8; });
 }
 const CHAPTERS_V2 = [
-  {season:1, title:'L’arrivée', who:'toi', give:['h','4','V'],
-   intro:['{nom}. Ton nom est maintenant écrit sur la couverture. Le carnet sous le bras, tu fais le tour de l’île : elle est déserte.', 'Il va falloir t’installer : un toit pour dormir, un feu pour te réchauffer, un potager pour manger, et quelques fleurs pour te sentir chez toi.'],
-   outro:['Le feu crépite. Pour la première fois, tu te sens un peu chez toi.', 'Au nord de l’île, une grande silhouette se dresse dans la brume : un phare. Éteint. À son pied, une vieille lanterne rouillée, éteinte elle aussi.'],
-   goals:[['Ta maison', () => cnt('h'), 1], ['Feu de camp', () => cnt('4'), 1], ['Potager', () => cnt('V'), 1], ['Massifs de fleurs', () => cnt('f') + cnt('H'), 2]], reward:[]},
-  {season:1, title:'Le phare éteint', who:'toi', give:['c'],
-   intro:['Le phare est vieux, mais solide. Pour l’atteindre sans te perdre, trace un chemin jusqu’à lui.', 'Au pied du phare, la vieille lanterne attend. Va la rallumer (touche-la) : en la regardant de près, tu comprendras comment en fabriquer d’autres pour éclairer le chemin.'],
-   outro:['En haut du phare, une table couverte de poussière, une lampe à huile… et gravé dans le bois, le même dessin que sur la couverture de ton carnet.', 'Tu ouvres le carnet. Sur la première page, un mot est apparu, d’une écriture qui n’est pas la tienne : « Iloe ».'],
+  {season:1, title:'L’arrivée', who:'toi', give:[],
+   onIntro:() => startTuto(),
+   intro:['{nom}. Ton nom est maintenant écrit sur la couverture.', 'La brume est si épaisse que tu ne vois que cette plage. Il va falloir t’abriter pour la nuit : ramasse le bois flotté et casse les rochers pour construire ta cabane.'],
+   outro:['Le feu crépite devant ta cabane. Elle n’est pas bien grande, mais le vent ne passe pas. Pour la première fois, tu te sens un peu chez toi.', 'Pendant la nuit, le vent chasse la brume. Au matin, tu découvres l’île entière… et au nord, une grande silhouette : un phare. Éteint depuis longtemps.'],
+   onDone:() => { for (const f of glob.story.fogs || []) if (f.key === 'start') f.to = 0; saveGlob(); },
+   goals:[['✋ Bois flotté', () => found('ŵ'), () => spawned('ŵ', 6)], ['⛏️ Rochers cassés', () => (glob.story.spawn || {})['ř_' + glob.story.chapter] == null ? 0 : Math.max(0, spawned('ř', 4) - cnt('ř')), () => spawned('ř', 4)], ['Ta cabane', () => cnt('Ĉ'), 1], ['Feu de camp', () => cnt('4'), 1]], reward:[]},
+  {season:1, title:'Le phare éteint', who:'toi', give:['c','V'],
+   intro:['Au matin, ton ventre gargouille : un petit potager près de la cabane, ce serait bien.', 'Le phare, lui, est vieux, mais solide. Pour l’atteindre sans te perdre, trace un chemin jusqu’à lui.'],
+   outro:['En haut du phare, une table couverte de poussière, une grande lampe intacte… et gravé dans le bois, le même dessin que sur la couverture de ton carnet.', 'Tu ouvres le carnet. Sur la première page, un mot est apparu, d’une écriture qui n’est pas la tienne : « Iloe ».', 'Ce soir-là, depuis la fenêtre du phare, tu les vois pour la première fois : de petites lueurs bleues qui dansent au-dessus de la mer.'],
    onDone:() => addPage('Iloe.'),
-   goals:[['Cases de chemin', () => cntG('c'), 8], ['Chemin jusqu’au phare', () => nearG('L', 'c') ? 1 : 0, 1], ['Vieille lanterne rallumée', () => glob.story.lanternLit ? 1 : 0, 1], ['Lanternes le long du chemin', () => cnt('æ'), 3]], reward:[]},
-  {season:1, title:'Rallumer la lumière', who:'carnet', give:['Ô','b'],
-   intro:['Tu as posé le carnet ouvert sur la table. Là-haut, la lampe du phare n’attend qu’une flamme.', 'Allume un grand bûcher près du phare pour y porter le feu, et installe de quoi regarder la mer.'],
-   outro:['La lumière tourne à nouveau au-dessus de la mer. Une petite lueur bleue danse autour du phare, puis file vers le nord-est…', 'Là-bas, dans la brume, on devine une forme. Une autre île ?'],
+   goals:[['Potager', () => cnt('V'), 1], ['Cases de chemin', () => cntG('c'), 8], ['Chemin jusqu’au phare', () => nearG('L', 'c') ? 1 : 0, 1]], reward:[]},
+  {season:1, title:'Rallumer la lumière', who:'carnet', give:['æ','b'],
+   intro:['Les lueurs ne s’approchent que de la lumière. Hier soir, elles sont venues tourner autour de ton feu de camp, puis elles sont reparties vers la mer.', 'Ce matin, une nouvelle page du carnet s’est remplie : le dessin d’une ligne de lanternes qui monte jusqu’au phare. Pose des lanternes le long du chemin, et une tout près du phare. Peut-être qu’elles suivront la lumière.'],
+   outro:['À la nuit tombée, une lueur bleue sort de la mer. Elle passe d’une lanterne à l’autre, tout le long du chemin… puis elle entre dans le phare.', 'Là-haut, la grande lampe s’allume. La lumière tourne à nouveau au-dessus de la mer. Puis la lueur s’échappe et file vers le nord-est…', 'Là-bas, dans la brume, on devine une forme. Une autre île ?'],
    onDone:() => { glob.story.lit = true; saveGlob(); },
    after:() => { v2Grow(); addIsle('ilot', N - 7, 7, 4.2, 3.2, 'galets', {}); lookAt(N - 9, 9); save(); syncWalkers(); toast('🌫️ Au nord-est, une île se devine dans la brume…'); },
-   goals:[['Bûcher près du phare', () => withinR('Ô', 'L', 3) ? 1 : 0, 1], ['Bancs', () => cnt('b'), 2], ['Massifs de fleurs', () => cnt('f') + cnt('H'), 4]], reward:[]},
-  {season:1, title:'La première voile', who:'tomas', give:['q','B','W'],
-   intro:['Ohé ! J’ai vu ta lumière depuis le large. Je croyais qu’il n’y avait plus rien, par ici…', 'Je m’appelle Tomas, je suis pêcheur. Si tu me construis un ponton, une petite maison et un puits pour l’eau douce, je reste un moment. J’ai une barque en plus dans ma cale, elle est pour toi.'],
+   goals:[['Lanternes le long du chemin', () => O.reduce((n, o, i) => n + (o === 'æ' && near8(i, j => G[j] === 'c') ? 1 : 0), 0), 4], ['Lanterne au pied du phare', () => withinR('æ', 'L', 2) ? 1 : 0, 1], ['Bancs pour regarder la mer', () => cnt('b'), 2]], reward:[]},
+  {season:1, title:'La première voile', who:'tomas', give:['q','B','W','h'],
+   intro:['Ohé ! J’ai vu ta lumière depuis le large. Je croyais qu’il n’y avait plus rien, par ici…', 'Je m’appelle Tomas, je suis pêcheur. Ta cabane est jolie, mais je vais te montrer comment bâtir une vraie maison, en pierre ! Construis-en une pour moi, un ponton et un puits pour l’eau douce, et je reste un moment. J’ai une barque en plus dans ma cale, elle est pour toi.'],
    outro:['Tomas a posé son sac. Il regarde longtemps la brume au nord-est.', '« C’est bizarre… J’ai l’impression de connaître ce coin. »'],
-   goals:[['Cases de quai', () => cntG('q'), 4], ['Barques (la tienne et celle de Tomas)', () => cnt('B'), 2], ['Maisons', () => cnt('h'), 2], ['Puits', () => cnt('W'), 1]], reward:[]},
+   goals:[['Cases de quai', () => cntG('q'), 4], ['Barques (la tienne et celle de Tomas)', () => cnt('B'), 2], ['Maison pour Tomas', () => cnt('h'), 1], ['Puits', () => cnt('W'), 1]], reward:[]},
   {season:1, title:'L’îlot des pêcheurs', who:'tomas', give:['N','G'],
    onIntro:() => { revealIsle('ilot'); toast('🌫️ La brume se lève sur l’îlot !'); },
    intro:['La brume s’est levée d’un coup ! Regarde : un îlot de galets, et pas si loin.', 'Aide-moi à m’y installer : une cabane de pêche, des casiers et une jetée pour accoster. Je vais faire venir mon chalutier !'],
    outro:['Sous les galets, Tomas a trouvé de vieux casiers en bois. Il en retourne un : un nom est gravé dessus. Celui de son grand-père.', '« Il ne m’a jamais dit qu’il était venu ici… »', 'Ce soir-là, une phrase de plus est apparue dans le carnet : « On revient toujours là où on a été heureux. »'],
    onDone:() => addPage('On revient toujours là où on a été heureux.'),
-   goals:[['Cabane sur l’îlot', () => cntIn('h', 'ilot'), 1], ['Casiers sur l’îlot', () => cntIn('N', 'ilot'), 3], ['Cases de quai sur l’îlot', () => cntGIn('q', 'ilot'), 2], ['Chalutier', () => cnt('G'), 1]], reward:[]},
+   goals:[['Cabane sur l’îlot', () => cntIn('Ĉ', 'ilot') + cntIn('h', 'ilot'), 1], ['Casiers sur l’îlot', () => cntIn('N', 'ilot'), 3], ['Cases de quai sur l’îlot', () => cntGIn('q', 'ilot'), 2], ['Chalutier', () => cnt('G'), 1]], reward:[]},
   {season:1, title:'Du pain frais', who:'lina', give:['1','m','k','F'],
    intro:['Bonjour ! Je m’appelle Lina, je suis boulangère. Mon bateau ne fait escale ici que pour une nuit…', 'Mais tant qu’à faire, donne-moi un four et je fais du pain pour tout le monde ! Il me faudrait un moulin, un champ de blé avec des clôtures autour, et quelques maisons pour les gens qui viendront.'],
    outro:['Le premier pain sort du four. Lina en goûte un morceau et reste silencieuse.', '« C’est drôle. Cette recette, je la tiens de ma mère. Elle disait qu’elle venait d’une île qui n’existe plus. »', 'Le lendemain, son bateau repart sans elle.'],
-   goals:[['Boulangerie', () => cnt('1'), 1], ['Moulin', () => cnt('m'), 1], ['Cases de blé', () => cntG('k'), 6], ['Clôtures', () => cnt('F'), 4], ['Maisons', () => cnt('h'), 4]], reward:[]},
+   goals:[['Boulangerie', () => cnt('1'), 1], ['Moulin', () => cnt('m'), 1], ['Cases de blé', () => cntG('k'), 6], ['Clôtures', () => cnt('F'), 4], ['Maisons', () => cnt('h'), 3]], reward:[]},
   {season:1, title:'La tempête', who:'tomas', give:['Î','Ö'],
    onIntro:() => storm(),
-   intro:['Quelle nuit ! Le vent a tout secoué, il y a des débris partout sur la côte.', 'Ramasse-les avec la pioche, construis une digue pour protéger le port, et une station de sauveteurs pour la prochaine fois. Il faut aussi trois barques à l’eau.'],
+   intro:['Quelle nuit ! Le vent a tout secoué, il y a des débris partout sur la côte.', 'Ramasse-les à la main ✋, construis une digue pour protéger le port, et une station de sauveteurs pour la prochaine fois. Il faut aussi trois barques à l’eau.'],
    outro:['L’île est réparée. En rangeant le phare, tu remarques que le carnet s’est ouvert tout seul.', 'Une nouvelle phrase est apparue, d’une écriture fine : « Elles reviendront si tu les éclaires. »'],
    outroWho:'carnet', onDone:() => addPage('Elles reviendront si tu les éclaires.'),
    goals:[['Débris ramassés', () => Math.max(0, (glob.story.debris || 0) - cnt('Ó')), () => glob.story.debris || 0], ['Cases de digue', () => cntG('Î'), 6], ['Sauveteurs', () => cnt('Ö'), 1], ['Barques', () => cnt('B'), 3]], reward:[]},
@@ -3467,7 +3554,7 @@ const CHAPTERS_V2 = [
    intro:['Tu as vu ?! Ce matin, une île est apparue au sud-ouest. Hier, il n’y avait que de la brume !', 'Elle est couverte d’oiseaux. Pose un banc pour les observer, un petit chemin de galets, et des bouées pour guider les barques.'],
    outro:['Assise sur le banc, Lina compte les oiseaux.', '« Ils se tournent tous vers l’ouest, tu as remarqué ? Comme s’ils attendaient quelque chose. »'],
    goals:[['Banc sur l’île aux oiseaux', () => cntIn('b', 'oiseaux'), 1], ['Cases de galets sur l’île', () => cntGIn('!', 'oiseaux'), 4], ['Bouées', () => cnt('J'), 2]], reward:[]},
-  {season:1, title:'Le feu de la plage', who:'tomas', give:['8','Ê','Ï'],
+  {season:1, title:'Le feu de la plage', who:'tomas', give:['Ô','8','Ê','Ï'],
    intro:['Lina et moi, on voudrait fêter ton arrivée. Après tout, sans ta lumière, on ne serait pas là !', 'Il faut deux grands feux de joie sur la plage, des bancs pour tout le monde, des guirlandes, des bannières… et un feu d’artifice !'],
    outro:['Pendant la fête, la brume s’illumine à l’ouest. Des dizaines de lueurs bleues flottent au-dessus de l’eau, puis s’éteignent une à une.', 'Plus tard, seul·e dans le phare, tu vois le carnet s’ouvrir. Une phrase s’écrit sous tes yeux, lettre après lettre :', '« Si tu lis ceci, {nom}, c’est que tu es enfin arrivé·e. Je t’attendais. — M. »'],
    outroWho:'carnet', onDone:() => addPage('Si tu lis ceci, {nom}, c’est que tu es enfin arrivé·e. Je t’attendais. — M.'),
@@ -3555,7 +3642,7 @@ function applyGrowth(i, late){
   toast(late ? 'L’île s’est agrandie pendant ton absence' : g.msg);
   return true;
 }
-const COLLECT = {'ÿ':'🔍 Indice trouvé !', 'ý':'🤿 Yuna plonge… quelque chose brille au fond !', 'ñ':'✂️ Ronces arrachées'};
+const COLLECT = {'ŵ':'🪵 Bois flotté ramassé', 'ÿ':'🔍 Indice trouvé !', 'ý':'🤿 Yuna plonge… quelque chose brille au fond !', 'ñ':'✂️ Ronces arrachées'};
 const shuffleArr = a => { for (let k = a.length - 1; k > 0; k--){ const j = (Math.random()*(k+1))|0; [a[k], a[j]] = [a[j], a[k]]; } return a; };
 function found(id){ return (glob.story.found || {})[id + '_' + glob.story.chapter] || 0; }
 function spawned(id, n){ const v = (glob.story.spawn || {})[id + '_' + glob.story.chapter]; return v == null ? n : v; }
@@ -3597,7 +3684,7 @@ function placeTreasure(){
   if (spot != null){ O[spot] = 'Ÿ'; save(); syncWalkers(); }
 }
 function storm(){
-  const SAFE = new Set(['h','K','I','T','A','E','L','i','a','é','ü','è','à','ù','œ','Ö','1','2','9','S','W','m','Ç','O','j','y','u','e','D','ê','â','Ë','Â','Ô','æ','4']);
+  const SAFE = new Set(['h','K','I','T','A','E','L','i','a','é','ü','è','à','ù','œ','Ö','1','2','9','S','W','m','Ç','O','j','y','u','e','D','ê','â','Ë','Â','Ô','æ','4','Ĉ']);
   const coast = i => G[i] === 's' || G[i] === 'q' || near8(i, j => G[j] === 'w');
   const shuffle = a => { for (let k = a.length - 1; k > 0; k--){ const j = (Math.random()*(k+1))|0; [a[k], a[j]] = [a[j], a[k]]; } return a; };
   const cand = []; for (let i = 0; i < N*N; i++) if (O[i] && !SAFE.has(O[i]) && coast(i)) cand.push(i);
@@ -3637,6 +3724,22 @@ function drawPortrait(cv, p){
   if (p.hat === 'coiffe'){ R(6, 0, 4, 4, '#fafafa'); R(5, 3, 6, 2, '#ececec'); R(7, 1, 2, 2, '#e8e0f0'); }
   C = prevC;
 }
+/* début de l'histoire : une clairière sur la plage, tout le reste dans la brume */
+function startFog(){
+  const bb = O.indexOf('B'), bx = bb >= 0 ? bb % N : 15, by = bb >= 0 ? (bb / N)|0 : N - 7;
+  const fogs = glob.story.fogs || (glob.story.fogs = []);
+  let f = fogs.find(g => g.key === 'start');
+  if (!f){ f = {key:'start', inv:true, cx:bx, cy:by - 2.5, rx:5.8, ry:4, to:1, a:1}; fogs.push(f); saveGlob(); }
+  lookAt(f.cx, f.cy); forceDraw = true;
+  return f;
+}
+function startTuto(){
+  const f = startFog();
+  const inside = i => { const x = i % N, y = (i / N)|0; return ((x - f.cx)/f.rx)**2 + ((y - f.cy)/f.ry)**2 < 0.85; };
+  spawnFor('ŵ', 6, i => G[i] === 's' && inside(i));
+  spawnFor('ř', 4, i => (G[i] === 'g' || G[i] === 's') && inside(i) && !near8(i, j => O[j] === 'B' || O[j] === 'ř'));
+  lookAt(f.cx, f.cy); saveGlob(); forceDraw = true;
+}
 function makeIsland2(){
   N = 32; W = N*T; G = Array(N*N).fill('w'); O = Array(N*N).fill(null);
   const cx = 15.5, cy = 16, rx = 9.6, ry = 8.4;
@@ -3654,7 +3757,6 @@ function makeIsland2(){
   if (bi >= 0){
     O[bi] = 'L';
     const bx = bi % N, by0 = (bi / N)|0;
-    for (const [a, b] of [[0,1],[-1,1],[1,1],[-1,0],[1,0],[0,2]]){ const j = (by0 + b)*N + bx + a; if ((G[j] === 's' || G[j] === 'g') && !O[j]){ O[j] = 'æ'; break; } }
   }
   // ta barque, échouée au bord de la plage du sud
   let bb = -1, by = -1;
@@ -3665,7 +3767,7 @@ function askName(){
   if (storyMode !== 'prologue' || storyBox.hidden){
     openStoryModal({mode:'prologue', kicker:'Prologue', title:'La brume', paras:[
       'La brume t’enveloppe depuis des heures. Ta barque dérive sans bruit, jusqu’à ce que sa coque racle le sable.',
-      'Une île. Personne sur la plage, pas une lumière. Juste, au loin, la silhouette d’un grand phare éteint.',
+      'Une île. Personne sur la plage, pas une lumière. Au-delà du sable, la brume est si épaisse qu’on n’y voit rien.',
       'En sautant de la barque, ton pied heurte quelque chose, à moitié enfoui dans le sable : un vieux carnet relié de cuir. Il est sec, comme si la mer n’avait jamais osé le toucher.'],
       go:'Ouvrir le carnet'});
     return;
@@ -3785,7 +3887,7 @@ function startStory(){
     v:2, name:null, isles:{}, fogs:[], pages:[], lit:false, lanternLit:false, unlocked2:[], grown:{}, found:{}, spawn:{}}); saveGlob();
   pickChapters();
   makeIsland2(); save();
-  afterTerrainChange(); setMenu(false);
+  afterTerrainChange(); startFog(); setMenu(false);
   if (storyBox.hidden) askName();
 }
 function completeChapter(){
