@@ -358,7 +358,6 @@ body.hand .tool[aria-pressed="true"],body.hand #recent .tb[aria-pressed="true"]{
         <div class="seg theme-seg" id="meteoSeg">
           <button type="button" data-m="auto">Au hasard</button>
           <button type="button" data-m="soleil">Soleil</button>
-          <button type="button" data-m="pluie">Pluie</button>
           <button type="button" data-m="brume">Brume</button>
         </div>
         <div class="label">Sons</div>
@@ -3097,9 +3096,10 @@ document.addEventListener('visibilitychange', () => { if (!actx) return; if (doc
 
 /* ---------- météo ---------- */
 const WEATHERS = {soleil:'Soleil', pluie:'Pluie', brume:'Brume'};
-function weatherMode(){ return (glob.ui && glob.ui.meteo) || 'auto'; }
-function pickWeather(){ const r = Math.random(); return r < 0.58 ? 'soleil' : r < 0.82 ? 'pluie' : 'brume'; }
+function weatherMode(){ const m = (glob.ui && glob.ui.meteo) || 'auto'; return m === 'pluie' ? 'soleil' : m; }
+function pickWeather(){ return Math.random() < 0.78 ? 'soleil' : 'brume'; }
 function setWeather(w){
+  if (w === 'pluie') w = 'soleil'; // la pluie est retirée : trop gourmande pour les téléphones
   weather = w; forceDraw = true;
   const el = document.getElementById('weatherName');
   if (el) el.textContent = w === 'soleil' ? '' : ' · ' + (w === 'pluie' && season === 'hiver' ? 'Neige' : WEATHERS[w]);
