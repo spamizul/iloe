@@ -341,12 +341,7 @@ body.hand .tool[aria-pressed="true"],body.hand #recent .tb[aria-pressed="true"]{
         <div class="group" id="menuTimeSlot"></div>
         <div class="label">L'histoire</div>
         <button class="btn" id="storyBtn" type="button">📖 Commencer l'histoire</button>
-        <button class="btn" id="storyRestart" type="button" hidden>↺ Recommencer l'histoire</button>
-        <div class="confirm" id="storyConfirm" hidden>
-          <span id="storyConfirmText">Repartir du chapitre 1 avec une île toute neuve ?</span>
-          <button class="btn danger" id="storyYes" type="button">Oui</button>
-          <button class="btn" id="storyNo" type="button">Annuler</button>
-        </div>
+        <button class="btn" id="chapterRestart" type="button" hidden>↺ Recommencer ce chapitre</button>
         <div class="label">Mes terrains</div>
         <div class="tlist" id="tlist"></div>
         <div class="row">
@@ -392,6 +387,13 @@ body.hand .tool[aria-pressed="true"],body.hand #recent .tb[aria-pressed="true"]{
             <button class="btn danger" id="confirmYes">Oui</button>
             <button class="btn" id="confirmNo">Annuler</button>
           </div>
+        </div>
+        <div class="label" id="storyDangerLabel">Repartir de zéro</div>
+        <button class="btn" id="storyRestart" type="button" hidden>↺ Recommencer l'histoire</button>
+        <div class="confirm" id="storyConfirm" hidden>
+          <span id="storyConfirmText">Repartir du chapitre 1 avec une île toute neuve ?</span>
+          <button class="btn danger" id="storyYes" type="button">Oui</button>
+          <button class="btn" id="storyNo" type="button">Annuler</button>
         </div>
       </div>
     </div>
@@ -2825,9 +2827,9 @@ function harvest(o){
   if (TREES.has(o)) return gain(2, 0, '🪵 Arbre coupé · +2 bois');
   if (GROWN[o]) return hintT('🌱 Trop petite pour donner du bois');
   if (o === 'r' || o === 'ř') return gain(0, 3, '⛏️ Rocher cassé · +3 pierres');
-  const c = COST[o]; if (c){ const b = Math.floor((c.b || 0)/2), p = Math.floor((c.p || 0)/2); if (b || p) gain(b, p); }
+  const c = COST[o]; if (c && (c.b || c.p)) gain(c.b || 0, c.p || 0, `♻️ Récupéré : ${costTxt(c)}`);
 }
-function refundG(g){ if (!resOn()) return; const c = COST[g === '¤' || g === '=' ? 'X' : g]; if (c){ const b = Math.floor((c.b || 0)/2), p = Math.floor((c.p || 0)/2); if (b || p) gain(b, p); } }
+function refundG(g){ if (!resOn()) return; const c = COST[g === '¤' || g === '=' ? 'X' : g]; if (c && (c.b || c.p)) gain(c.b || 0, c.p || 0); }
 /* à chaque marée, la mer rapporte du bois flotté et quelques rochers sur la côte */
 function tide(){
   if (!resOn()) return;
@@ -3119,11 +3121,11 @@ function updateClock(){
   if (t !== clockTxt){ clockTxt = t; document.getElementById('clock').textContent = t; }
 }
 function updateStats(){
-  renderRes();
+  renderRes(); renderHearts();
   const hab = residents(), p = walkers.length, v = cars.length;
   const an = animals.length + animals.reduce((s, a) => s + (a.babies ? a.babies.length : 0), 0) + gulls.length + walkers.filter(w => w.dog).length + cnt('v') + cnt('C');
   const pl = (n, w, ws) => `${n} ${n > 1 ? (ws || w + 's') : w}`;
-  document.getElementById('stats').textContent = `${N}×${N} · ${pl(hab, 'foyer')} · ${pl(inhabitants(), 'habitant')} · ${pl(p, 'promeneur')} · ${pl(v, 'voiture')} · ${pl(boats.length, 'voilier')}${trains.length ? ' · ' + pl(trains.length, 'train') : ''} · ${pl(an, 'animal', 'animaux')}`;
+  document.getElementById('stats').textContent = `${N}×${N} · ${pl(hab, 'foyer')} · ${pl(inhabitants(), 'habitant')} · ${pl(p, 'promeneur')} · ${v || cntG('R') || cntG('+') ? pl(v, 'voiture') + ' · ' : ''}${pl(boats.length, 'voilier')}${trains.length ? ' · ' + pl(trains.length, 'train') : ''} · ${pl(an, 'animal', 'animaux')}`;
   checkRequest(); checkStory();
 }
 let pending = null;
@@ -3160,7 +3162,7 @@ updateGrowBtn();
 /* ---------- roue crantée ---------- */
 const gearBtn = document.getElementById('gearBtn'), gearMenu = document.getElementById('gearMenu');
 function setMenu(open){ gearMenu.hidden = !open; gearBtn.setAttribute('aria-expanded', open); if (!open){ confirmRow.hidden = true; resetRow.hidden = false; const sc = document.getElementById('storyConfirm'); if (sc){ sc.hidden = true; updateStoryBtn(); } } }
-gearBtn.onclick = e => { e.stopPropagation(); setMenu(gearMenu.hidden); };
+gearBtn.onclick = e => { e.stopPropagation(); if (gearMenu.hidden) updateStoryBtn(); setMenu(gearMenu.hidden); };
 document.addEventListener('pointerdown', e => { if (!gearMenu.hidden && !gearMenu.contains(e.target) && e.target !== gearBtn) setMenu(false); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
 
@@ -3403,7 +3405,7 @@ function residentLook(name){
 }
 function renderHearts(){
   const h = glob.hearts || 0, el = document.getElementById('heartsPill');
-  el.hidden = !h;
+  el.hidden = !h || (glob.story.v === 2 && isStory());
   el.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.3-9.2C1.4 8.3 3.6 5 7 5c2 0 3.6 1.2 5 3 1.4-1.8 3-3 5-3 3.4 0 5.6 3.3 4.3 6.8C19.5 16.4 12 21 12 21z"/></svg>';
   el.append(String(h)); el.title = `${h} idée${h > 1 ? 's' : ''} réalisée${h > 1 ? 's' : ''}`; el.setAttribute('aria-label', el.title);
 }
@@ -3691,9 +3693,9 @@ function revealIsle(key){
   saveGlob(); const g = (glob.story.isles || {})[key]; if (g) lookAt(g.cx, g.cy);
 }
 function v2Grow(){ growTerrain(true, false); fillContinent(); }
-/* le continent : un bout de terre qui dépasse dans le coin en bas à droite, avec sa voie ferrée */
+/* la ligne oubliée : un bout de terre qui dépasse dans le coin en bas à droite, et une voie ferrée qui part dans la brume */
 function inCont(i){
-  const ct = glob.story.cont; if (!ct || typeof ct !== 'object') return false;
+  const ct = glob.story.cont; if (typeof ct === 'number') return i % N >= ct; if (!ct || typeof ct !== 'object') return false;
   const x = i % N, y = (i / N)|0;
   return Math.hypot(N + 1 - x, N + 1 - y) + (hs(x, y, 515) - 0.5)*1.6 <= ct.r;
 }
@@ -3711,6 +3713,9 @@ function fillContinent(){
   const y = ct.row; let west = -1;
   for (let x = 0; x < N; x++){ const i = y*N + x; if (inCont(i)){ if (west < 0) west = x; G[i] = 'X'; if (O[i] !== 'i') O[i] = null; } }
   if (west >= 0){ const gi = (y - 1)*N + west + 1; if (inCont(gi) && !O.some((o, k) => o === 'i' && inCont(k))){ G[gi] = 'g'; O[gi] = 'i'; } }
+  const fogs = glob.story.fogs || (glob.story.fogs = []); let f = fogs.find(g => g.key === 'ligne');
+  if (!f){ f = {key:'ligne', to:1, a:1}; fogs.push(f); }
+  f.cx = N + 0.5; f.cy = ct.row; f.rx = 4.5; f.ry = 5; saveGlob();
   groundDirty = true;
 }
 function makeContinent(){
@@ -3719,6 +3724,27 @@ function makeContinent(){
   save(); syncWalkers(); updateStats();
 }
 const isRailG = g => g === 'X' || g === '¤' || g === '=';
+/* si la gare de la ligne oubliée a disparu, on la remet */
+function repairLine(){
+  const ct = glob.story.cont; if (ct == null || O.some((o, k) => o === 'i' && inCont(k))) return;
+  if (typeof ct === 'object'){ fillContinent(); }
+  else { const y = N >> 1; for (let x = ct; x < N; x++){ const i = y*N + x; if (G[i] === 'g' && !O[i]){ O[i] = 'i'; break; } } }
+  save();
+}
+/* recommencer le chapitre en cours : les objets à ramasser reviennent, l'intro se relit */
+function restartChapter(){
+  if (glob.story.v !== 2 || !isStory()) return;
+  const i = glob.story.chapter, ch = CHAPTERS[i]; if (!ch) return;
+  for (let k = 0; k < N*N; k++) if (COLLECT[O[k]] || O[k] === 'ř') O[k] = null;
+  for (const m of [glob.story.found || {}, glob.story.spawn || {}]) for (const key of Object.keys(m)) if (key.endsWith('_' + i)) delete m[key];
+  const ev = glob.story.events || (glob.story.events = {});
+  if (!ch.noReplay) ev[i] = false;
+  repairLine();
+  glob.story.introSeen = i - 1; glob.story.nextAt = 0; glob.story.readyToast = null; glob.story.pendingOutro = null;
+  saveGlob(); save(); syncWalkers(); updateStats(); setMenu(false);
+  openChapter('intro', i);
+  toast('↺ Le chapitre recommence');
+}
 function railToContinent(){
   if (!glob.story.cont) return false;
   const seen = new Set(), q = [];
@@ -3780,7 +3806,7 @@ const CHAPTERS_V2 = [
    outro:['Quelle fête ! Tomas a dansé avec Lina, Mei a pris cent photos, Jonas a mangé trop de brioche, et la fontaine a fini pleine de pétales.', 'Tard dans la nuit, tu relis les pages retrouvées. Il y a longtemps, quelqu’un a fêté les premières voiles sur cette île, exactement comme vous ce soir.'],
    goals:[['Ramasse les pages arrachées', () => found('ƥ'), () => spawned('ƥ', 2)], ['Cases de pavés', () => cntG('p'), 12], ['Fontaine sur la place', () => O.some((o, i) => o === 'Q' && near8(i, j => G[j] === 'p')) ? 1 : 0, 1], ['Café', () => cnt('2'), 1], ['Lampadaires', () => cnt('l'), 4], ['Guirlandes', () => cnt('8'), 3]], reward:[]},
   {season:1, title:'La tempête', who:'tomas', give:['Î','Ö'],
-   onIntro:() => storm(),
+   onIntro:() => storm(), noReplay:true,
    intro:['Quelle nuit ! Le vent a tout secoué, il y a des débris partout sur la côte.', 'Ramasse-les, construis une digue pour protéger le port, et une station de sauveteurs pour la prochaine fois. Il faut aussi trois barques à l’eau.'],
    outro:['L’île est réparée, et tout le monde a mis la main à la pâte. Même Lina a porté des pierres pour la digue, entre deux fournées.', 'Au matin, le vent a emporté la brume du nord-est : l’îlot est là, tout près. On pourrait presque y aller à pied.', 'Dans le carnet, une nouvelle phrase est apparue : « Elles reviendront si tu les éclaires. »'],
    onDone:() => addPage('Elles reviendront si tu les éclaires.'),
@@ -3798,11 +3824,11 @@ const CHAPTERS_V2 = [
    onDone:() => addPage('Si tu lis ceci, {nom}, c’est que tu es enfin arrivé·e. Je t’attendais. — M.'),
    after:() => { addIsle('oiseaux', 6, N - 6, 3.6, 2.8, 'oiseaux', {}); save(); syncWalkers(); toast('🌫️ Au sud-ouest, une forme dans la brume… À suivre !'); },
    goals:[['Ramasse la page envolée', () => found('ƥ'), () => spawned('ƥ', 1)], ['Marché', () => cnt('9'), 1], ['Feux sur la plage', () => cnt('Ô'), 2], ['Bannières', () => cnt('Ê'), 3], ['Foyers', () => residents(), 20], ['Feu d’artifice', () => cnt('Ï'), 1]], reward:[]},
-  {season:2, title:'Le train du continent', who:'ines', give:['i','X'],
-   onIntro:() => { v2Grow(); makeContinent(); spawnSmart('Ŧ', 1, i => G[i] === 's' && !fogAt(i % N, (i / N)|0) && !inCont(i)); lookAt(N - 12, N - 10); },
-   intro:['Bonjour ! Inès, cheffe de gare. Vous avez entendu le sifflet, le soir de la fête ? C’était mon train. Il ne lui manque plus qu’une chose : des rails jusqu’à chez vous !', 'Construis une gare sur ton île et relie-la à la voie du continent, qui dépasse au sud-est. Il faudra passer au-dessus de la mer : les rails posés sur l’eau deviennent un viaduc. Et prévois quelques maisons, les premiers voyageurs voudront rester !', 'Ah… et j’ai encore perdu mon ticket. Il doit être sur une plage.'],
-   outro:['Le premier train traverse la mer dans un nuage de vapeur. Toute l’île l’attend sur le quai, Tomas en tête, sa casquette à la main.', 'Parmi les voyageurs descend une petite femme chargée de rouleaux de papier. Elle regarde le phare, puis l’horizon, puis toi. « Alors c’est vrai… Iloe existe encore. »'],
-   goals:[['Ramasse le ticket d’Inès', () => found('Ŧ'), () => spawned('Ŧ', 1)], ['Ta gare sur l’île', islandGare, 1], ['Rails jusqu’au continent', () => railToContinent() ? 1 : 0, 1], ['Foyers', () => residents(), 24]], reward:[]},
+  {season:2, title:'Le train de la brume', who:'ines', give:['i','X'],
+   onIntro:() => { if (glob.story.cont == null){ v2Grow(); makeContinent(); } else repairLine(); spawnSmart('Ŧ', 1, i => G[i] === 's' && !fogAt(i % N, (i / N)|0) && !inCont(i)); lookAt(N - 12, N - 10); },
+   intro:['Bonjour… Inès, cheffe de gare. Enfin, je crois. Ce matin, mon train est sorti de la brume, au sud-est, sur une voie que personne ici n’avait jamais vue. Je ne sais plus très bien d’où je viens : j’ai juste suivi la lumière du phare.', 'Construis une gare sur ton île et relie-la à la ligne oubliée. Il faudra passer au-dessus de la mer : les rails posés sur l’eau deviennent un viaduc. Et prévois quelques maisons, les voyageurs voudront rester !', 'Ah… et j’ai perdu mon ticket. Il doit être sur une plage.'],
+   outro:['Le premier train traverse la mer dans un nuage de vapeur. Toute l’île l’attend sur le quai, Tomas en tête, sa casquette à la main.', 'Parmi les voyageurs descend une petite femme chargée de rouleaux de papier. Elle regarde le phare, puis la brume d’où sort la voie, puis toi. « Alors c’est vrai… Iloe existe encore. »'],
+   goals:[['Ramasse le ticket d’Inès', () => found('Ŧ'), () => spawned('Ŧ', 1)], ['Ta gare sur l’île', islandGare, 1], ['Rails jusqu’à la ligne oubliée', () => railToContinent() ? 1 : 0, 1], ['Foyers', () => residents(), 24]], reward:[]},
   {season:2, title:'La cartographe', who:'aiko', give:['à','l'],
    onIntro:() => spawnSmart('ƈ', 3, i => G[i] === 'g' && !fogAt(i % N, (i / N)|0) && !inCont(i)),
    intro:['Je m’appelle Aiko. Je dessine des cartes, et je collectionne les vieilles. Celle-ci date d’il y a soixante ans… Regarde : Iloe n’y est pas une île, mais six. Et au centre, un nom effacé.', 'Le vent m’a arraché trois morceaux en descendant du train : ramasse-les. Il me faudrait aussi un endroit au calme pour l’étudier : une bibliothèque, avec des bancs devant, et des lampadaires pour travailler tard.'],
@@ -3815,17 +3841,17 @@ const CHAPTERS_V2 = [
    outro:['Mei a passé la nuit dans sa cabane. Au matin, elle te montre ses photos : sur chacune, les oiseaux regardent dans la même direction. L’ouest.', 'Aiko, penchée sur sa carte : « À l’ouest, il y avait l’île des vents. On disait que ses pierres chantaient. »'],
    goals:[['Ramasse les plumes bleues', () => found('ƒ'), () => spawned('ƒ', 5)], ['Cabane sur l’île aux oiseaux', () => cntIn('Ĉ', 'oiseaux') + cntIn('h', 'oiseaux'), 1], ['Jetée sur l’île', () => cntGIn('q', 'oiseaux'), 2], ['Galets sur l’île', () => cntGIn('!', 'oiseaux'), 6], ['Bouées', () => cnt('J'), 3]], reward:[]},
   {season:2, title:'Les pierres qui chantent', who:'aiko', give:['M','5','e'],
-   onIntro:() => { v2Grow(); addIsle('vents', 7, N >> 1, 5, 8, 'vents', null); spawnSmart('ƚ', 5, onIsleOk('vents')); save(); syncWalkers(); const g = glob.story.isles.vents; lookAt(g.cx + 3, g.cy); },
+   onIntro:() => { if (!(glob.story.isles || {}).vents){ v2Grow(); addIsle('vents', 7, N >> 1, 5, 8, 'vents', null); } spawnSmart('ƚ', 5, onIsleOk('vents')); save(); syncWalkers(); const g = glob.story.isles.vents; lookAt(g.cx + 3, g.cy); },
    intro:['Regarde, à l’ouest ! L’île des vents est sortie de la brume cette nuit, et ses pierres sont toutes tombées.', 'Relève les pierres couchées, puis reforme le cercle : cinq menhirs. Plante des ajoncs autour, comme sur la carte. Et avec tout ce vent… trois éoliennes donneraient de la lumière à tout le village !'],
    outro:['Quand le dernier menhir est debout, le vent se lève et passe entre les pierres. On dirait une voix. Une chanson.', 'Lina, qui t’avait suivie, s’arrête net. « Cette chanson… c’est la berceuse que ma mère me chantait. »'],
    goals:[['Relève les pierres couchées', () => found('ƚ'), () => spawned('ƚ', 5)], ['Menhirs sur l’île des vents', () => cntIn('M', 'vents'), 5], ['Ajoncs', () => cnt('5'), 6], ['Éoliennes', () => cnt('e'), 3]], reward:[]},
   {season:2, title:'Le marché du port', who:'tomas', give:['S'],
    onIntro:() => spawnSmart('ƀ', 4, i => G[i] === 's' && !fogAt(i % N, (i / N)|0) && !inCont(i)),
-   intro:['Avec le train, les gens du continent viennent acheter mon poisson ! Il nous faut un vrai port de commerce.', 'La grande marée a déposé des caisses sur la plage : ramasse-les, elles serviront d’étals. Ensuite : un magasin, un deuxième marché, un entrepôt pour le poisson, et un quai d’au moins dix cases. Et de la place pour tout ce monde : trente foyers.'],
+   intro:['Avec le train, des voyageurs viennent acheter mon poisson ! D’où ils sortent, personne ne sait vraiment… mais ils ont faim. Il nous faut un vrai port de commerce.', 'La grande marée a déposé des caisses sur la plage : ramasse-les, elles serviront d’étals. Ensuite : un magasin, un deuxième marché, un entrepôt pour le poisson, et un quai d’au moins dix cases. Et de la place pour tout ce monde : trente foyers.'],
    outro:['Le samedi, le port déborde : poissons de Tomas, pains de Lina, photos de Mei, cartes d’Aiko… et des voyageurs qui ne repartent plus.', 'Dans une des caisses, Tomas a trouvé une vieille étiquette : « Expédié d’Iloe — 6 îles ». Il la garde dans sa poche, sans rien dire.'],
    goals:[['Ramasse les caisses', () => found('ƀ'), () => spawned('ƀ', 4)], ['Magasin', () => cnt('S'), 1], ['Marchés', () => cnt('9'), 2], ['Entrepôts (granges)', () => cnt('Ç'), 2], ['Cases de quai', () => cntG('q'), 10], ['Foyers', () => residents(), 30]], reward:[]},
   {season:2, title:'L’île des jardins', who:'nour', give:['y','u','À','H'],
-   onIntro:() => { v2Grow(); addIsle('jardins', (N >> 1) + 4, N - 20, 6, 4.5, 'jardins', null); spawnSmart('ǥ', 4, onIsleOk('jardins')); save(); syncWalkers(); const g = glob.story.isles.jardins; lookAt(g.cx, g.cy - 2); },
+   onIntro:() => { if (!(glob.story.isles || {}).jardins){ v2Grow(); addIsle('jardins', (N >> 1) + 4, N - 20, 6, 4.5, 'jardins', null); } spawnSmart('ǥ', 4, onIsleOk('jardins')); save(); syncWalkers(); const g = glob.story.isles.jardins; lookAt(g.cx, g.cy - 2); },
    intro:['Bonjour ! Nour, jardinière. Je suis arrivée par le train de ce matin avec une copie de la carte d’Aiko, et je n’ai pas pu attendre : regarde ce qui est sorti de la brume, au sud !', 'L’île des jardins. Tout est en friche, mais il reste de vieilles graines dans des pots cassés : ramasse-les. Il me faudrait une serre, des ruches, des palmiers, des hortensias, et une fontaine pour arroser.'],
    outro:['Les premières fleurs s’ouvrent. Nour plante la dernière graine au pied de la fontaine et s’essuie les mains, les yeux brillants.', '« Ma grand-mère disait qu’elle avait grandi dans un jardin au milieu de la mer. Je croyais que c’était une histoire. »'],
    goals:[['Ramasse les graines', () => found('ǥ'), () => spawned('ǥ', 4)], ['Serre', () => cnt('y'), 1], ['Ruches', () => cnt('u'), 2], ['Palmiers', () => cnt('À') + cnt('ą'), 3], ['Hortensias sur l’île', () => cntIn('H', 'jardins'), 6], ['Fontaine sur l’île des jardins', () => cntIn('Q', 'jardins'), 1]], reward:[]},
@@ -4290,6 +4316,8 @@ function updateStoryBtn(){
   const sc = document.getElementById('storyConfirm');
   const rb = document.getElementById('storyRestart');
   rb.hidden = !has || !sc.hidden;
+  document.getElementById('storyDangerLabel').hidden = !has;
+  document.getElementById('chapterRestart').hidden = !(has && isStory() && glob.story.v === 2 && CHAPTERS[glob.story.chapter] && glob.story.introSeen >= glob.story.chapter && sc.hidden);
   const old = has && glob.story.v !== 2;
   rb.textContent = old ? '✨ Nouvelle histoire : le carnet' : '↺ Recommencer l’histoire';
   document.getElementById('storyConfirmText').textContent = old ? 'Commencer la nouvelle histoire ? L’ancienne île de l’histoire sera remplacée par une île toute neuve.' : 'Repartir du chapitre 1 avec une île toute neuve ?';
@@ -4306,6 +4334,7 @@ function restartStory(){
   startStory(); syncWalkers(); updateStats(); renderTerrains(); updateStoryBtn();
   toast('📖 Nouvelle île, nouvelle histoire !');
 }
+document.getElementById('chapterRestart').onclick = () => restartChapter();
 document.getElementById('storyRestart').onclick = () => { document.getElementById('storyConfirm').hidden = false; document.getElementById('storyRestart').hidden = true; };
 document.getElementById('storyNo').onclick = () => { document.getElementById('storyConfirm').hidden = true; updateStoryBtn(); };
 document.getElementById('storyYes').onclick = () => { document.getElementById('storyConfirm').hidden = true; restartStory(); };
