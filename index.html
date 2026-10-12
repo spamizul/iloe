@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#2b3a44">
+<meta name="theme-color" content="#11171c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="iloe">
@@ -21,21 +21,22 @@ button{touch-action:manipulation}
 </head>
 <body>
 <title>iloe</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Fraunces:ital,opsz,wght@0,9..144,600;1,9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Caveat:wght@600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <style>
 /* Layout : le terrain en pixel art à gauche, l'établi d'outils à droite (empilés sur téléphone). Couleurs : granit et ardoise bretons, volets bleus, lueur des lampadaires. */
 :root{
-  --bg:#e8ecee; --surface:#f8fafb; --ink:#1e2830; --muted:#5a6872; --line:#cfd6db;
-  --accent:#2e6fa8; --accent-soft:#dbe7f2; --glow:#d99a2b;
-  --f-display:"Pixelify Sans", "Courier New", monospace;
+  --bg:#e8ecee; --surface:#f8fafb; --surface2:#eef2f4; --ink:#1e2830; --muted:#5a6872; --line:#cfd6db;
+  --accent:#2e6fa8; --amber:#2e6fa8; --on-amber:#ffffff; --accent-soft:#dbe7f2; --glow:#d99a2b; --good:#3f8f5a;
+  --halo:rgba(46,111,168,.25);
+  --f-display:"Bricolage Grotesque", system-ui, sans-serif;
   --f-body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#11171c; --surface:#1a2229; --ink:#e4eaee; --muted:#93a1aa; --line:#2c3842;
-  --accent:#7cb0e0; --accent-soft:#22364a; --glow:#f0b850; color-scheme:dark}}
+  --bg:#11171c; --surface:#1a2229; --surface2:#222c35; --ink:#e4eaee; --muted:#93a1aa; --line:#2c3842;
+  --accent:#7cb0e0; --amber:#7cb0e0; --on-amber:#11171c; --accent-soft:#22364a; --glow:#f0b850; --good:#7dd3a0; --halo:rgba(124,176,224,.28); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#11171c; --surface:#1a2229; --ink:#e4eaee; --muted:#93a1aa; --line:#2c3842;
-  --accent:#7cb0e0; --accent-soft:#22364a; --glow:#f0b850; color-scheme:dark}
+  --bg:#11171c; --surface:#1a2229; --surface2:#222c35; --ink:#e4eaee; --muted:#93a1aa; --line:#2c3842;
+  --accent:#7cb0e0; --amber:#7cb0e0; --on-amber:#11171c; --accent-soft:#22364a; --glow:#f0b850; --good:#7dd3a0; --halo:rgba(124,176,224,.28); color-scheme:dark}
 html,body{background:var(--bg);color:var(--ink);overflow-x:hidden;overscroll-behavior:none;max-width:100%}
 body{touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .photo-card img{-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
@@ -87,7 +88,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tabs{gap:4px}
 .tabs button{font-family:var(--f-display);font-size:13px}
 .btn:disabled{opacity:.5;cursor:default}
-#ecoBtn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+#soundBtn[aria-pressed="true"],#ecoBtn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
 .hdr-right{display:flex;align-items:center;gap:8px;position:relative;flex:none}
 .gear{width:44px;height:44px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:22px;line-height:1;cursor:pointer}
 .gear:hover,.gear[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
@@ -180,23 +181,149 @@ button.fold{flex:none;width:32px;height:30px;border:1px solid var(--line);backgr
 .photo-card{background:var(--surface);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;align-items:center;max-width:min(560px,100%)}
 .photo-card img{width:100%;image-rendering:pixelated;border-radius:4px}
 @media (prefers-reduced-motion: reduce){.toast{transition:none}}
+/* ---------- habillage « Nuit au phare » ---------- */
+h1{font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+h1::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber)}
+.clock{font-weight:500;color:var(--ink)}
+.clock b{font-weight:500}
+#seasonName{color:var(--accent)}
+.label{font-family:var(--f-body);font-weight:700;font-size:11.5px;letter-spacing:.12em}
+.gear{border-radius:12px;display:flex;align-items:center;justify-content:center;padding:0}
+.gear svg{width:22px;height:22px}
+.board-frame{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:4px;box-shadow:none}
+canvas#board{border-radius:12px}
+@media (max-width:600px){.board-frame{padding:3px}}
+.panel,.menu,.req,.storycard{border-radius:14px}
+.btn,.seg button{border-radius:10px;background:var(--surface2)}
+.btn.primary,.seg button[aria-pressed="true"],.qbtn[aria-pressed="true"]{background:var(--amber);border-color:var(--amber);color:var(--on-amber)}
+.btn.danger{border-color:#d05a4e;color:#d05a4e}
+.tabs{gap:18px!important;border-bottom:1px solid var(--line);padding-bottom:0!important}
+.tabs button{font-family:var(--f-body);font-size:14px;border:none;border-bottom:2px solid transparent;border-radius:0;background:none;color:var(--muted);padding:6px 0;min-height:34px}
+.tabs button[aria-pressed="true"]{background:none;color:var(--ink);font-weight:700;border-bottom-color:var(--accent)}
+.tabs button:hover{border-color:transparent;color:var(--ink)}
+.tabs button[aria-pressed="true"]:hover{border-bottom-color:var(--accent)}
+.tool{border-radius:12px;background:var(--surface)}
+.tool[aria-pressed="true"],.tb[aria-pressed="true"]{border-color:var(--accent);background:var(--surface2);box-shadow:inset 0 0 0 1px var(--accent),0 0 16px var(--halo)}
+.recent .tb{border-radius:12px;background:var(--surface2)}
+.tb{border-radius:12px}
+.tb .glyph svg{width:22px;height:22px}
+.thumb{box-shadow:none}
+.sc-title{font-family:var(--f-display);font-weight:700;font-size:16px;display:flex;flex-direction:column;line-height:1.2}
+.sc-kick{font-family:var(--f-body);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.storycard.min .sc-title{display:block}
+.storycard.min .sc-kick{display:none}
+.sc-head button{border-radius:10px;background:var(--surface2);display:inline-flex;align-items:center;gap:5px}
+.sc-head button svg{width:16px;height:16px}
+button.fold{border-radius:10px;background:var(--surface2);justify-content:center;padding:0}
+.sc-goals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;font-size:13px}
+.sc-goals li{display:flex;flex-direction:column;gap:3px;min-width:0}
+.sc-goals li::before,.sc-goals li.ok::before{content:none}
+.sc-goals li.free{grid-column:1/-1}
+.sc-goals .bar{display:block;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.sc-goals .bar b{display:block;height:100%;border-radius:2px;background:var(--amber)}
+.sc-goals li.ok .bar b{box-shadow:0 0 8px var(--amber)}
+.sc-goals li.ok span::after{content:" ✓";color:var(--good);font-weight:700}
+.photo{background:rgba(6,12,22,.72)}
+.photo-card{border-radius:16px;border:1px solid var(--line)}
+.story-body h3.season{color:var(--accent)}
+.theme-seg{display:flex;gap:6px;flex-wrap:wrap}
+/* ---------- habillage « Carte marine » (sans quadrillage) ---------- */
+:root{--f-display:"Fraunces", Georgia, serif; --f-mono:"IBM Plex Mono", ui-monospace, Menlo, monospace; --tick:#9aa7b0; --line2:#b9c4cc;
+  --bubble:#f6ecd8; --bubble-ink:#22202e; --bubble-btn:#e8dabf}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--tick:#4d5e6a; --line2:#3a4955}}
+:root[data-theme="dark"]{--tick:#4d5e6a; --line2:#3a4955}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.compass{width:40px;height:40px;flex:none}
+.brand-t{display:flex;flex-direction:column;min-width:0;gap:3px}
+h1{font-family:var(--f-display);font-weight:600;letter-spacing:0;line-height:1;font-size:30px}
+h1::after{content:none}
+.coords{font-family:var(--f-mono);font-size:11px;color:var(--muted);letter-spacing:.04em;white-space:nowrap}
+.hearts-pill{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 8px;border:1px solid var(--line2);border-radius:4px;font-family:var(--f-mono);font-size:12px;color:var(--accent);margin-left:2px;align-self:center}
+.hearts-pill svg{width:12px;height:12px;fill:var(--amber)}
+.clock{font-family:var(--f-mono);font-size:15px;font-weight:400}
+.clock b{font-weight:500}
+#hearts{display:none}
+.gear,.panel,.menu,.storycard,.photo-card,.btn,.seg button,.tool,.tb,.recent .tb,button.fold,.sc-head button{border-radius:4px}
+.gear,.panel,.storycard,.menu{border-color:var(--line2)}
+.label{font-family:var(--f-mono);font-weight:500;font-size:11px;letter-spacing:.1em}
+.tabs{gap:10px!important;border-bottom:none}
+.tabs button{font-family:var(--f-mono);font-size:12px;text-transform:uppercase;letter-spacing:.06em;border:1px solid transparent;border-radius:3px;padding:4px 8px;min-height:32px;color:var(--muted)}
+.tabs button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);font-weight:500;background:none}
+.tabs button:hover,.tabs button[aria-pressed="true"]:hover{border-color:var(--accent)}
+.tabs .tab-search{width:34px}
+.tool{border-style:dashed;border-color:var(--line2);background:var(--surface)}
+.tool[aria-pressed="true"]{border-style:solid;border-color:var(--accent);background:var(--surface2);box-shadow:inset 0 0 0 1px var(--accent)}
+.tb[aria-pressed="true"]{box-shadow:inset 0 0 0 1px var(--accent)}
+.recent .tb{border-style:dashed;border-color:var(--line2)}
+.recent .tb[aria-pressed="true"]{border-style:solid}
+.tb > span:last-child{font-family:var(--f-mono);font-size:10px;text-transform:lowercase}
+.board-frame{position:relative;box-sizing:border-box;border-radius:2px;padding:9px;background:var(--bg);border-color:var(--line2)}
+.board-frame::before{content:"";position:absolute;left:9px;right:9px;top:0;height:5px;background:repeating-linear-gradient(90deg,var(--tick) 0 1px,transparent 1px 24px);pointer-events:none}
+.board-frame::after{content:"";position:absolute;top:9px;bottom:9px;left:0;width:5px;background:repeating-linear-gradient(180deg,var(--tick) 0 1px,transparent 1px 24px);pointer-events:none}
+canvas#board{border-radius:0;outline:1px solid var(--line2)}
+@media (max-width:600px){.board-frame{padding:8px}}
+.sc-title span{font-family:var(--f-display);font-style:italic;font-weight:600;font-size:19px}
+.storycard.min .sc-title{font-family:var(--f-mono);font-size:12.5px;font-style:normal}
+.sc-kick{font-family:var(--f-mono);font-weight:500;font-size:10.5px;letter-spacing:.1em}
+.sc-goals{gap:3px 16px}
+.sc-goals li{flex-direction:row;align-items:baseline;gap:5px}
+.sc-goals .lab{min-width:0;flex:0 1 auto}
+.sc-goals .lead{flex:1;min-width:6px;border-bottom:1px dotted var(--line2);transform:translateY(-3px)}
+.sc-goals .num{font-family:var(--f-mono);font-size:12.5px;flex:none}
+.sc-goals li.ok{color:var(--accent)}
+.sc-goals li.ok .lab{text-decoration:line-through}
+.sc-goals li.ok .lead{border-color:var(--accent)}
+.sc-goals li.ok span::after{content:none}
+.sc-done{margin-top:4px;height:42px;border:none;border-radius:4px;background:var(--amber);color:var(--on-amber);font:inherit;font-weight:700;font-size:15px;cursor:pointer;animation:donePulse 1.6s ease-in-out infinite}
+@keyframes donePulse{0%,100%{box-shadow:0 0 0 0 var(--halo)}50%{box-shadow:0 0 0 6px var(--halo)}}
+@media (prefers-reduced-motion: reduce){.sc-done{animation:none}}
+.storycard.min .sc-done{height:34px;font-size:13.5px}
+/* bulle des habitants */
+.req{background:none;border:none;padding:0;align-items:flex-end;gap:8px}
+#reqFace{width:42px;height:42px;flex:none;border-radius:50%;background:var(--surface2);border:2px solid var(--line2);image-rendering:pixelated;box-sizing:border-box}
+.req .bubble{flex:1;min-width:0;display:flex;align-items:center;gap:6px;background:var(--bubble);color:var(--bubble-ink);border-radius:16px 16px 16px 4px;padding:7px 7px 7px 12px;box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.req p{font-size:14px;line-height:1.3}
+.req .bubble button{flex:none;border:none;background:var(--bubble-btn);color:var(--bubble-ink);border-radius:15px;text-decoration:none;font-size:12.5px;padding:0 10px;height:30px;cursor:pointer}
+.req .bubble button.fold{width:30px;padding:0;border-radius:50%}
+.req.thanks{background:none}
+.req.thanks .bubble{background:#f7d58e}
+.req.thanks #reqFace{border-color:var(--amber);box-shadow:0 0 14px var(--halo)}
+.req.min #reqFace{width:32px;height:32px}
+.req.min .bubble{padding:3px 4px 3px 12px;border-radius:16px}
+.req.min .bubble button.fold{width:26px;height:26px}
+@media (max-width:859px){.req,.req.min{padding:0}}
+.frame-card{max-width:340px;text-align:center}
+.story-body p.carnet-line{font-family:var(--f-display);font-style:italic;font-size:17px;color:var(--accent);border-left:2px solid var(--line2);padding-left:10px}
+.name-in{width:100%;box-sizing:border-box;font-size:18px;padding:10px 12px;border-color:var(--line2);background:var(--surface2);color:var(--ink);border-radius:6px}
+.frame-opts{display:flex;flex-direction:column;gap:8px;width:100%}
+.frame-opts .btn{font-size:15px;padding:12px}
+.tabs .tab-search{flex:none;width:36px;display:flex;align-items:center;justify-content:center;padding:0}
+.tabs .tab-search svg{width:19px;height:19px}
+.search-in{width:100%;box-sizing:border-box;border-color:var(--line);background:var(--surface2);color:var(--ink);border-radius:10px;padding:9px 12px}
+.search-in:focus{outline:none;border-color:var(--accent)}
+.tgroup .hint{padding:6px 2px}
+.theme-seg button{flex:1}
 </style>
 
 <div class="wrap" lang="fr">
   <header>
     <div class="hdr-top">
-      <h1>iloe</h1>
+      <div class="brand">
+        <svg class="compass" viewBox="0 0 40 40" fill="none" aria-hidden="true"><circle cx="20" cy="20" r="17" stroke="var(--line2)" stroke-width="1"/><circle cx="20" cy="20" r="12" stroke="var(--line2)" stroke-width="1" stroke-dasharray="2 3"/><path d="M20 3l3 17-3 17-3-17z" fill="var(--amber)"/><path d="M3 20l17-2.5 17 2.5-17 2.5z" fill="var(--muted)"/><circle cx="20" cy="20" r="2" fill="var(--bg)" stroke="var(--amber)"/></svg>
+        <div class="brand-t"><h1>iloe</h1><span class="coords" id="coords">48°41,0′N · 3°56,0′O</span></div>
+        <span class="hearts-pill" id="heartsPill" hidden></span>
+      </div>
     <div class="hdr-right">
       <button class="gear giftbtn" id="giftBtn" type="button" aria-label="Ouvrir le cadeau du jour" hidden>🎁</button>
-      <button class="gear" id="photoBtn" type="button" aria-label="Prendre une photo">📷</button>
-      <button class="gear" id="gearBtn" type="button" aria-expanded="false" aria-controls="gearMenu" aria-label="Réglages">⚙</button>
+      <button class="gear" id="photoBtn" type="button" aria-label="Prendre une photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+      <button class="gear" id="gearBtn" type="button" aria-expanded="false" aria-controls="gearMenu" aria-label="Réglages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
       <div class="menu" id="gearMenu" hidden>
         <div class="group" id="menuTimeSlot"></div>
         <div class="label">L'histoire</div>
         <button class="btn" id="storyBtn" type="button">📖 Commencer l'histoire</button>
         <button class="btn" id="storyRestart" type="button" hidden>↺ Recommencer l'histoire</button>
         <div class="confirm" id="storyConfirm" hidden>
-          <span>Repartir du chapitre 1 avec une île toute neuve ?</span>
+          <span id="storyConfirmText">Repartir du chapitre 1 avec une île toute neuve ?</span>
           <button class="btn danger" id="storyYes" type="button">Oui</button>
           <button class="btn" id="storyNo" type="button">Annuler</button>
         </div>
@@ -206,6 +333,22 @@ button.fold{flex:none;width:32px;height:30px;border:1px solid var(--line);backgr
           <button class="btn" id="newEmpty" type="button">+ Terrain vide</button>
           <button class="btn" id="newSample" type="button">+ Village d'exemple</button>
         </div>
+        <div class="label">Thème</div>
+        <div class="seg theme-seg" id="themeSeg">
+          <button type="button" data-t="dark">Sombre</button>
+          <button type="button" data-t="light">Clair</button>
+          <button type="button" data-t="auto">Auto</button>
+        </div>
+        <div class="label">Météo</div>
+        <div class="seg theme-seg" id="meteoSeg">
+          <button type="button" data-m="auto">Au hasard</button>
+          <button type="button" data-m="soleil">Soleil</button>
+          <button type="button" data-m="pluie">Pluie</button>
+          <button type="button" data-m="brume">Brume</button>
+        </div>
+        <div class="label">Sons</div>
+        <button class="btn" id="soundBtn" type="button" aria-pressed="false">🔈 Sons : coupés</button>
+        <p class="hint">Les vagues, les mouettes, la cloche du port et la pluie, tout doucement.</p>
         <div class="label">Batterie</div>
         <button class="btn" id="ecoBtn" type="button" aria-pressed="false">🔋 Mode économie : désactivé</button>
         <p class="hint">Moins d'animations (vagues, feuilles, neige) et un affichage plus lent, pour que le téléphone chauffe moins.</p>
@@ -234,19 +377,22 @@ button.fold{flex:none;width:32px;height:30px;border:1px solid var(--line);backgr
     </div>
     </div>
     <div class="meta">
-      <span class="clock"><b id="clock">10 h 00</b> · <span id="seasonName">Automne</span></span>
+      <span class="clock"><b id="clock">10 h 00</b> · <span id="seasonName">Automne</span><span id="weatherName"></span></span>
       <span id="stats"></span>
       <span id="hearts"></span>
     </div>
     <div class="req" id="reqCard" hidden>
-      <span aria-hidden="true">💬</span>
-      <p id="reqText"></p>
-      <button type="button" id="reqSkip">Autre idée</button>
-      <button type="button" class="fold" id="reqFold" aria-expanded="true" aria-label="Replier l’idée">▾</button>
+      <canvas id="reqFace" width="16" height="16" aria-hidden="true"></canvas>
+      <div class="bubble">
+        <p id="reqText"></p>
+        <button type="button" id="reqSkip">Autre idée</button>
+        <button type="button" class="fold" id="reqFold" aria-expanded="true" aria-label="Replier l’idée">▾</button>
+      </div>
     </div>
     <div class="storycard" id="storyCard" hidden>
-      <div class="sc-head"><span class="sc-title" id="scTitle"></span><button type="button" id="scBook">📖 Carnet</button><button type="button" class="fold" id="scFold" aria-expanded="true" aria-label="Replier les objectifs">▾</button></div>
+      <div class="sc-head"><span class="sc-title" id="scTitle"></span><button type="button" id="scBook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1zM12 6v14"/></svg>Carnet</button><button type="button" class="fold" id="scFold" aria-expanded="true" aria-label="Replier les objectifs">▾</button></div>
       <ul class="sc-goals" id="scGoals"></ul>
+      <button type="button" class="sc-done" id="scDone" hidden>Valider le chapitre ✓</button>
     </div>
   </header>
 
@@ -278,9 +424,9 @@ button.fold{flex:none;width:32px;height:30px;border:1px solid var(--line);backgr
       <button class="tb" id="pipBtn" type="button" aria-pressed="false" title="Pipette : reprendre un objet du terrain">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 3.5a2.1 2.1 0 0 1 3 3L18 9l-3-3 2.5-2.5z"/><path d="M15 6l3 3"/><path d="M16 8l-9 9-3 1 1-3 9-9"/></svg>
         <span>Pipette</span></button>
-      <button class="tb" id="eraseBtn" type="button" aria-pressed="false"><span id="eraseIcon"></span><span>Gomme</span></button>
-      <button class="tb" id="undoBtn" type="button" disabled><b class="glyph">↶</b><span>Annuler</span></button>
-      <button class="tb" id="handBtn" type="button" aria-pressed="false" title="Déplacer la vue"><b class="glyph">✋</b><span>Bouger</span></button>
+      <button class="tb" id="eraseBtn" type="button" aria-pressed="false"><span id="eraseIcon"></span><span>Pioche</span></button>
+      <button class="tb" id="undoBtn" type="button" disabled><b class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6L4 11l5 5"/><path d="M4 11h10a5 5 0 0 1 0 10h-2"/></svg></b><span>Annuler</span></button>
+      <button class="tb" id="handBtn" type="button" aria-pressed="false" title="Déplacer la vue"><b class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V6a1.5 1.5 0 0 1 3 0v5M11 11V4.5a1.5 1.5 0 0 1 3 0V11M14 11V6a1.5 1.5 0 0 1 3 0v7c0 4-2.5 7-6 7-2.6 0-4.2-1.6-5.5-3.7L3.3 12.6a1.4 1.4 0 0 1 2.3-1.6L8 13.5"/></svg></b><span>Bouger</span></button>
     </div>
   </div>
 </nav>
@@ -314,6 +460,16 @@ button.fold{flex:none;width:32px;height:30px;border:1px solid var(--line);backgr
     </div>
   </div>
 </div>
+<div class="photo" id="photoChoose" hidden>
+  <div class="photo-card frame-card">
+    <div class="label">Quel cadre pour ta photo ?</div>
+    <div class="frame-opts">
+      <button class="btn" type="button" data-f="souvenir">Souvenir</button>
+      <button class="btn" type="button" data-f="brut">Sans cadre</button>
+    </div>
+    <button class="btn" id="photoChooseClose" type="button">Annuler</button>
+  </div>
+</div>
 <div class="photo" id="photoBox" hidden>
   <div class="photo-card">
     <img id="photoImg" alt="Photo de ton iloe">
@@ -329,13 +485,21 @@ const board = document.getElementById('board');
 const disp = board.getContext('2d');
 const world = document.createElement('canvas'); world.width = W; world.height = W;
 const ctx = world.getContext('2d');
-let now = 0, staticPass = false, groundDirty = true, forceDraw = true, curDark = 0, stormT = 0;
+let now = 0, staticPass = false, groundDirty = true, forceDraw = true, curDark = 0, stormT = 0, weather = 'soleil', weatherReady = false;
 let rockets = [], sparks = []; // le décor fixe est redessiné seulement quand groundDirty est vrai
 /* caméra */
 let zoom = innerWidth < 700 ? 2 : 1, camX = 0, camY = 0;
 const ZMIN = 1, zmax = () => 3 * N / 24;
 const vw = () => W / zoom;
-function clampCam(){ forceDraw = true; const v = vw(); camX = Math.max(0, Math.min(W - v, camX)); camY = Math.max(0, Math.min(W - v, camY)); }
+function clampCam(){ forceDraw = true; const v = vw(); camX = Math.max(0, Math.min(W - v, camX)); camY = Math.max(0, Math.min(W - v, camY)); updateCoords(); }
+let coordsTxt = '';
+function updateCoords(){
+  const el = document.getElementById('coords'); if (!el) return;
+  const v = vw(), cx = (camX + v/2)/T - N/2, cy = (camY + v/2)/T - N/2;
+  const fmt = (deg, min) => { const t = deg*60 + min, d = Math.floor(t/60), m = t - d*60; return `${d}°${m.toFixed(1).replace('.', ',')}′`; };
+  const txt = `${fmt(48, 41 - cy*0.12)}N · ${fmt(3, 56 - cx*0.12)}O`;
+  if (txt !== coordsTxt){ coordsTxt = txt; el.textContent = txt; }
+}
 function sizeBoard(){ const s = Math.round(vw()); if (board.width !== s){ board.width = s; board.height = s; } forceDraw = true; }
 function setZoom(z, fx = 0.5, fy = 0.5){
   const wx = camX + fx*vw(), wy = camY + fy*vw();
@@ -425,11 +589,27 @@ if (!terrains || !Array.isArray(terrains.list) || !terrains.list.length){
 if (!terrains.list.some(t => t.id === terrains.cur)) terrains.cur = terrains.list[0].id;
 let glob = {gifts:[], lastGift:null, hearts:0, recent:['h','t','c','f','R','w'], req:null};
 Object.assign(glob, readJSON(GKEY) || {});
+applyTheme();
 glob.story = Object.assign({asked:false, started:false, terrain:null, chapter:0, unlocked:[], pendingOutro:null}, glob.story || {});
 if (glob.story.introSeen == null) glob.story.introSeen = glob.story.started ? Math.min(glob.story.chapter, 6) : -1;
 function saveGlob(){ writeJSON(GKEY, glob); }
+function applyTheme(){
+  const t = (glob.ui && glob.ui.theme) || 'dark';
+  if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
+  document.querySelectorAll('#themeSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === t));
+}
+document.querySelectorAll('#themeSeg button').forEach(b => b.onclick = () => { glob.ui = glob.ui || {}; glob.ui.theme = b.dataset.t; saveGlob(); applyTheme(); });
 function terrainData(){ return {n:N, g:G.join(''), o:O.map(c => c || '.').join(''), season}; }
 function save(){ writeJSON(tKey(terrains.cur), terrainData()); }
+// anciens rails posés sur la mer : ils deviennent un viaduc (eau des deux côtés)
+function railsOverWater(){
+  const g = (x, y) => (x < 0 || y < 0 || x >= N || y >= N) ? 'w' : G[y*N + x];
+  const wet = c => c === 'w' || c === '¤';
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++){
+    const i = y*N + x; if (G[i] !== 'X' || O[i]) continue;
+    if ((wet(g(x, y-1)) && wet(g(x, y+1))) || (wet(g(x-1, y)) && wet(g(x+1, y)))) G[i] = '¤';
+  }
+}
 function loadTerrain(id){
   N = 24; W = N*T;
   const d = readJSON(tKey(id));
@@ -439,7 +619,7 @@ function loadTerrain(id){
       if (SEASONS[d.season]) season = d.season;
       if (d.g.length === 144){ expand(d.g, o, 12, 5, true); return; }
       const n = Math.round(Math.sqrt(d.g.length));
-      if (n*n === d.g.length && n >= 24 && n <= NMAX){ N = n; W = N*T; G = d.g.split(''); O = o; return; }
+      if (n*n === d.g.length && n >= 24 && n <= 80){ N = n; W = N*T; G = d.g.split(''); O = o; railsOverWater(); return; }
     }
   } catch(e){}
   loadSample();
@@ -459,7 +639,7 @@ function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(save, 300)
 const gAt = (x, y) => (x < 0 || y < 0 || x >= N || y >= N) ? null : G[y*N + x];
 const walkable = c => c === 'c' || c === 'p' || c === 'q' || c === 'n' || c === '#' || c === '*' || c === '~' || c === '+' || c === 'Î' || c === 'µ' || c === '¶' || c === '±' || c === '£';
 const isRoad = c => c === 'R' || c === 'n' || c === '+' || c === '=';
-const isRail = c => c === 'X' || c === '=';
+const isRail = c => c === 'X' || c === '=' || c === '¤';
 
 /* ---------- dessin du sol ---------- */
 function band(ox, oy, arms, w0, w1, fill, seam, edge){
@@ -488,7 +668,44 @@ function band(ox, oy, arms, w0, w1, fill, seam, edge){
   if (u){ R(ox+w0-1, oy, 1, w0, edge); R(ox+w1, oy, 1, w0, edge); }
   if (d){ R(ox+w0-1, oy+w1, 1, T-w1, edge); R(ox+w1, oy+w1, 1, T-w1, edge); }
 }
+function drawRails(ox, oy, x, y, nb, bal){
+  const isX = isRail;
+  const l = isX(nb(x-1, y)), r = isX(nb(x+1, y)), u = isX(nb(x, y-1)), d = isX(nb(x, y+1));
+  const sl = '#6b4a2e', rail = '#5b6168';
+  const H = (x0, len) => { R(ox+x0, oy+5, len, 6, bal); for (let k = x0 + 1; k < x0 + len; k += 3) R(ox+k, oy+4, 1, 8, sl); R(ox+x0, oy+6, len, 1, rail); R(ox+x0, oy+9, len, 1, rail); };
+  const V = (y0, len) => { R(ox+5, oy+y0, 6, len, bal); for (let k = y0 + 1; k < y0 + len; k += 3) R(ox+4, oy+k, 8, 1, sl); R(ox+6, oy+y0, 1, len, rail); R(ox+9, oy+y0, 1, len, rail); };
+  const corner = (l && d && !r && !u) ? [0, 16] : (r && d && !l && !u) ? [16, 16] : (l && u && !r && !d) ? [0, 0] : (r && u && !l && !d) ? [16, 0] : null;
+  if (corner){
+    const [cx, cy] = corner;
+    for (let py = 0; py < T; py++) for (let px = 0; px < T; px++){
+      const dx = px + 0.5 - cx, dy = py + 0.5 - cy, dist = Math.hypot(dx, dy);
+      if (dist < 4.5 || dist > 11.5) continue;
+      const ang = Math.atan2(Math.abs(dy), Math.abs(dx)) * 180 / Math.PI;
+      const col = (Math.abs(dist - 6.5) < 0.55 || Math.abs(dist - 9.5) < 0.55) ? rail : (ang % 15 < 3.5 ? sl : (dist >= 5 && dist <= 11 ? bal : null));
+      if (col) R(ox+px, oy+py, 1, 1, col);
+    }
+  } else {
+    R(ox+5, oy+5, 6, 6, bal);
+    if (!(l || r || u || d)) H(0, 16);
+    else { if (l) H(0, 8); if (r) H(8, 8); if (u) V(0, 8); if (d) V(8, 8); }
+  }
+}
 function drawGround(t, ox, oy, x, y, nb){
+  if (t === '¤'){ // rails sur un viaduc de pierre au-dessus de l'eau
+    drawGround('w', ox, oy, x, y, (a, b) => { const c = nb(a, b); return c === '¤' ? 'w' : c; });
+    const arms = {l:isRail(nb(x-1, y)), r:isRail(nb(x+1, y)), u:isRail(nb(x, y-1)), d:isRail(nb(x, y+1))};
+    const st = season === 'hiver' ? '#c9c3b8' : '#b3aa9b';
+    // ombre portée sur l'eau
+    const sh = 'rgba(10,30,50,.28)';
+    if (arms.l || arms.r || !(arms.u || arms.d)) R(ox, oy+13, T, 2, sh);
+    if (arms.u || arms.d) R(ox+13, oy, 2, T, sh);
+    band(ox, oy, arms, 3, 13, st, '#9b9384', '#6f6a62');
+    // piles du viaduc : petites arches sombres sur le côté
+    if ((arms.l || arms.r) && !(arms.u || arms.d)){ R(ox+7, oy+13, 2, 2, '#6f6a62'); }
+    if ((arms.u || arms.d) && !(arms.l || arms.r)){ R(ox+13, oy+7, 2, 2, '#6f6a62'); }
+    drawRails(ox, oy, x, y, nb, '#8f8778');
+    return;
+  }
   if (t === 'w'){
     const wc = S.water;
     R(ox, oy, T, T, wc);
@@ -503,7 +720,7 @@ function drawGround(t, ox, oy, x, y, nb){
       }
     }
     const foam = season === 'hiver' ? '#eef7fb' : '#cfe8f4';
-    const isW = c => c === null || c === 'w' || c === 'n';
+    const isW = c => c === null || c === 'w' || c === 'n' || c === '¤';
     if (!isW(nb(x, y-1))) R(ox, oy, T, 1, foam);
     if (!isW(nb(x, y+1))) R(ox, oy+T-1, T, 1, foam);
     if (!isW(nb(x-1, y))) R(ox, oy, 1, T, foam);
@@ -526,7 +743,7 @@ function drawGround(t, ox, oy, x, y, nb){
     R(ox, oy, T, T, season === 'hiver' ? '#a3a8ad' : '#8f949a');
     for (let r = 0; r < 4; r++){ R(ox, oy + r*4 + 3, T, 1, '#6f747a'); for (let c = 0; c < 2; c++) R(ox + c*8 + (r % 2 ? 4 : 0), oy + r*4, 1, 3, '#6f747a'); }
     R(ox, oy, T, 1, '#a9aeb3');
-    const wet = c => c === 'w' || c === 'n';
+    const wet = c => c === 'w' || c === 'n' || c === '¤';
     if (wet(nb(x, y+1))) R(ox, oy+T-1, T, 1, '#cfe8f4');
     if (wet(nb(x-1, y))) R(ox, oy, 1, T, '#cfe8f4');
     if (wet(nb(x+1, y))) R(ox+T-1, oy, 1, T, '#cfe8f4');
@@ -540,7 +757,7 @@ function drawGround(t, ox, oy, x, y, nb){
       R(ox, oy + r*4 + 3, T, 1, gap);
       R(ox + ((r*7 + x*5 + y*3) % 11) + 2, oy + r*4, 1, 3, gap);
     }
-    const wet = c => c === 'w' || c === 'n';
+    const wet = c => c === 'w' || c === 'n' || c === '¤';
     if (wet(nb(x, y+1))){ R(ox, oy+T-2, T, 2, '#4a3520'); for (let k = 1; k < T; k += 5) R(ox+k, oy+T-1, 2, 1, '#3a2a18'); }
     if (wet(nb(x, y-1))) R(ox, oy, T, 1, '#a8845c');
     if (wet(nb(x-1, y))) R(ox, oy, 1, T, '#4a3520');
@@ -696,26 +913,7 @@ function drawGround(t, ox, oy, x, y, nb){
     else if (!horiz && !vert){ R(ox+6, oy+7, 4, 1, line); }
     if (season === 'hiver'){ R(ox+1, oy+1, 2, 1, '#fff'); R(ox+13, oy+14, 2, 1, '#fff'); }
   } else if (t === 'X'){ // rails
-    const isX = isRail;
-    const l = isX(nb(x-1, y)), r = isX(nb(x+1, y)), u = isX(nb(x, y-1)), d = isX(nb(x, y+1));
-    const bal = season === 'hiver' ? '#c4c1b9' : '#9a958c', sl = '#6b4a2e', rail = '#5b6168';
-    const H = (x0, len) => { R(ox+x0, oy+5, len, 6, bal); for (let k = x0 + 1; k < x0 + len; k += 3) R(ox+k, oy+4, 1, 8, sl); R(ox+x0, oy+6, len, 1, rail); R(ox+x0, oy+9, len, 1, rail); };
-    const V = (y0, len) => { R(ox+5, oy+y0, 6, len, bal); for (let k = y0 + 1; k < y0 + len; k += 3) R(ox+4, oy+k, 8, 1, sl); R(ox+6, oy+y0, 1, len, rail); R(ox+9, oy+y0, 1, len, rail); };
-    const corner = (l && d && !r && !u) ? [0, 16] : (r && d && !l && !u) ? [16, 16] : (l && u && !r && !d) ? [0, 0] : (r && u && !l && !d) ? [16, 0] : null;
-    if (corner){
-      const [cx, cy] = corner;
-      for (let py = 0; py < T; py++) for (let px = 0; px < T; px++){
-        const dx = px + 0.5 - cx, dy = py + 0.5 - cy, dist = Math.hypot(dx, dy);
-        if (dist < 4.5 || dist > 11.5) continue;
-        const ang = Math.atan2(Math.abs(dy), Math.abs(dx)) * 180 / Math.PI;
-        const col = (Math.abs(dist - 6.5) < 0.55 || Math.abs(dist - 9.5) < 0.55) ? rail : (ang % 15 < 3.5 ? sl : (dist >= 5 && dist <= 11 ? bal : null));
-        if (col) R(ox+px, oy+py, 1, 1, col);
-      }
-    } else {
-      R(ox+5, oy+5, 6, 6, bal);
-      if (!(l || r || u || d)) H(0, 16);
-      else { if (l) H(0, 8); if (r) H(8, 8); if (u) V(0, 8); if (d) V(8, 8); }
-    }
+    drawRails(ox, oy, x, y, nb, season === 'hiver' ? '#c4c1b9' : '#9a958c');
   } else if (t === 'p'){
     const a = season === 'hiver' ? '#d2d0cb' : '#bbb6ad', b = season === 'hiver' ? '#bcb9b2' : '#a29c92';
     R(ox, oy, T, T, a);
@@ -819,6 +1017,7 @@ function drawObject(o, ox, oy, x, y, withLights){
     R(ox+6, oy+2, 4, 11, '#f3f1ec'); R(ox+6, oy+4, 4, 2, '#cf453a'); R(ox+6, oy+8, 4, 2, '#cf453a');
     R(ox+9, oy+2, 1, 11, 'rgba(0,0,0,.1)');
     R(ox+5, oy+1, 6, 1, '#3b434b'); R(ox+6, oy-2, 4, 3, '#3b434b'); R(ox+7, oy-1, 2, 2, '#ffe28a'); R(ox+6, oy-3, 4, 1, '#cf453a');
+    if (glob.story.v === 2 && !glob.story.lit && isStory()){ R(ox+7, oy-1, 2, 2, '#5b6168'); break; }
     L(ox+8, oy-1, 22, 'lamp');
     if (withLights) lights.push({x:ox+8, y:oy-0.5, kind:'beam'});
     break; }
@@ -1615,7 +1814,7 @@ const DOGS = ['#8a5a32','#2b2b30','#e8dcc8','#c98a4a'];
 function syncWalkers(){
   groundDirty = true;
   const cells = walkCells();
-  const want = cells.length ? Math.min(residents() + 1, Math.round(16 * N / 24)) : 0;
+  const want = cells.length ? Math.min(Math.round(inhabitants()/3) + 1, Math.round(16 * N / 24)) : 0;
   walkers = walkers.filter(w => walkable(gAt(w.cx, w.cy)) && walkable(gAt(w.tx, w.ty)));
   while (walkers.length > want) walkers.pop();
   while (walkers.length < want) walkers.push(makeWalker(cells, walkers.length));
@@ -1623,6 +1822,9 @@ function syncWalkers(){
 }
 const RES = {h:1, K:1, I:3, T:6};
 function residents(){ let n = 0; for (const o of O) if (o && RES[o]) n += RES[o]; return n; }
+// habitants : 2 à 4 par maison, plus pour les immeubles et les tours
+const PEOPLE_IN = {h:0, K:2, I:12, T:24, 'Æ':5, L:1};
+function inhabitants(){ let n = 0; for (let i = 0; i < N*N; i++){ const o = O[i]; if (o === 'h') n += 2 + (hs(i % N, (i / N)|0, 555)*3|0); else if (o && PEOPLE_IN[o]) n += PEOPLE_IN[o]; } return n; }
 
 /* ---------- voitures ---------- */
 const CAR_COLS = ['#cf453a','#2e6fa8','#f2b134','#f4f4f4','#3f8f5a','#2b2b30','#8a5aa8'];
@@ -1711,6 +1913,7 @@ function syncBoats(){
   const water = []; for (let i = 0; i < N*N; i++) if (G[i] === 'w') water.push(i);
   const quais = G.filter(c => c === 'q').length;
   const want = water.length >= 12 ? Math.min(Math.round(5 * N / 24), Math.floor(water.length / 90) + 1 + Math.ceil(quais / 3)) : 0;
+  if (glob.story.v === 2 && isStory() && glob.story.chapter < 3) { boats = []; return; } // au début, personne en mer
   boats = boats.filter(b => gAt(b.cx, b.cy) === 'w' && gAt(b.tx, b.ty) === 'w');
   while (boats.length > want) boats.pop();
   while (boats.length < want){
@@ -1979,11 +2182,18 @@ function updateFireworks(dt){
 /* Le décor (sols) est dessiné une seule fois dans groundCv, puis redessiné seulement quand le terrain change.
    À chaque image, on ne dessine que ce qui est visible à l'écran. */
 const groundCv = document.createElement('canvas'), gctx = groundCv.getContext('2d');
+// sous un objet, les sols très dessinés deviennent unis pour qu'on voie bien l'objet
+const CALM_UNDER = {'±':'#efe3cc', '*':'#c27a60', 'µ':'#aaa397', '~':'#d8cdb0', '%':'#5b6168', '+':'#5b6168'};
 function buildGround(){
   if (groundCv.width !== W){ groundCv.width = W; groundCv.height = W; }
   const prevC = C; C = gctx; staticPass = true;
   gctx.clearRect(0, 0, W, W);
-  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) drawGround(G[y*N + x], x*T, y*T, x, y, gAt);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++){
+    const g = G[y*N + x];
+    drawGround(g, x*T, y*T, x, y, gAt);
+    const calm = O[y*N + x] && CALM_UNDER[g];
+    if (calm) R(x*T + 1, y*T + 1, T - 2, T - 2, calm);
+  }
   staticPass = false; C = prevC; groundDirty = false;
 }
 function groundAnim(x, y){
@@ -2004,6 +2214,41 @@ function groundAnim(x, y){
     const sw = Math.round(Math.sin(now/700 + x*0.6 + y*0.3));
     for (let r = 0; r < 5; r++) R(x*T + ((r*5 + sw + 16) % 16), y*T + r*3, 1, 1, '#fff1b8');
   }
+}
+let mistT = 0;
+function drawMist(c2){
+  const fogs = glob.story.fogs || [], dk = darkness(tday).dark, t = now || 0;
+  const dt = Math.min(0.2, (performance.now() - (mistT || performance.now()))/1000); mistT = performance.now();
+  let changed = false;
+  for (const f of fogs){
+    if (f.a == null) f.a = f.to;
+    if (f.a !== f.to){ f.a += Math.sign(f.to - f.a)*Math.min(Math.abs(f.to - f.a), dt*0.45); forceDraw = true; if (Math.abs(f.a - f.to) < 0.01){ f.a = f.to; changed = true; } }
+    if (f.a <= 0) continue;
+    const col = dk > 0.4 ? '150,165,188' : '232,238,244';
+    c2.save(); c2.translate(f.cx*T + 8, f.cy*T + 8); c2.scale(f.rx*T, f.ry*T);
+    const g = c2.createRadialGradient(0, 0, 0, 0, 0, 1);
+    g.addColorStop(0, `rgba(${col},${(0.9*f.a).toFixed(3)})`); g.addColorStop(0.62, `rgba(${col},${(0.82*f.a).toFixed(3)})`); g.addColorStop(1, `rgba(${col},0)`);
+    c2.fillStyle = g; c2.beginPath(); c2.arc(0, 0, 1, 0, 6.29); c2.fill(); c2.restore();
+  }
+  if (changed){ glob.story.fogs = fogs.filter(f => f.to > 0 || f.a > 0); saveGlob(); }
+  // lueurs : de petites lumières bleues autour de la brume, et autour du phare une fois rallumé
+  if (reduce) return;
+  const spots = fogs.filter(f => f.a > 0.3).map(f => [f.cx, f.cy, f.rx*0.7, f.ry*0.6, 4]);
+  if (glob.story.lit){ const li = O.indexOf('L'); if (li >= 0) spots.push([li % N, ((li / N)|0) - 1, 1.6, 1.2, 1]); }
+  const alpha = 0.25 + dk*0.75;
+  c2.save(); c2.globalCompositeOperation = 'lighter';
+  spots.forEach(([cx, cy, rx, ry, n], s) => {
+    for (let k = 0; k < n; k++){
+      const ph = t/1000*0.35 + k*1.9 + s;
+      const x = cx*T + 8 + Math.cos(ph)*rx*T, y = cy*T + 8 + Math.sin(ph*1.3 + k)*ry*T;
+      const tw = (Math.sin(t/300 + k*2 + s) + 1)/2, a = alpha*(0.5 + tw*0.5);
+      const g = c2.createRadialGradient(x, y, 0, x, y, 6);
+      g.addColorStop(0, `rgba(170,220,255,${a.toFixed(3)})`); g.addColorStop(1, 'rgba(120,180,255,0)');
+      c2.fillStyle = g; c2.fillRect(x - 6, y - 6, 12, 12);
+      c2.fillStyle = `rgba(235,248,255,${a.toFixed(3)})`; c2.fillRect(Math.round(x), Math.round(y), 1, 1);
+    }
+  });
+  c2.restore(); forceDraw = forceDraw || spots.length > 0;
 }
 function render(full){
   const c2 = full ? ctx : disp;
@@ -2030,6 +2275,7 @@ function render(full){
     for (const a of animals) if (Math.floor((a.y - 2) / T) === y && inView(a.x, a.y)) drawAnimal(a);
   }
   for (const g of gulls) if (inView(g.x, g.y)) drawGull(g);
+  if (glob.story.v === 2 && isStory()) drawMist(c2);
   const {dark, warm} = darkness(tday);
   if (!eco) drawParticles(dark > 0.2, inView);
   if (warm > 0){ c2.fillStyle = `rgba(255,140,70,${warm})`; c2.fillRect(vx, vy, s, s); }
@@ -2072,6 +2318,29 @@ function render(full){
     c2.fillStyle = `rgba(40,50,70,${(0.35*Math.min(1, stormT/2)).toFixed(3)})`; c2.fillRect(vx, vy, s, s);
     for (let k = 0; k < 70; k++){ const rx = vx + ((k*97 + now*0.35) % s), ry = vy + ((k*53 + now*0.9) % s); R(Math.round(rx), Math.round(ry), 1, 4, 'rgba(200,220,255,.45)'); }
   }
+  if (weather === 'pluie' && stormT <= 0){
+    const dk = curDark;
+    c2.fillStyle = `rgba(40,52,74,${(0.26 + dk*0.08).toFixed(3)})`; c2.fillRect(vx, vy, s, s);
+    if (!reduce){
+      const snow = season === 'hiver', n = Math.min(eco ? 80 : 220, Math.round(s*s/420));
+      for (let k = 0; k < n; k++){
+        if (snow){ const rx = vx + ((k*97 + now*0.02 + Math.sin(now/900 + k)*6) % s + s) % s, ry = vy + ((k*53 + now*0.05) % s); R(Math.round(rx), Math.round(ry), 1, 1, 'rgba(255,255,255,.85)'); }
+        else { const rx = vx + ((k*97 + now*0.12) % s), ry = vy + ((k*53 + now*0.75) % s); R(Math.round(rx), Math.round(ry), 1, 4, 'rgba(210,225,248,.6)'); }
+      }
+    }
+  }
+  if (weather === 'brume'){
+    const a0 = 0.34 * (1 - curDark*0.45), col = curDark > 0.4 ? '170,180,200' : '230,236,242';
+    c2.fillStyle = `rgba(${col},${(a0*0.75).toFixed(3)})`; c2.fillRect(vx, vy, s, s);
+    for (let k = 0; k < 7; k++){
+      const r = W*0.22 + (k % 3)*W*0.05;
+      const fx = ((k*0.37*W + now*0.004*(1 + k % 3)) % (W + 2*r)) - r, fy = (k*0.61*W) % W;
+      if (fx + r < vx || fx - r > vx + s || fy + r < vy || fy - r > vy + s) continue;
+      const g = c2.createRadialGradient(fx, fy, 0, fx, fy, r);
+      g.addColorStop(0, `rgba(${col},${a0.toFixed(3)})`); g.addColorStop(1, `rgba(${col},0)`);
+      c2.fillStyle = g; c2.fillRect(fx - r, fy - r, 2*r, 2*r);
+    }
+  }
   if (rockets.length || sparks.length){
     c2.save(); c2.globalCompositeOperation = 'lighter';
     for (const r of rockets){ R(Math.round(r.x), Math.round(r.y), 1, 2, '#ffe9b0'); }
@@ -2093,7 +2362,7 @@ function frame(ts){
   forceDraw = false; lastDraw = ts;
   const dt = Math.min(0.1, (ts - last)/1000); last = ts;
   now = reduce ? 0 : ts;
-  if (autoTime && !reduce) tday = (tday + dt/240) % 1;
+  if (autoTime && !reduce) { const t0 = tday; tday = (tday + dt/720) % 1; if (t0 < 0.22 && tday >= 0.22) nextWeather(); }
   if (!reduce){ updateWalkers(dt); updateCars(dt); updateBoats(dt); updateTrains(dt); updateAnimals(dt); updateFireworks(dt); if (!eco) updateParticles(dt); }
   if (stormT > 0) stormT = Math.max(0, stormT - dt);
   if (ts - lastStoryCheck > 1500){ lastStoryCheck = ts; if (isStory()) checkStory(); }
@@ -2209,7 +2478,7 @@ const TOOLS = [
   {id:'Ô', kind:'obj', name:'Bûcher', group:'Plage', story:true},
   {id:'ß', kind:'obj', name:'Épave', group:'Plage', story:true},
   {id:'Ÿ', kind:'obj', name:'Coffre au trésor', group:'Plage', story:true},
-  {id:'x', kind:'erase', name:'Gomme', group:'Outils'}
+  {id:'x', kind:'erase', name:'Pioche', group:'Outils'}
 ];
 const WATER_OBJ = new Set(['B','G','J','6','Û','Ý','ý']);
 let tool = 'h', pipMode = false;
@@ -2218,7 +2487,11 @@ const ICON_OY = {I:7, T:20, A:5, a:13, e:12, d:16, 'é':7, 'À':6, 'œ':6, 'â':
 function drawIconTo(t, cv){
   const c = cv.getContext('2d'), prevC = C; C = c; c.clearRect(0, 0, 16, 20);
   if (t.kind === 'erase'){
-    R(3, 9, 10, 6, '#e8a0a8'); R(3, 9, 4, 6, '#5a7fb0'); R(3, 15, 10, 1, 'rgba(0,0,0,.25)');
+    // pioche : manche en bois et fer recourbé
+    R(3, 17, 9, 1, 'rgba(0,0,0,.22)');
+    for (const [hx, hy] of [[9,5],[9,6],[8,7],[8,8],[7,9],[7,10],[6,11],[6,12],[5,13],[5,14],[4,15],[4,16]]){ R(hx, hy, 1, 1, '#a8733f'); R(hx + 1, hy, 1, 1, '#6e4520'); }
+    R(7, 3, 5, 1, '#d5dae1'); R(5, 4, 2, 1, '#aab2bc'); R(12, 4, 2, 1, '#aab2bc'); R(7, 4, 5, 1, '#8a929c');
+    R(4, 5, 1, 1, '#737b85'); R(14, 5, 1, 1, '#737b85'); R(9, 4, 2, 2, '#5a616b');
     C = prevC; return;
   }
   const ground = t.kind === 'ground' ? t.id : WATER_OBJ.has(t.id) ? 'w' : t.id === 'N' ? 'q' : (t.id === '0' || t.id === '4' || t.id === 'Ô' || t.id === 'ß' || t.id === 'Ÿ') ? 's' : 'g';
@@ -2231,9 +2504,16 @@ function drawIconTo(t, cv){
   iconMode = false; C = prevC;
 }
 function drawIcon(t){ if (iconCanvases[t.id]) drawIconTo(t, iconCanvases[t.id]); }
-let activeGroup = 'Village';
+let activeGroup = 'Habitations';
+const GROUP_ORDER = ['Habitations', 'Commerces', 'Services', 'Mobilier', 'Loisirs', 'Campagne', 'Nature', 'Eau et port', 'Sols', 'Voies'];
+const REGROUP = {
+  'Sols':'gpµ¶±£#*~&%s!', 'Voies':'cR+Xn', 'Eau et port':'wqÎGBJN6ÛÖÝLß',
+  'Campagne':'kz^voVmÇÉuey', 'Habitations':'hITÆï', 'Commerces':'SK129üùË',
+  'Services':'AEéèàœiaD', 'Mobilier':'QçâêîôblFWæ8ÊÂ', 'Loisirs':'ûë3OjÏ4ÔYUZ0dÑŸ', 'Nature':'tPÀfHrM5øþðŒC'};
+for (const t of TOOLS) for (const [g, ids] of Object.entries(REGROUP)) if ([...ids].includes(t.id)) t.group = g;
+try { const a = readJSON('iloe-tab'); if (a && GROUP_ORDER.includes(a)) activeGroup = a; } catch(e){}
 function openTab(g){
-  activeGroup = g;
+  activeGroup = g; if (g !== '__search') writeJSON('iloe-tab', g);
   document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.g === g));
   document.querySelectorAll('.tgroup').forEach(w => w.hidden = w.dataset.g !== g);
 }
@@ -2242,9 +2522,21 @@ function buildTools(){
   host.style.display = 'flex'; host.style.flexDirection = 'column'; host.style.gap = '10px';
   iconCanvases = {};
   const avail = TOOLS.filter(t => t.kind !== 'erase' && unlocked(t.id));
-  const groups = [...new Set(avail.map(t => t.group))];
+  const groups = [...new Set(avail.map(t => t.group))].sort((a, b) => (GROUP_ORDER.indexOf(a) + 1 || 99) - (GROUP_ORDER.indexOf(b) + 1 || 99));
+  if (!groups.includes(activeGroup) && activeGroup !== '__search') activeGroup = groups[0];
   const tabs = document.createElement('div'); tabs.className = 'seg tabs'; tabs.setAttribute('role', 'tablist');
   host.append(tabs);
+  const sb = document.createElement('button'); sb.type = 'button'; sb.className = 'tab-search'; sb.dataset.g = '__search'; sb.setAttribute('role', 'tab'); sb.setAttribute('aria-label', 'Rechercher un objet');
+  sb.setAttribute('aria-pressed', activeGroup === '__search');
+  sb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>';
+  sb.onclick = () => { openTab('__search'); const i = document.getElementById('toolSearch'); i.focus(); };
+  tabs.append(sb);
+  const sw = document.createElement('div'); sw.className = 'group tgroup'; sw.dataset.g = '__search'; sw.hidden = activeGroup !== '__search';
+  const inp = document.createElement('input'); inp.type = 'search'; inp.id = 'toolSearch'; inp.className = 'tinput search-in'; inp.placeholder = 'Chercher : phare, banc, crêpe…'; inp.autocomplete = 'off'; inp.enterKeyHint = 'search';
+  inp.setAttribute('aria-label', 'Rechercher un objet');
+  const res = document.createElement('div'); res.className = 'tools'; res.id = 'searchRes';
+  inp.oninput = () => renderSearch(inp.value);
+  sw.append(inp, res); host.append(sw);
   for (const g of groups){
     const tb = document.createElement('button'); tb.type = 'button'; tb.id = 'tab-' + g; tb.dataset.g = g; tb.textContent = g; tb.setAttribute('role', 'tab');
     tb.setAttribute('aria-pressed', g === activeGroup);
@@ -2252,7 +2544,8 @@ function buildTools(){
     tabs.append(tb);
     const wrap = document.createElement('div'); wrap.className = 'group tgroup'; wrap.dataset.g = g; wrap.hidden = g !== activeGroup;
     const grid = document.createElement('div'); grid.className = 'tools';
-    for (const t of avail.filter(t => t.group === g)){
+    const ord = [...(REGROUP[g] || '')];
+    for (const t of avail.filter(t => t.group === g).sort((a, b) => (ord.indexOf(a.id) + 1 || 99) - (ord.indexOf(b.id) + 1 || 99))){
       const b = document.createElement('button'); b.className = 'tool' + (t.gift || t.story ? ' isgift' : ''); b.id = 'tool-' + t.id; b.type = 'button';
       b.setAttribute('aria-pressed', t.id === tool);
       const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; iconCanvases[t.id] = cv;
@@ -2264,6 +2557,22 @@ function buildTools(){
     wrap.append(grid); host.append(wrap);
   }
   avail.forEach(drawIcon);
+  renderSearch(inp.value);
+}
+const fold = t => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+function renderSearch(q){
+  const res = document.getElementById('searchRes'); if (!res) return; res.innerHTML = '';
+  const k = fold(q.trim());
+  if (!k){ const h = document.createElement('p'); h.className = 'hint'; h.textContent = 'Tape le nom d’un objet ou d’un sol.'; res.append(h); return; }
+  const found = TOOLS.filter(t => t.kind !== 'erase' && unlocked(t.id) && (fold(t.name).includes(k) || fold(t.group).includes(k)));
+  if (!found.length){ const h = document.createElement('p'); h.className = 'hint'; h.textContent = 'Rien trouvé… essaie un autre mot.'; res.append(h); return; }
+  for (const t of found){
+    const b = document.createElement('button'); b.className = 'tool' + (t.gift || t.story ? ' isgift' : ''); b.id = 'tool-' + t.id; b.type = 'button';
+    b.setAttribute('aria-pressed', t.id === tool);
+    const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; drawIconTo(t, cv);
+    const sp = document.createElement('span'); sp.textContent = t.name;
+    b.append(cv, sp); b.onclick = () => selectTool(t.id); res.append(b);
+  }
 }
 /* barre sous le pouce : les derniers outils utilisés */
 function renderRecent(){
@@ -2298,7 +2607,7 @@ pipBtn.onclick = () => {
 function pickAt(x, y){
   const i = y*N + x; let id = O[i];
   if (!id){ const below = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x])); if (below) id = O[below[0]*N + x]; }
-  if (!id) id = G[i] === '=' ? 'X' : G[i];
+  if (!id) id = G[i] === '=' || G[i] === '¤' ? 'X' : G[i];
   pipMode = false; pipBtn.setAttribute('aria-pressed', 'false');
   const t = TOOLS.find(t => t.id === id);
   if (t && unlocked(id)){ selectTool(id); openTab(t.group); toast(`Outil choisi : ${t.name}`); }
@@ -2321,6 +2630,7 @@ function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('on'); cle
 const TALL1 = new Set(['t','P','L','I','T','A','m','K','h','a','e','d','é','œ','À','â','Ê','Ô','Â','Æ','Ð']), TALL2 = new Set(['T','d']);
 function place(x, y, forceErase){
   const i = y*N + x, t = TOOLS.find(t => t.id === (forceErase ? 'x' : tool));
+  if (fogAt(x, y)){ const n = performance.now(); if (n - busyT > 1500){ busyT = n; toast('🌫️ La brume est trop épaisse par ici…'); } return; }
   if (COLLECT[O[i]] && isStory()){
     const id = O[i], key = id + '_' + glob.story.chapter, f = glob.story.found || (glob.story.found = {});
     O[i] = null; f[key] = (f[key] || 0) + 1; saveGlob(); toast(COLLECT[id]);
@@ -2332,14 +2642,16 @@ function place(x, y, forceErase){
       // le haut d'un arbre, d'une maison ou d'une tour dépasse sur la case du dessus : on efface l'objet qu'on voit
       const below = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x]));
       if (below) O[below[0]*N + x] = null;
-      else if (G[i] === 'n') G[i] = 'w';
+      else if (G[i] === 'n' || G[i] === '¤') G[i] = 'w';
       else if (G[i] === 'q' || G[i] === 'Î') G[i] = [[1,0],[-1,0],[0,1],[0,-1]].filter(([a,b]) => gAt(x+a, y+b) === 'w').length >= 2 ? 'w' : 'g';
       else G[i] = 'g';
     }
   }
   else if (t.kind === 'ground'){
     if (t.id === 'n' && G[i] !== 'w' && G[i] !== 'n'){ toast("Le pont se pose sur l'eau"); return; }
-    if ((t.id === 'X' && (G[i] === 'R' || G[i] === '=')) || (t.id === 'R' && (G[i] === 'X' || G[i] === '='))) G[i] = '=';
+    if (O[i] && ('cRnX+'.includes(t.id) || (t.id === 'w') !== WATER_OBJ.has(O[i]))){ busyToast(); return; }
+    if (t.id === 'X' && (G[i] === 'w' || G[i] === '¤')) G[i] = '¤';
+    else if ((t.id === 'X' && (G[i] === 'R' || G[i] === '=')) || (t.id === 'R' && (G[i] === 'X' || G[i] === '='))) G[i] = '=';
     else G[i] = t.id;
     if (t.id === 'w' && O[i] && !WATER_OBJ.has(O[i])) O[i] = null;
     if (t.id !== 'w' && WATER_OBJ.has(O[i])) O[i] = null;
@@ -2349,11 +2661,15 @@ function place(x, y, forceErase){
     else if (G[i] === 'w' || G[i] === 'n'){ toast('Pose-le sur la terre ferme'); return; }
     else if (G[i] === 'c'){ toast('Les chemins restent libres pour les promeneurs'); return; }
     else if (G[i] === 'R' || G[i] === '+'){ toast('Les routes restent libres pour les voitures'); return; }
-    else if (G[i] === 'X' || G[i] === '='){ toast('Les rails restent libres pour le train'); return; }
+    else if (G[i] === 'X' || G[i] === '=' || G[i] === '¤'){ toast('Les rails restent libres pour le train'); return; }
+    if (O[i] === t.id) return;
+    if (O[i]){ busyToast(); return; }
     O[i] = t.id;
   }
   syncWalkers(); updateStats(); queueSave();
 }
+let busyT = -1e9;
+function busyToast(){ const n = performance.now(); if (n - busyT > 1500){ busyT = n; toast('⛏️ Il y a déjà quelque chose ici : prends la pioche d’abord'); } }
 let hover = null, handMode = false;
 function cellOf(e){
   const r = board.getBoundingClientRect();
@@ -2440,6 +2756,7 @@ function setSeason(k){
   season = k; S = SEASONS[k]; groundDirty = true;
   document.querySelectorAll('#seasons button').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === k));
   document.getElementById('seasonName').textContent = S.name;
+  if (weatherReady) setWeather(weather);
   TOOLS.forEach(drawIcon); renderRecent(); resetParticles(); queueSave();
 }
 const seasonsEl = document.getElementById('seasons');
@@ -2451,6 +2768,87 @@ const autoBtn = document.getElementById('autoTime');
 autoBtn.onclick = () => { autoTime = !autoTime; autoBtn.setAttribute('aria-pressed', autoTime); };
 if (reduce){ autoTime = false; autoBtn.setAttribute('aria-pressed', 'false'); }
 let clockTxt = '';
+/* ---------- sons ---------- */
+let actx = null, aMaster = null, aRain = null, aWaves = null, sndTimer = null;
+function soundOn(){ return !!(glob.ui && glob.ui.sound); }
+function noiseBuf(c){ const b = c.createBuffer(1, c.sampleRate*2, c.sampleRate), d = b.getChannelData(0); let l = 0; for (let i = 0; i < d.length; i++){ const w = Math.random()*2 - 1; l = (l + 0.02*w)/1.02; d[i] = l*3.5 + w*0.05; } return b; }
+function initAudio(){
+  if (actx) return;
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+  actx = new AC(); aMaster = actx.createGain(); aMaster.gain.value = 0.55; aMaster.connect(actx.destination);
+  const buf = noiseBuf(actx);
+  // vagues : bruit grave qui monte et descend lentement
+  const ws = actx.createBufferSource(); ws.buffer = buf; ws.loop = true;
+  const wf = actx.createBiquadFilter(); wf.type = 'lowpass'; wf.frequency.value = 420;
+  aWaves = actx.createGain(); aWaves.gain.value = 0.10;
+  const lfo = actx.createOscillator(), lg = actx.createGain(); lfo.frequency.value = 0.09; lg.gain.value = 0.07; lfo.connect(lg); lg.connect(aWaves.gain); lfo.start();
+  ws.connect(wf); wf.connect(aWaves); aWaves.connect(aMaster); ws.start();
+  // pluie : bruit aigu, coupé par beau temps
+  const rs = actx.createBufferSource(); rs.buffer = buf; rs.loop = true; rs.playbackRate.value = 1.7;
+  const rf = actx.createBiquadFilter(); rf.type = 'highpass'; rf.frequency.value = 900;
+  aRain = actx.createGain(); aRain.gain.value = 0;
+  rs.connect(rf); rf.connect(aRain); aRain.connect(aMaster); rs.start();
+  soundWeather(); scheduleSfx();
+}
+function soundWeather(){ if (aRain) aRain.gain.setTargetAtTime(weather === 'pluie' && season !== 'hiver' ? 0.06 : 0, actx.currentTime, 1.5); }
+function gull(){
+  const t = actx.currentTime;
+  for (let k = 0; k < 2 + (Math.random()*2|0); k++){
+    const o = actx.createOscillator(), g = actx.createGain(), t0 = t + k*0.32;
+    o.type = 'triangle'; o.frequency.setValueAtTime(1500 + Math.random()*200, t0); o.frequency.exponentialRampToValueAtTime(820, t0 + 0.24);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.025, t0 + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.27);
+    o.connect(g); g.connect(aMaster); o.start(t0); o.stop(t0 + 0.3);
+  }
+}
+function bell(){
+  const t = actx.currentTime;
+  for (const [f, v] of [[523, 0.05], [1046*1.19, 0.018], [1568*1.03, 0.012]]){
+    const o = actx.createOscillator(), g = actx.createGain(); o.type = 'sine'; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 3.2);
+    o.connect(g); g.connect(aMaster); o.start(t); o.stop(t + 3.3);
+  }
+}
+function scheduleSfx(){
+  clearTimeout(sndTimer);
+  sndTimer = setTimeout(() => {
+    if (actx && soundOn() && !document.hidden){
+      const hasPort = O.some(o => o === 'G' || o === 'B' || o === 'L') || G.some(g => g === 'q');
+      if (curDark < 0.3 && weather !== 'pluie' && Math.random() < 0.75) gull();
+      else if (hasPort && Math.random() < 0.5) bell();
+    }
+    scheduleSfx();
+  }, 9000 + Math.random()*16000);
+}
+const soundBtn = document.getElementById('soundBtn');
+function applySound(){
+  const on = soundOn();
+  soundBtn.setAttribute('aria-pressed', on); soundBtn.textContent = on ? '🔊 Sons : activés' : '🔈 Sons : coupés';
+  if (on){ initAudio(); if (actx && actx.state !== 'running') actx.resume(); }
+  else if (actx) actx.suspend();
+}
+soundBtn.onclick = () => { glob.ui = glob.ui || {}; glob.ui.sound = !soundOn(); saveGlob(); applySound(); };
+// le navigateur n'autorise le son qu'après un premier toucher
+addEventListener('pointerdown', () => { if (soundOn()) applySound(); }, {once:true});
+document.addEventListener('visibilitychange', () => { if (!actx) return; if (document.hidden) actx.suspend(); else if (soundOn()) actx.resume(); });
+
+/* ---------- météo ---------- */
+const WEATHERS = {soleil:'Soleil', pluie:'Pluie', brume:'Brume'};
+function weatherMode(){ return (glob.ui && glob.ui.meteo) || 'auto'; }
+function pickWeather(){ const r = Math.random(); return r < 0.58 ? 'soleil' : r < 0.82 ? 'pluie' : 'brume'; }
+function setWeather(w){
+  weather = w; forceDraw = true;
+  const el = document.getElementById('weatherName');
+  if (el) el.textContent = w === 'soleil' ? '' : ' · ' + (w === 'pluie' && season === 'hiver' ? 'Neige' : WEATHERS[w]);
+  soundWeather();
+}
+function nextWeather(){ if (weatherMode() === 'auto'){ glob.meteoCur = pickWeather(); saveGlob(); setWeather(glob.meteoCur); } }
+function applyWeatherMode(){
+  const m = weatherMode();
+  document.querySelectorAll('#meteoSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === m));
+  setWeather(m === 'auto' ? (glob.meteoCur || 'soleil') : m);
+}
+weatherReady = true; applyWeatherMode(); applySound();
+document.querySelectorAll('#meteoSeg button').forEach(b => b.onclick = () => { glob.ui = glob.ui || {}; glob.ui.meteo = b.dataset.m; if (b.dataset.m === 'auto') glob.meteoCur = pickWeather(); saveGlob(); applyWeatherMode(); });
 function updateClock(){
   const h = Math.floor(tday*24), m = Math.floor((tday*24 % 1)*4)*15, t = `${h} h ${String(m).padStart(2, '0')}`;
   if (t !== clockTxt){ clockTxt = t; document.getElementById('clock').textContent = t; }
@@ -2459,7 +2857,7 @@ function updateStats(){
   const hab = residents(), p = walkers.length, v = cars.length;
   const an = animals.length + animals.reduce((s, a) => s + (a.babies ? a.babies.length : 0), 0) + gulls.length + walkers.filter(w => w.dog).length + cnt('v') + cnt('C');
   const pl = (n, w, ws) => `${n} ${n > 1 ? (ws || w + 's') : w}`;
-  document.getElementById('stats').textContent = `${N}×${N} · ${pl(hab, 'foyer')} · ${pl(p, 'promeneur')} · ${pl(v, 'voiture')} · ${pl(boats.length, 'voilier')}${trains.length ? ' · ' + pl(trains.length, 'train') : ''} · ${pl(an, 'animal', 'animaux')}`;
+  document.getElementById('stats').textContent = `${N}×${N} · ${pl(hab, 'foyer')} · ${pl(inhabitants(), 'habitant')} · ${pl(p, 'promeneur')} · ${pl(v, 'voiture')} · ${pl(boats.length, 'voilier')}${trains.length ? ' · ' + pl(trains.length, 'train') : ''} · ${pl(an, 'animal', 'animaux')}`;
   checkRequest(); checkStory();
 }
 let pending = null;
@@ -2475,11 +2873,12 @@ function updateGrowBtn(){
   if (N >= NMAX){ growBtn.textContent = `Taille maximale (${N}×${N})`; growBtn.disabled = true; }
   else { growBtn.textContent = `Agrandir : ${N}×${N} → ${N+8}×${N+8}`; growBtn.disabled = false; }
 }
-function growTerrain(){
-  if (N >= NMAX) return false;
+function growTerrain(force, extras = true){
+  if (!force && N >= NMAX) return false;
   const n0 = N, g = G.join(''), o = [...O], off = 4, sh = off*T;
   N += 8; W = N*T;
-  expand(g, o, n0, off, true);
+  expand(g, o, n0, off, extras);
+  shiftStoryGeo(off);
   zoom = zoom * N / n0; camX += sh; camY += sh;
   applySize();
   for (const w of walkers){ w.px += sh; w.py += sh; w.cx += off; w.cy += off; w.tx += off; w.ty += off; if (w.prev){ w.prev[0] += off; w.prev[1] += off; } if (w.dog){ w.dog.x += sh; w.dog.y += sh; } }
@@ -2523,20 +2922,92 @@ async function offerFile(blob, name, isPhoto){
     return 'saved';
   } catch(e){ return 'failed'; }
 }
-document.getElementById('photoBtn').onclick = async () => {
+const photoChoose = document.getElementById('photoChoose');
+document.getElementById('photoBtn').onclick = () => { photoChoose.hidden = false; };
+document.getElementById('photoChooseClose').onclick = () => { photoChoose.hidden = true; };
+photoChoose.addEventListener('click', e => { if (e.target === photoChoose) photoChoose.hidden = true; });
+photoChoose.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { photoChoose.hidden = true; makePhoto(b.dataset.f); });
+function photoInfo(){
+  const t = terrains.list.find(t => t.id === terrains.cur), name = t ? t.name : 'mon île';
+  const hh = tday*24, mom = hh < 6 || hh >= 21.5 ? ['Une nuit', 'une nuit'] : hh < 12 ? ['Un matin', 'un matin'] : hh < 18 ? ['Un après-midi', 'un après-midi'] : ['Une soirée', 'une soirée'];
+  const sea = {printemps:'de printemps', ete:'d’été', automne:'d’automne', hiver:'d’hiver'}[season] || '';
+  const date = new Date().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'});
+  const an = animals.length + animals.reduce((s, a) => s + (a.babies ? a.babies.length : 0), 0) + gulls.length + walkers.filter(w => w.dog).length + cnt('v') + cnt('C');
+  const hab = residents(), h = glob.hearts || 0;
+  const ih = inhabitants();
+  const stats = [`${ih} habitant${ih > 1 ? 's' : ''}`, `${an} animau${an > 1 ? 'x' : ''}`.replace('animaux', an > 1 ? 'animaux' : 'animal')];
+  if (h) stats.push(`${h} idée${h > 1 ? 's' : ''} réalisée${h > 1 ? 's' : ''}`);
+  return {name, mom, sea, date, stats};
+}
+function fitFont(o, txt, weight, family, size, maxW){ let s = size; do { o.font = `${weight} ${s}px ${family}`; s -= Math.max(1, size*0.04); } while (o.measureText(txt).width > maxW && s > size*0.4); }
+function rrect(o, x, y, w, h, r){ o.beginPath(); o.moveTo(x + r, y); o.arcTo(x + w, y, x + w, y + h, r); o.arcTo(x + w, y + h, x, y + h, r); o.arcTo(x, y + h, x, y, r); o.arcTo(x, y, x + w, y, r); o.closePath(); }
+async function makePhoto(frameKind){
   render(true);
-  const k = 4, pad = 8*k, out = document.createElement('canvas');
-  out.width = W*k + pad*2; out.height = W*k + pad*2;
-  const o = out.getContext('2d'); o.imageSmoothingEnabled = false;
-  o.fillStyle = '#2b3a44'; o.fillRect(0, 0, out.width, out.height);
-  o.drawImage(world, 0, 0, W, W, pad, pad, W*k, W*k);
+  const k = W >= 1000 ? 2 : W > 600 ? 3 : 4, img = W*k;
+  try { await Promise.all(['700 40px Caveat', '600 40px Caveat', '700 40px "Bricolage Grotesque"', '400 20px "Atkinson Hyperlegible"'].map(f => document.fonts.load(f))); } catch(e){}
+  const info = photoInfo(), out = document.createElement('canvas');
+  let o;
+  if (frameKind === 'carte'){
+    const pad = Math.round(img*0.06), bord = Math.round(img*0.025), foot = Math.round(img*0.24);
+    out.width = img + 2*pad + 2*bord; out.height = img + 2*pad + 2*bord + foot;
+    o = out.getContext('2d');
+    o.fillStyle = '#f5eedf'; o.fillRect(0, 0, out.width, out.height);
+    o.save(); o.shadowColor = 'rgba(80,60,30,.28)'; o.shadowBlur = img*0.02; o.shadowOffsetY = img*0.008;
+    o.fillStyle = '#ffffff'; o.fillRect(pad, pad, img + 2*bord, img + 2*bord); o.restore();
+    o.imageSmoothingEnabled = false; o.drawImage(world, 0, 0, W, W, pad + bord, pad + bord, img, img);
+    // timbre
+    const sw = Math.round(img*0.13), sh = Math.round(img*0.16);
+    o.save(); o.translate(out.width - pad - sw*0.7, pad + sh*0.45); o.rotate(0.07);
+    o.fillStyle = '#fffdf7'; o.fillRect(-sw/2, -sh/2, sw, sh);
+    o.setLineDash([img*0.008, img*0.006]); o.lineWidth = Math.max(2, img*0.004); o.strokeStyle = '#c2b49c'; o.strokeRect(-sw/2, -sh/2, sw, sh);
+    const ph = TOOLS.find(t => t.id === 'L'); if (ph){ const ic = document.createElement('canvas'); ic.width = 16; ic.height = 20; drawIconTo(ph, ic); o.imageSmoothingEnabled = false; o.drawImage(ic, -sw*0.3, -sh*0.42, sw*0.6, sw*0.75); }
+    o.fillStyle = '#2f6f8f'; o.textAlign = 'center'; o.font = `700 ${Math.round(sw*0.17)}px "Atkinson Hyperlegible", sans-serif`; o.fillText('ILOE', 0, sh*0.42);
+    o.restore();
+    const tx = pad, ty = pad + img + 2*bord, maxW = out.width - 2*pad;
+    o.textAlign = 'left'; o.textBaseline = 'alphabetic'; o.fillStyle = '#2f6f8f';
+    const title = `Bons baisers de ${info.name}`; fitFont(o, title, 700, 'Caveat, cursive', Math.round(img*0.075), maxW);
+    o.fillText(title, tx, ty + foot*0.38);
+    o.fillStyle = '#6e604f'; o.font = `600 ${Math.round(img*0.042)}px Caveat, cursive`;
+    o.fillText(`${info.mom[1]} ${info.sea} · ${info.date}`, tx, ty + foot*0.6);
+    o.setLineDash([img*0.008, img*0.006]); o.lineWidth = Math.max(2, img*0.002); o.strokeStyle = '#c2b49c';
+    o.beginPath(); o.moveTo(tx, ty + foot*0.72); o.lineTo(out.width - pad, ty + foot*0.72); o.stroke(); o.setLineDash([]);
+    o.font = `400 ${Math.round(img*0.024)}px "Atkinson Hyperlegible", sans-serif`;
+    o.fillText(info.stats.join('   ·   '), tx, ty + foot*0.88);
+  } else if (frameKind === 'souvenir'){
+    const pad = Math.round(img*0.04), inner = Math.round(img*0.012), foot = Math.round(img*0.19);
+    out.width = img + 2*pad + 2*inner; out.height = img + 2*pad + 2*inner + foot;
+    o = out.getContext('2d');
+    o.fillStyle = '#0e1a2b'; o.fillRect(0, 0, out.width, out.height);
+    rrect(o, pad, pad, img + 2*inner, img + 2*inner, img*0.03); o.fillStyle = '#16263b'; o.fill(); o.lineWidth = Math.max(2, img*0.002); o.strokeStyle = '#26405e'; o.stroke();
+    o.save(); rrect(o, pad + inner, pad + inner, img, img, img*0.022); o.clip(); o.imageSmoothingEnabled = false; o.drawImage(world, 0, 0, W, W, pad + inner, pad + inner, img, img); o.restore();
+    const tx = pad + inner*0.5, ty = pad + img + 2*inner;
+    // logo
+    o.font = `700 ${Math.round(img*0.045)}px "Bricolage Grotesque", sans-serif`; o.textAlign = 'right'; o.fillStyle = '#e9eef4';
+    const dotR = img*0.007, rx = out.width - pad - dotR*4;
+    o.fillText('iloe', rx, ty + foot*0.42);
+    o.save(); o.shadowColor = '#f2b544'; o.shadowBlur = img*0.012; o.fillStyle = '#f2b544'; o.beginPath(); o.arc(out.width - pad - dotR*1.5, ty + foot*0.42 - img*0.02, dotR, 0, 6.29); o.fill(); o.restore();
+    const logoW = o.measureText('iloe').width + dotR*6;
+    o.textAlign = 'left'; o.fillStyle = '#e9eef4';
+    fitFont(o, info.name, 700, '"Bricolage Grotesque", sans-serif', Math.round(img*0.055), out.width - 2*pad - logoW - img*0.04);
+    o.fillText(info.name, tx, ty + foot*0.42);
+    o.font = `400 ${Math.round(img*0.027)}px "Atkinson Hyperlegible", sans-serif`; o.fillStyle = '#9fb0c4';
+    o.fillText(`${info.mom[0]} ${info.sea} · ${info.date}`, tx, ty + foot*0.66);
+    o.fillStyle = '#f7d58e'; o.font = `400 ${Math.round(img*0.024)}px "Atkinson Hyperlegible", sans-serif`;
+    o.fillText(info.stats.join(' · '), tx, ty + foot*0.86);
+  } else {
+    const pad = 8*k; out.width = img + pad*2; out.height = img + pad*2;
+    o = out.getContext('2d'); o.imageSmoothingEnabled = false;
+    o.fillStyle = '#2b3a44'; o.fillRect(0, 0, out.width, out.height);
+    o.drawImage(world, 0, 0, W, W, pad, pad, img, img);
+  }
   const blob = await new Promise(r => out.toBlob(r, 'image/png'));
+
   if (!blob){ toast("La photo n'a pas pu être créée"); return; }
   const name = `iloe-${S.name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')}.png`;
   const res = await offerFile(blob, name, true);
   if (res === 'saved') toast('Photo enregistrée');
   if (res === 'fallback'){ document.getElementById('photoImg').src = URL.createObjectURL(blob); photoBox.hidden = false; }
-};
+}
 document.getElementById('confirmYes').onclick = () => {
   snapshot();
   if (pending === 'clear') clearAll(); else loadSample();
@@ -2651,15 +3122,31 @@ function setFold(btn, min){ btn.textContent = min ? '▸' : '▾'; btn.setAttrib
 function toggleFold(key){ glob.ui = glob.ui || {}; glob.ui[key] = !glob.ui[key]; saveGlob(); renderReq(); renderStoryCard(); }
 reqFold.onclick = () => toggleFold('reqMin');
 scFold.onclick = () => toggleFold('storyMin');
+function residentLook(name){
+  let h = 7; for (const ch of name) h = (h*31 + ch.charCodeAt(0)) >>> 0;
+  const pick = (a, k) => a[(h >>> k) % a.length];
+  const long = (h >>> 3) % 2 === 0;
+  return {skin:pick(['#f1c9a5','#d8a07a','#a86f4b','#e8b48e'], 1), hair:pick(['#3a2a1e','#7a4a2a','#c0582a','#2b2b30','#d9c27a','#b8b4ac'], 5),
+    clothes:pick(['#c94f4f','#3f7f8f','#5a9e5a','#2e6fa8','#f2c14e','#5a3c6a','#1f3550','#d98a3a'], 9), long,
+    hat:(h >>> 13) % 6 === 0 ? 'beret' : undefined, glasses:(h >>> 16) % 6 === 0, beard:!long && (h >>> 19) % 4 === 0 ? '#5a3c22' : undefined};
+}
+function renderHearts(){
+  const h = glob.hearts || 0, el = document.getElementById('heartsPill');
+  el.hidden = !h;
+  el.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.3-9.2C1.4 8.3 3.6 5 7 5c2 0 3.6 1.2 5 3 1.4-1.8 3-3 5-3 3.4 0 5.6 3.3 4.3 6.8C19.5 16.4 12 21 12 21z"/></svg>';
+  el.append(String(h)); el.title = `${h} idée${h > 1 ? 's' : ''} réalisée${h > 1 ? 's' : ''}`; el.setAttribute('aria-label', el.title);
+}
 function renderReq(){
+  renderHearts();
   const r = reqDef();
   if (!r){ reqCard.hidden = true; return; }
   reqCard.hidden = isStory(); reqCard.classList.toggle('thanks', reqThanks);
   reqText.textContent = '';
+  drawPortrait(document.getElementById('reqFace'), residentLook(glob.req.name));
   const b = document.createElement('b'); b.textContent = glob.req.name;
   const min = !!(glob.ui && glob.ui.reqMin);
   reqCard.classList.toggle('min', min); setFold(reqFold, min);
-  reqText.append(b, reqThanks ? ' te dit merci ! 💛' : min ? ' a une idée pour l’île' : ` aimerait ${r.txt}.`);
+  reqText.append(b, reqThanks ? ' te dit merci ! Un cœur pour toi.' : min ? ' a une idée pour l’île' : ` aimerait ${r.txt}.`);
   reqSkip.hidden = reqThanks || min;
   const h = glob.hearts;
   document.getElementById('hearts').textContent = h ? `💛 ${h} idée${h > 1 ? 's' : ''} réalisée${h > 1 ? 's' : ''}` : '';
@@ -2794,8 +3281,10 @@ const PEOPLE = {
   morgane:{name:'Morgane', role:'bibliothécaire', skin:'#f1c9a5', hair:'#a83a2c', clothes:'#5a3c6a', glasses:true, long:true},
   fanch: {name:'Fañch', role:'conteur de l’île', skin:'#f1c9a5', hair:'#e8e4dc', clothes:'#3b4a3a', hat:'beret', beard:'#eeeeee'},
   yuna:  {name:'Yuna', role:'plongeuse', skin:'#a86f4b', hair:'#1e1e24', clothes:'#2b5a7a', hat:'mask', long:true},
+  tomas: {name:'Tomas', role:'pêcheur', skin:'#d8a07a', hair:'#3a2a1e', clothes:'#2e6fa8', hat:'cire', beard:'#3a2a1e'},
+  lina:  {name:'Lina', role:'boulangère', skin:'#a86f4b', hair:'#1e1e24', clothes:'#e9e2d0', long:true},
 };
-const CHAPTERS = [
+const CHAPTERS_V1 = [
   {season:1, title:'L’arrivée', who:'job',
    intro:['Te voilà enfin ! Ça fait des années que plus personne ne débarque sur l’île. Il n’y a que moi, mon phare et les mouettes…', 'Si tu veux rester, il te faudra un toit : une maison, un chemin pour la rejoindre, un potager pour te nourrir et quelques fleurs pour égayer tout ça. Je compte sur toi !'],
    outro:['Une maison, un chemin, un potager… L’île respire à nouveau !', 'Ce soir, on fera un feu sur la plage. Je t’ai mis de côté de quoi l’allumer, et quelques ajoncs pour fleurir la lande.'],
@@ -2819,7 +3308,7 @@ const CHAPTERS = [
   {season:1, title:'Le petit train', who:'anaig',
    intro:['Tchou tchou ! Je serai ta cheffe de gare.', 'Pose une gare, au moins seize cases de rails, et le petit train fera le tour de l’île. Il s’arrêtera à chaque fois qu’il passe devant la gare. Les voyageurs auront faim : une boulangerie tout près de la gare serait parfaite, et un petit parking pour les voitures.'],
    outro:['Le train siffle, tout le monde se met à la fenêtre !', 'Avec tous ces visiteurs, le marché du samedi déborde ! Et pour les enfants, voici une aire de jeux.'],
-   goals:[['Gare', () => cnt('i'), 1], ['Cases de rails', () => cntG('X') + cntG('='), 16], ['Boulangerie près de la gare', () => withinR('1', 'i', 3) ? 1 : 0, 1], ['Cases de parking', () => cntG('%'), 2]], reward:['3']},
+   goals:[['Gare', () => cnt('i'), 1], ['Cases de rails', () => cntG('X') + cntG('=') + cntG('¤'), 16], ['Boulangerie près de la gare', () => withinR('1', 'i', 3) ? 1 : 0, 1], ['Cases de parking', () => cntG('%'), 2]], reward:['3']},
   {season:1, title:'La grande ville', who:'rozenn',
    intro:['Je m’appelle Rozenn, et les habitants viennent de m’élire maire. L’île grandit si vite !', 'Pour en faire une vraie petite ville, il nous faut une mairie, une école, un hôpital, trois bacs à fleurs et de quoi loger 30 foyers. Les immeubles et les tours t’aideront.'],
    outro:['L’île est devenue une ville, et c’est grâce à toi.', 'Le vieux Job a rallumé son phare en ton honneur. Fin de la première saison… mais l’année ne fait que commencer !'],
@@ -2838,7 +3327,7 @@ const CHAPTERS = [
    outro:['Tous les bateaux ont défilé, fanions au vent. Même les mouettes avaient l’air fières !', 'Je t’offre un bateau pavoisé, pour que la fête dure toute l’année.'],
    goals:[['Chalutiers le long du quai', () => O.filter((o, i) => o === 'G' && near8(i, j => G[j] === 'q')).length, 2], ['Bouées', () => cnt('J'), 3], ['Casiers sur le quai', () => cntOn('N', 'q'), 2], ['Phare', () => cnt('L'), 1]], reward:['Û']},
   {season:2, title:'La tempête', who:'job', give:['Î'], onIntro:() => storm(),
-   intro:['Quelle nuit… Une tempête d’automne a frappé l’île. Le vent a tout emporté : il y a des débris partout sur la côte.', 'Ramasse les débris avec la gomme, remets deux barques à l’eau, puis construis une digue d’au moins huit cases pour protéger le port. Je te confie les pierres.'],
+   intro:['Quelle nuit… Une tempête d’automne a frappé l’île. Le vent a tout emporté : il y a des débris partout sur la côte.', 'Ramasse les débris avec la pioche, remets deux barques à l’eau, puis construis une digue d’au moins huit cases pour protéger le port. Je te confie les pierres.'],
    outro:['La digue tient bon, et l’île est plus belle que jamais. Tu as fait du bon travail, matelot.', 'Pour qu’on ne soit plus jamais pris au dépourvu, les sauveteurs en mer installent leur station sur l’île.', 'Et grâce à ta digue, la mer s’est retirée à l’est : une jolie anse est apparue.'],
    goals:[['Débris ramassés', () => Math.max(0, (glob.story.debris || 0) - cnt('Ó')), () => glob.story.debris || 0], ['Barques à l’eau', () => cnt('B'), 2], ['Cases de digue', () => cntG('Î'), 8]], reward:['Ö']},
   {season:2, title:'Le marché de Noël', who:'anaig', give:['Ë','Â'],
@@ -2883,6 +3372,105 @@ const CHAPTERS = [
    outro:['Le coffre était là, caché sous le dolmen ! Dedans : des pièces d’or, et une lettre du corsaire à sa fille Gwen…', 'Gwen Le Cam, c’était l’arrière-arrière-grand-mère de Job ! Le vieux gardien a pleuré en lisant la lettre : le vrai trésor, c’était l’histoire de sa famille. Fin de la saison 3… à suivre !'],
    goals:[['Derniers indices', () => found('ÿ'), () => spawned('ÿ', 5)], ['Épave', () => cnt('ß'), 1], ['Grotte', () => cnt('Œ'), 1], ['Dolmen', () => cnt('ø'), 1], ['Lanternes anciennes', () => cnt('æ'), 5]], reward:['Ÿ']},
 ];
+
+/* ---------- nouvelle histoire : le carnet de Mira ---------- */
+const V2_SEASONS = {1:'Saison 1 · Seul·e au monde'};
+const inIsle = (i, key) => { const g = (glob.story.isles || {})[key]; if (!g) return false; const x = i % N, y = (i / N)|0; return ((x - g.cx)/(g.rx + 1.5))**2 + ((y - g.cy)/(g.ry + 1.5))**2 <= 1; };
+const cntIn = (id, key) => { let n = 0; for (let i = 0; i < N*N; i++) if (O[i] === id && inIsle(i, key)) n++; return n; };
+const cntGIn = (g, key) => { let n = 0; for (let i = 0; i < N*N; i++) if (G[i] === g && inIsle(i, key)) n++; return n; };
+function addPage(t){ const p = glob.story.pages || (glob.story.pages = []); if (!p.includes(t)){ p.push(t); saveGlob(); } }
+function shiftStoryGeo(off){
+  if (glob.story.v !== 2 || !isStory()) return;
+  for (const g of Object.values(glob.story.isles || {})){ g.cx += off; g.cy += off; }
+  for (const f of glob.story.fogs || []){ f.cx += off; f.cy += off; }
+  saveGlob();
+}
+function addIsle(key, cx, cy, rx, ry, kind, fogged){
+  const cells = [];
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++){
+    const i = y*N + x; if (G[i] !== 'w') continue;
+    const d = ((x - cx)/rx)**2 + ((y - cy)/ry)**2 + (hs(x, y, 41 + key.length) - 0.5)*0.28;
+    if (d >= 1) continue;
+    O[i] = null; cells.push(i);
+    G[i] = d < (kind === 'oiseaux' ? 0.45 : 0.7) ? (kind === 'galets' ? '!' : kind === 'oiseaux' ? 's' : 'g') : 's';
+  }
+  for (const i of cells){
+    const r = hs(i % N, (i / N)|0, 977);
+    if (kind === 'galets') O[i] = r < 0.12 ? 'r' : null;
+    else if (kind === 'oiseaux') O[i] = G[i] === 's' && r < 0.18 ? 'r' : null;
+    else if (kind === 'vents') O[i] = G[i] === 'g' ? (r < 0.22 ? '5' : r < 0.28 ? 'r' : r < 0.32 ? 'f' : null) : (r < 0.05 ? 'r' : null);
+  }
+  (glob.story.isles || (glob.story.isles = {}))[key] = {cx, cy, rx, ry};
+  if (fogged) (glob.story.fogs || (glob.story.fogs = [])).push({key, cx: fogged.cx ?? cx, cy: fogged.cy ?? cy, rx: rx + 2.5, ry: ry + 2.5, to:1, a:1});
+  saveGlob(); groundDirty = true;
+}
+function lookAt(cx, cy){ const v = vw(); camX = cx*T + 8 - v/2; camY = cy*T + 8 - v/2; clampCam(); }
+function revealIsle(key){
+  for (const f of glob.story.fogs || []) if (f.key === key) f.to = 0;
+  saveGlob(); const g = (glob.story.isles || {})[key]; if (g) lookAt(g.cx, g.cy);
+}
+function v2Grow(){ growTerrain(true, false); }
+function fogAt(x, y){
+  if (glob.story.v !== 2 || !isStory()) return false;
+  return (glob.story.fogs || []).some(f => (f.a ?? f.to) > 0.4 && ((x - f.cx)/f.rx)**2 + ((y - f.cy)/f.ry)**2 < 0.8);
+}
+const CHAPTERS_V2 = [
+  {season:1, title:'L’arrivée', who:'toi', give:['4'],
+   intro:['{nom}. Ton nom est maintenant écrit sur la couverture. Le carnet sous le bras, tu fais le tour de l’île : elle est déserte.', 'Il va falloir t’installer : un toit pour dormir, un feu pour te réchauffer, un potager pour manger, et quelques fleurs pour te sentir chez toi.'],
+   outro:['Le feu crépite. Pour la première fois, tu te sens un peu chez toi.', 'Au nord de l’île, une grande silhouette se dresse dans la brume : un phare. Éteint.'],
+   goals:[['Ta maison', () => cnt('h'), 1], ['Feu de camp', () => cnt('4'), 1], ['Potager', () => cnt('V'), 1], ['Massifs de fleurs', () => cnt('f') + cnt('H'), 2]], reward:['æ']},
+  {season:1, title:'Le phare éteint', who:'toi',
+   intro:['Le phare est vieux, mais solide. Pour l’atteindre sans te perdre, il te faut un chemin, et quelques lanternes pour le soir, quand la brume s’épaissit.'],
+   outro:['En haut du phare, une table couverte de poussière, une lampe à huile… et gravé dans le bois, le même dessin que sur la couverture de ton carnet.', 'Tu ouvres le carnet. Sur la première page, un mot est apparu, d’une écriture qui n’est pas la tienne : « Iloe ».'],
+   onDone:() => addPage('Iloe.'),
+   goals:[['Cases de chemin', () => cntG('c'), 8], ['Chemin jusqu’au phare', () => nearG('L', 'c') ? 1 : 0, 1], ['Lanternes anciennes', () => cnt('æ'), 3]], reward:['Ô']},
+  {season:1, title:'Rallumer la lumière', who:'carnet',
+   intro:['Tu as posé le carnet ouvert sur la table. Là-haut, la lampe du phare n’attend qu’une flamme.', 'Allume un grand bûcher près du phare pour y porter le feu, et installe de quoi regarder la mer.'],
+   outro:['La lumière tourne à nouveau au-dessus de la mer. Une petite lueur bleue danse autour du phare, puis file vers le nord-est…', 'Là-bas, dans la brume, on devine une forme. Une autre île ?'],
+   onDone:() => { glob.story.lit = true; saveGlob(); },
+   after:() => { v2Grow(); addIsle('ilot', N - 7, 7, 4.2, 3.2, 'galets', {}); lookAt(N - 9, 9); save(); syncWalkers(); toast('🌫️ Au nord-est, une île se devine dans la brume…'); },
+   goals:[['Bûcher près du phare', () => withinR('Ô', 'L', 3) ? 1 : 0, 1], ['Bancs', () => cnt('b'), 2], ['Massifs de fleurs', () => cnt('f') + cnt('H'), 4]], reward:['6']},
+  {season:1, title:'La première voile', who:'tomas',
+   intro:['Ohé ! J’ai vu ta lumière depuis le large. Je croyais qu’il n’y avait plus rien, par ici…', 'Je m’appelle Tomas, je suis pêcheur. Si tu me construis un ponton et une petite maison, je reste un moment. On ne sait jamais, il y a peut-être du poisson.'],
+   outro:['Tomas a posé son sac. Il regarde longtemps la brume au nord-est.', '« C’est bizarre… J’ai l’impression de connaître ce coin. »'],
+   goals:[['Cases de quai', () => cntG('q'), 4], ['Barques (la tienne et celle de Tomas)', () => cnt('B'), 2], ['Maisons', () => cnt('h'), 2]], reward:['Û']},
+  {season:1, title:'L’îlot des pêcheurs', who:'tomas',
+   onIntro:() => { revealIsle('ilot'); toast('🌫️ La brume se lève sur l’îlot !'); },
+   intro:['La brume s’est levée d’un coup ! Regarde : un îlot de galets, et pas si loin.', 'Aide-moi à m’y installer : une cabane de pêche, des casiers et une jetée pour accoster.'],
+   outro:['Sous les galets, Tomas a trouvé de vieux casiers en bois. Il en retourne un : un nom est gravé dessus. Celui de son grand-père.', '« Il ne m’a jamais dit qu’il était venu ici… »', 'Ce soir-là, une phrase de plus est apparue dans le carnet : « On revient toujours là où on a été heureux. »'],
+   onDone:() => addPage('On revient toujours là où on a été heureux.'),
+   goals:[['Cabane sur l’îlot', () => cntIn('h', 'ilot'), 1], ['Casiers sur l’îlot', () => cntIn('N', 'ilot'), 3], ['Cases de quai sur l’îlot', () => cntGIn('q', 'ilot'), 2]], reward:['1']},
+  {season:1, title:'Du pain frais', who:'lina',
+   intro:['Bonjour ! Je m’appelle Lina, je suis boulangère. Mon bateau ne fait escale ici que pour une nuit…', 'Mais tant qu’à faire, donne-moi un four et je fais du pain pour tout le monde ! Il me faudrait un moulin, un champ de blé, et quelques maisons pour les gens qui viendront.'],
+   outro:['Le premier pain sort du four. Lina en goûte un morceau et reste silencieuse.', '« C’est drôle. Cette recette, je la tiens de ma mère. Elle disait qu’elle venait d’une île qui n’existe plus. »', 'Le lendemain, son bateau repart sans elle.'],
+   goals:[['Boulangerie', () => cnt('1'), 1], ['Moulin', () => cnt('m'), 1], ['Cases de blé', () => cntG('k'), 6], ['Maisons', () => cnt('h'), 4]], reward:['Î']},
+  {season:1, title:'La tempête', who:'tomas',
+   onIntro:() => storm(),
+   intro:['Quelle nuit ! Le vent a tout secoué, il y a des débris partout sur la côte.', 'Ramasse-les avec la pioche, construis une digue pour protéger le port, et trois barques doivent être à l’eau.'],
+   outro:['L’île est réparée. En rangeant le phare, tu remarques que le carnet s’est ouvert tout seul.', 'Une nouvelle phrase est apparue, d’une écriture fine : « Elles reviendront si tu les éclaires. »'],
+   outroWho:'carnet', onDone:() => addPage('Elles reviendront si tu les éclaires.'),
+   goals:[['Débris ramassés', () => Math.max(0, (glob.story.debris || 0) - cnt('Ó')), () => glob.story.debris || 0], ['Cases de digue', () => cntG('Î'), 6], ['Barques', () => cnt('B'), 3]], reward:['8']},
+  {season:1, title:'L’île aux oiseaux', who:'lina',
+   onIntro:() => { v2Grow(); addIsle('oiseaux', 6, N - 7, 3.6, 2.8, 'oiseaux', null); lookAt(8, N - 9); save(); syncWalkers(); toast('🐦 Une île est sortie de la brume, sans prévenir !'); },
+   intro:['Tu as vu ?! Ce matin, une île est apparue au sud-ouest. Hier, il n’y avait que de la brume !', 'Elle est couverte d’oiseaux. Pose un banc pour les observer, un petit chemin de galets, et des bouées pour guider les barques.'],
+   outro:['Assise sur le banc, Lina compte les oiseaux.', '« Ils se tournent tous vers l’ouest, tu as remarqué ? Comme s’ils attendaient quelque chose. »'],
+   goals:[['Banc sur l’île aux oiseaux', () => cntIn('b', 'oiseaux'), 1], ['Cases de galets sur l’île', () => cntGIn('!', 'oiseaux'), 4], ['Bouées', () => cnt('J'), 2]], reward:['Ê']},
+  {season:1, title:'Le feu de la plage', who:'tomas',
+   intro:['Lina et moi, on voudrait fêter ton arrivée. Après tout, sans ta lumière, on ne serait pas là !', 'Il faut un grand feu de joie sur la plage, des bancs pour tout le monde, des guirlandes et des bannières.'],
+   outro:['Pendant la fête, la brume s’illumine à l’ouest. Des dizaines de lueurs bleues flottent au-dessus de l’eau, puis s’éteignent une à une.', 'Plus tard, seul·e dans le phare, tu vois le carnet s’ouvrir. Une phrase s’écrit sous tes yeux, lettre après lettre :', '« Si tu lis ceci, {nom}, c’est que tu es enfin arrivé·e. Je t’attendais. — M. »'],
+   outroWho:'carnet', onDone:() => addPage('Si tu lis ceci, {nom}, c’est que tu es enfin arrivé·e. Je t’attendais. — M.'),
+   after:() => { v2Grow(); addIsle('vents', 4, Math.round(N/2), 6, 8.5, 'vents', {cx:2}); lookAt(6, Math.round(N/2)); save(); syncWalkers(); toast('🌫️ À l’ouest, la pointe d’une île dépasse de la brume…'); },
+   goals:[['Bûchers', () => cnt('Ô'), 2], ['Bancs', () => cnt('b'), 6], ['Guirlandes', () => cnt('8'), 3], ['Bannières', () => cnt('Ê'), 2]], reward:['Ï']},
+];
+let CHAPTERS = CHAPTERS_V1;
+function pickChapters(){ CHAPTERS = glob.story.v === 2 ? CHAPTERS_V2 : CHAPTERS_V1; }
+pickChapters();
+function runAfter(i){
+  const ch = CHAPTERS[i]; if (!ch || !ch.after || !isStory()) return false;
+  const g = glob.story.grown || (glob.story.grown = {});
+  if (g['a' + i]) return false;
+  g['a' + i] = true; saveGlob(); ch.after(); return true;
+}
 const needOf = n => typeof n === 'function' ? n() : n;
 function seasonInfo(i){ const ch = CHAPTERS[i], list = CHAPTERS.filter(c => c.season === ch.season); return {s:ch.season, k:list.indexOf(ch) + 1, n:list.length}; }
 /* rythme : pas de limite de chapitres par jour (mettre un nombre ici pour en remettre une) */
@@ -2996,7 +3584,7 @@ function placeTreasure(){
   if (spot != null){ O[spot] = 'Ÿ'; save(); syncWalkers(); }
 }
 function storm(){
-  const SAFE = new Set(['h','K','I','T','A','E','L','i','a','é','ü','è','à','ù','œ','Ö','1','2','9','S','W','m','Ç','O','j','y','u','e','D','ê','â','Ë','Â']);
+  const SAFE = new Set(['h','K','I','T','A','E','L','i','a','é','ü','è','à','ù','œ','Ö','1','2','9','S','W','m','Ç','O','j','y','u','e','D','ê','â','Ë','Â','Ô','æ','4']);
   const coast = i => G[i] === 's' || G[i] === 'q' || near8(i, j => G[j] === 'w');
   const shuffle = a => { for (let k = a.length - 1; k > 0; k--){ const j = (Math.random()*(k+1))|0; [a[k], a[j]] = [a[j], a[k]]; } return a; };
   const cand = []; for (let i = 0; i < N*N; i++) if (O[i] && !SAFE.has(O[i]) && coast(i)) cand.push(i);
@@ -3010,6 +3598,13 @@ function storm(){
   toast('🌩️ Une tempête a frappé l’île !');
 }
 function isStory(){ const t = terrains.list.find(t => t.id === terrains.cur); return !!(t && t.story); }
+function drawBookFace(cv){
+  const c = cv.getContext('2d'), prevC = C; C = c; c.clearRect(0, 0, 16, 16);
+  R(2, 3, 12, 10, '#6e4520'); R(3, 4, 5, 8, '#f3ead6'); R(8, 4, 5, 8, '#e9dfc8'); R(7, 3, 2, 10, '#5a3818');
+  R(4, 6, 3, 1, '#9a8f7a'); R(4, 8, 3, 1, '#9a8f7a'); R(9, 6, 3, 1, '#9a8f7a'); R(2, 13, 12, 1, 'rgba(0,0,0,.2)');
+  R(12, 1, 1, 1, '#9fd3ff'); R(13, 2, 1, 1, '#9fd3ff');
+  C = prevC;
+}
 function drawPortrait(cv, p){
   const c = cv.getContext('2d'), prevC = C; C = c; c.clearRect(0, 0, 16, 16);
   R(3, 12, 10, 4, p.clothes);
@@ -3029,6 +3624,44 @@ function drawPortrait(cv, p){
   if (p.hat === 'coiffe'){ R(6, 0, 4, 4, '#fafafa'); R(5, 3, 6, 2, '#ececec'); R(7, 1, 2, 2, '#e8e0f0'); }
   C = prevC;
 }
+function makeIsland2(){
+  N = 32; W = N*T; G = Array(N*N).fill('w'); O = Array(N*N).fill(null);
+  const cx = 15.5, cy = 16, rx = 9.6, ry = 8.4;
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++){
+    const d = ((x - cx)/rx)**2 + ((y - cy)/ry)**2 + (hs(x, y, 17) - 0.5)*0.22;
+    if (d < 0.62) G[y*N + x] = 'g'; else if (d < 1) G[y*N + x] = 's';
+  }
+  let best = 1e9, bi = -1;
+  for (let i = 0; i < N*N; i++){ const x = i % N, y = (i / N)|0; if (G[i] === 's' && y*1.2 - x*0.3 < best){ best = y*1.2 - x*0.3; bi = i; } }
+  for (let i = 0; i < N*N; i++){
+    const x = i % N, y = (i / N)|0, r = hs(x, y, 79), dc = Math.hypot(x - cx, y - cy);
+    if (G[i] === 'g' && dc > 3.5) O[i] = r < 0.08 ? 't' : r < 0.12 ? 'P' : r > 0.17 && r < 0.19 ? 'r' : null;
+    else if (G[i] === 's') O[i] = r < 0.06 ? 'r' : null;
+  }
+  if (bi >= 0) O[bi] = 'L';
+  // ta barque, échouée au bord de la plage du sud
+  let bb = -1, by = -1;
+  for (let i = 0; i < N*N; i++){ const x = i % N, y = (i / N)|0; if (G[i] === 'w' && Math.abs(x - 15) < 4 && near8(i, j => G[j] === 's') && y > by){ by = y; bb = i; } }
+  if (bb >= 0) O[bb] = 'B';
+}
+function askName(){
+  if (storyMode !== 'prologue' || storyBox.hidden){
+    openStoryModal({mode:'prologue', kicker:'Prologue', title:'La brume', paras:[
+      'La brume t’enveloppe depuis des heures. Ta barque dérive sans bruit, jusqu’à ce que sa coque racle le sable.',
+      'Une île. Personne sur la plage, pas une lumière. Juste, au loin, la silhouette d’un grand phare éteint.',
+      'En sautant de la barque, ton pied heurte quelque chose, à moitié enfoui dans le sable : un vieux carnet relié de cuir. Il est sec, comme si la mer n’avait jamais osé le toucher.'],
+      go:'Ouvrir le carnet'});
+    return;
+  }
+  askNameForm();
+}
+function askNameForm(){
+  const inp = document.createElement('input'); inp.type = 'text'; inp.id = 'nameIn'; inp.className = 'tinput name-in'; inp.maxLength = 18; inp.autocomplete = 'off';
+  inp.placeholder = 'Ton prénom'; inp.value = glob.story.name || '';
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') storyGo.click(); });
+  openStoryModal({mode:'name', who:'carnet', kicker:'Le carnet', title:'Comment tu t’appelles ?', paras:['Toutes les pages sont blanches. Sur la couverture, une seule ligne, vide. Comme si quelqu’un attendait ton nom.', inp], go:'Écrire mon nom'});
+  setTimeout(() => inp.focus(), 50);
+}
 function makeIsland(){
   N = 24; W = N*T; G = Array(N*N).fill('w'); O = Array(N*N).fill(null);
   const cx = 11.5, cy = 11.5, rx = 8.6, ry = 7.4;
@@ -3040,7 +3673,7 @@ function makeIsland(){
   for (let i = 0; i < N*N; i++){ const x = i % N, y = (i / N)|0; if (G[i] === 's' && x - y*1.1 > best){ best = x - y*1.1; bi = i; } }
   for (let i = 0; i < N*N; i++){
     const x = i % N, y = (i / N)|0, r = hs(x, y, 77), dc = Math.hypot(x - cx, y - cy);
-    if (G[i] === 'g' && dc > 3.2) O[i] = r < 0.09 ? 't' : r < 0.13 ? 'P' : r < 0.17 ? 'f' : r < 0.19 ? 'r' : null;
+    if (G[i] === 'g' && dc > 3.2) O[i] = r < 0.09 ? 't' : r < 0.13 ? 'P' : r > 0.17 && r < 0.19 ? 'r' : null;
     else if (G[i] === 's') O[i] = r < 0.06 ? 'r' : null;
   }
   if (bi >= 0) O[bi] = 'L';
@@ -3053,12 +3686,13 @@ const storyCard = document.getElementById('storyCard'), scTitle = document.getEl
 let storyMode = null, storyHold = 0; // storyHold : laisse le temps de voir les nouvelles terres avant le chapitre suivant
 function openStoryModal({mode, who, kicker, title, paras, rewards, go, alt}){
   storyMode = mode;
-  const p = who && PEOPLE[who];
-  storyFace.hidden = !p; if (p) drawPortrait(storyFace, p);
+  const p = who === 'toi' ? Object.assign(residentLook(glob.story.name || 'toi'), {name:glob.story.name || 'Toi', role:'nouvel·le arrivant·e'})
+    : who === 'carnet' ? {name:'Le carnet', role:'des pages qui s’écrivent seules', book:true} : who && PEOPLE[who];
+  storyFace.hidden = !p; if (p){ if (p.book) drawBookFace(storyFace); else drawPortrait(storyFace, p); }
   storyKicker.textContent = kicker; storyTitle.textContent = title;
   storyWho.hidden = !p; storyWho.textContent = p ? `${p.name}, ${p.role}` : '';
   storyBody.innerHTML = '';
-  for (const t of paras){ if (typeof t === 'string'){ const el = document.createElement('p'); el.textContent = t; storyBody.append(el); } else storyBody.append(t); }
+  for (const t of paras){ if (typeof t === 'string'){ const el = document.createElement('p'); el.textContent = t.replace(/\{nom\}/g, glob.story.name || 'toi'); if (/^« .* »$/.test(el.textContent) && mode !== 'intro') el.className = 'carnet-line'; storyBody.append(el); } else storyBody.append(t); }
   storyRewards.innerHTML = ''; storyRewards.hidden = !(rewards && rewards.length);
   for (const id of rewards || []){
     const t = TOOLS.find(t => t.id === id), d = document.createElement('div'); d.className = 'rw';
@@ -3084,11 +3718,26 @@ function openChapter(kind, i){
     if (ch.onIntro && isStory()){ const ev = glob.story.events || (glob.story.events = {}); if (!ev[i]){ ev[i] = true; saveGlob(); ch.onIntro(); } }
   } else {
     const next = CHAPTERS[i + 1];
-    openStoryModal({mode:'outro', who:ch.who, kicker:`Saison ${si.s} · chapitre ${si.k} terminé 💛`, title:ch.title, paras:ch.outro, rewards:ch.reward,
-      go: !next ? 'Merci !' : !chapterReady() ? 'À demain !' : next.season !== ch.season ? `Vers la saison ${next.season}` : 'Chapitre suivant'});
+    openStoryModal({mode:'outro', who:ch.outroWho || ch.who, kicker:`Saison ${si.s} · chapitre ${si.k} terminé 💛`, title:ch.title, paras:ch.outro, rewards:ch.reward,
+      go: !next ? (glob.story.v === 2 ? 'À suivre…' : 'Merci !') : !chapterReady() ? 'À demain !' : next.season !== ch.season ? `Vers la saison ${next.season}` : 'Chapitre suivant'});
   }
 }
 function openBook(){
+  if (glob.story.v === 2){
+    const parts = [], last = Math.min(glob.story.chapter, CHAPTERS.length - 1);
+    const pages = glob.story.pages || [];
+    if (pages.length){ const h = document.createElement('h3'); h.className = 'season'; h.textContent = 'Pages retrouvées'; parts.push(h);
+      for (const t of pages){ const el = document.createElement('p'); el.className = 'carnet-line'; el.textContent = '« ' + t.replace(/\{nom\}/g, glob.story.name || 'toi') + ' »'; parts.push(el); } }
+    for (let i = 0; i <= last; i++){
+      const ch = CHAPTERS[i], si = seasonInfo(i);
+      if (si.k === 1){ const hs2 = document.createElement('h3'); hs2.className = 'season'; hs2.textContent = V2_SEASONS[si.s] || `Saison ${si.s}`; parts.push(hs2); }
+      const h = document.createElement('h3'); h.textContent = `${si.k}. ${ch.title}`; parts.push(h);
+      parts.push(...ch.intro);
+      if (i < glob.story.chapter) for (const t of ch.outro){ const el = document.createElement('p'); el.className = 'outro'; el.textContent = t.replace(/\{nom\}/g, glob.story.name || 'toi'); parts.push(el); }
+    }
+    openStoryModal({mode:'book', who:'carnet', kicker:'Carnet', title:'Le carnet', paras:parts, go:'Fermer'});
+    return;
+  }
   const parts = [], last = Math.min(glob.story.chapter, CHAPTERS.length - 1);
   for (let i = 0; i <= last; i++){
     const ch = CHAPTERS[i], si = seasonInfo(i);
@@ -3101,6 +3750,9 @@ function openBook(){
 }
 function maybeInvite(){
   if (glob.story.asked || glob.story.started || !giftBox.hidden || !storyBox.hidden) return;
+  if (true){ openStoryModal({mode:'invite', who:'carnet', kicker:'Nouvelle histoire', title:'Le carnet',
+    paras:['Une île déserte, perdue dans la brume. Un phare éteint, et un carnet aux pages blanches qui t’attend.', 'Rallume la lumière, accueille les rares voyageurs qui la verront, et découvre ce que cache la brume. Chaque chapitre te fait gagner de nouveaux objets, aussi disponibles dans tes autres terrains.', 'Ton village actuel ne change pas : l’île est un terrain à part, que tu retrouves dans la ⚙.'],
+    go:'Commencer l’histoire', alt:'Plus tard'}); return; }
   openStoryModal({mode:'invite', who:'job', kicker:'Nouveau', title:'L’île de l’histoire',
     paras:['Une petite île bretonne t’attend, presque vide. Fais-la revivre chapitre après chapitre, avec ses habitants.', 'Chaque chapitre te fait gagner de nouveaux objets : boulangerie, parc à huîtres, petit train… Ils seront aussi disponibles dans tes autres terrains.', 'Ton village actuel ne change pas : l’île est un terrain à part, que tu retrouves dans la ⚙.'],
     go:'Commencer l’histoire', alt:'Plus tard'});
@@ -3111,10 +3763,12 @@ function startStory(){
   const id = 'story' + newId();
   terrains.list.unshift({id, name:'L’île de l’histoire', story:true});
   terrains.cur = id; writeJSON(IDX, terrains);
-  makeIsland(); save();
-  Object.assign(glob.story, {started:true, asked:true, terrain:id, chapter:0, pendingOutro:null, introSeen:-1, moments:{}, events:{}, debris:0}); saveGlob();
+  Object.assign(glob.story, {started:true, asked:true, terrain:id, chapter:0, pendingOutro:null, introSeen:-1, moments:{}, events:{}, debris:0,
+    v:2, name:null, isles:{}, fogs:[], pages:[], lit:false, grown:{}, found:{}, spawn:{}}); saveGlob();
+  pickChapters();
+  makeIsland2(); save();
   afterTerrainChange(); setMenu(false);
-  if (storyBox.hidden) openChapter('intro', 0);
+  if (storyBox.hidden) askName();
 }
 function completeChapter(){
   const i = glob.story.chapter, ch = CHAPTERS[i];
@@ -3133,6 +3787,7 @@ function renderStoryCard(){
   const i = glob.story.chapter, ch = CHAPTERS[i];
   scGoals.innerHTML = '';
   if (!ch){
+    scDone.hidden = true;
     scTitle.textContent = `Saison ${CHAPTERS[CHAPTERS.length - 1].season} terminée 💛`;
     const li = document.createElement('li'); li.className = 'free'; li.textContent = 'La suite arrive bientôt. En attendant, fais grandir ton île comme tu veux.'; scGoals.append(li);
     return;
@@ -3140,32 +3795,53 @@ function renderStoryCard(){
   const si = seasonInfo(i), min = !!(glob.ui && glob.ui.storyMin);
   storyCard.classList.toggle('min', min); setFold(scFold, min);
   const okCount = ch.goals.filter(([, f, n]) => f() >= needOf(n)).length;
-  scTitle.textContent = `S${si.s} · Ch. ${si.k} · ${ch.title}` + (min ? `  ·  ${okCount}/${ch.goals.length} ✓` : '');
+  scTitle.textContent = '';
+  if (min) scTitle.textContent = `Ch. ${si.k} · ${ch.title}  ·  ${okCount}/${ch.goals.length} ✓`;
+  else { const k = document.createElement('small'); k.className = 'sc-kick'; k.textContent = `Journal de bord — S${si.s} · Ch. ${si.k}`; const t = document.createElement('span'); t.textContent = ch.title; scTitle.append(k, t); }
   if ((glob.story.introSeen ?? -1) < i && !chapterReady()){
     const li = document.createElement('li'); li.className = 'free'; li.textContent = '🌙 Ce chapitre arrive demain. En attendant, construis librement !'; scGoals.append(li);
-    return;
+    scDone.hidden = true; return;
   }
   for (const [label, f, need] of ch.goals){
     const nd = needOf(need), cur = Math.min(f(), nd), li = document.createElement('li');
-    li.className = cur >= nd ? 'ok' : ''; li.textContent = `${label} ${cur}/${nd}`; scGoals.append(li);
+    li.className = cur >= nd ? 'ok' : '';
+    const lab = document.createElement('span'); lab.className = 'lab'; lab.textContent = label;
+    const lead = document.createElement('span'); lead.className = 'lead';
+    const num = document.createElement('span'); num.className = 'num'; num.textContent = `${cur}/${nd}`;
+    li.append(lab, lead, num); scGoals.append(li);
   }
+  scDone.hidden = okCount < ch.goals.length || glob.story.pendingOutro != null;
 }
+const scDone = document.getElementById('scDone');
+scDone.onclick = () => {
+  const ch = CHAPTERS[glob.story.chapter];
+  if (!ch || !storyBox.hidden || glob.story.pendingOutro != null || !ch.goals.every(([, f, n]) => f() >= needOf(n))) return;
+  scDone.hidden = true; completeChapter();
+};
 function checkStory(){
   if (!isStory()) { storyCard.hidden = true; return; }
   renderStoryCard();
   if (!storyBox.hidden || !giftBox.hidden || Date.now() < storyHold) return;
   if (glob.story.pendingOutro != null){ openChapter('outro', glob.story.pendingOutro); return; }
-  for (const k of Object.keys(GROWTH)) if (+k < glob.story.chapter && applyGrowth(+k, true)) return;
+  if (glob.story.v === 2 && !glob.story.name){ askName(); return; }
+  if (glob.story.v === 2){ for (let k = 0; k < glob.story.chapter; k++) if (runAfter(k)) return; }
+  else for (const k of Object.keys(GROWTH)) if (+k < glob.story.chapter && applyGrowth(+k, true)) return;
   const ch = CHAPTERS[glob.story.chapter];
   if (ch && (glob.story.introSeen ?? -1) < glob.story.chapter){ if (chapterReady()) openChapter('intro', glob.story.chapter); return; }
-  if (ch && ch.goals.every(([, f, n]) => f() >= needOf(n))) completeChapter();
+  if (ch && ch.goals.every(([, f, n]) => f() >= needOf(n)) && glob.story.readyToast !== glob.story.chapter){
+    glob.story.readyToast = glob.story.chapter; saveGlob(); toast('✓ Tout est prêt ! Valide le chapitre quand tu veux');
+  }
 }
 function updateStoryBtn(){
   const b = document.getElementById('storyBtn');
   const has = glob.story.started && terrains.list.some(t => t.id === glob.story.terrain);
   b.textContent = !has ? '📖 Commencer l’histoire' : isStory() ? '📖 Carnet de l’île' : '📖 Aller sur l’île';
   const sc = document.getElementById('storyConfirm');
-  document.getElementById('storyRestart').hidden = !has || !sc.hidden;
+  const rb = document.getElementById('storyRestart');
+  rb.hidden = !has || !sc.hidden;
+  const old = has && glob.story.v !== 2;
+  rb.textContent = old ? '✨ Nouvelle histoire : le carnet' : '↺ Recommencer l’histoire';
+  document.getElementById('storyConfirmText').textContent = old ? 'Commencer la nouvelle histoire ? L’ancienne île de l’histoire sera remplacée par une île toute neuve.' : 'Repartir du chapitre 1 avec une île toute neuve ?';
 }
 function restartStory(){
   const old = glob.story.terrain;
@@ -3173,7 +3849,7 @@ function restartStory(){
   try { localStorage.removeItem(tKey(old)); } catch(e){}
   if (terrains.cur === old) terrains.cur = null;
   writeJSON(IDX, terrains);
-  Object.assign(glob.story, {started:false, terrain:null, chapter:0, pendingOutro:null, introSeen:-1, moments:{}, events:{}, debris:0, grown:{}, found:{}, spawn:{}, today:null});
+  Object.assign(glob.story, {started:false, terrain:null, chapter:0, pendingOutro:null, introSeen:-1, moments:{}, events:{}, debris:0, grown:{}, found:{}, spawn:{}, today:null, v:2, isles:{}, fogs:[], pages:[], lit:false});
   saveGlob();
   walkers = [];
   startStory(); syncWalkers(); updateStats(); renderTerrains(); updateStoryBtn();
@@ -3195,7 +3871,7 @@ storyGo.onclick = () => {
     glob.story.chapter = done + 1; glob.story.pendingOutro = null; saveGlob();
     storyBox.hidden = true;
     storyHold = Date.now() + 2700;
-    const grew = applyGrowth(done);
+    const grew = glob.story.v === 2 ? runAfter(done) : applyGrowth(done);
     if (!grew) storyHold = 0;
     renderStoryCard(); updateStoryBtn();
     if (CHAPTERS[glob.story.chapter] && chapterReady()) setTimeout(() => openChapter('intro', glob.story.chapter), grew ? 2600 : 300);
@@ -3204,13 +3880,18 @@ storyGo.onclick = () => {
     return;
   }
   if (storyMode === 'invite'){ glob.story.asked = true; saveGlob(); storyBox.hidden = true; startStory(); return; }
+  if (storyMode === 'prologue'){ askNameForm(); return; }
+  if (storyMode === 'name'){
+    const v = (document.getElementById('nameIn').value || '').trim().slice(0, 18);
+    glob.story.name = v || 'Voyageur'; saveGlob(); storyBox.hidden = true; openChapter('intro', 0); return;
+  }
   storyBox.hidden = true; updateStats();
 };
 storyAlt.onclick = () => {
   if (storyMode === 'invite'){ glob.story.asked = true; saveGlob(); toast('L’histoire t’attend dans la ⚙'); }
   storyBox.hidden = true;
 };
-storyBox.addEventListener('click', e => { if (e.target === storyBox && storyMode !== 'outro'){ if (storyMode === 'invite'){ glob.story.asked = true; saveGlob(); } storyBox.hidden = true; } });
+storyBox.addEventListener('click', e => { if (e.target === storyBox && storyMode !== 'outro' && storyMode !== 'name' && storyMode !== 'prologue'){ if (storyMode === 'invite'){ glob.story.asked = true; saveGlob(); } storyBox.hidden = true; } });
 giftLater.addEventListener('click', () => setTimeout(maybeInvite, 400));
 giftBox.addEventListener('click', e => { if (e.target === giftBox) setTimeout(maybeInvite, 400); });
 giftOpen.addEventListener('click', () => { if (giftBox.hidden) setTimeout(() => { maybeInvite(); updateStats(); }, 600); });
