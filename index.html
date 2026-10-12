@@ -2784,6 +2784,20 @@ const COST = {'à':{p:3, b:2}, J:{b:1}, M:{p:2}, e:{p:2, b:2}, S:{p:3, b:2}, y:{
   '1':{p:4, b:2}, m:{p:3, b:3}, 'Ç':{p:2, b:4}, N:{b:1}, G:{b:4}, Q:{p:3}, '2':{p:2, b:2}, l:{p:1}, '8':{b:1}, 'Ö':{p:3, b:2}, i:{p:4, b:3}, 'Ô':{b:3}, '4':{b:1}, 'Ê':{b:1}, r:{p:3}};
 const TREES = new Set(['t', 'P', 'À']);
 const SAPLING = {t:'ţ', P:'ş', 'À':'ą'}, GROWN = {'ţ':'t', 'ş':'P', 'ą':'À'};
+const SAP_MS = 3*60000;
+function growSaplings(){
+  if (!resOn()) return;
+  const sap = glob.story.sap || (glob.story.sap = {}), now = Date.now();
+  let grew = 0, dirty = false;
+  for (const k of Object.keys(sap)) if (!GROWN[O[k]]){ delete sap[k]; dirty = true; }
+  for (let i = 0; i < N*N; i++){
+    if (!GROWN[O[i]]) continue;
+    if (sap[i] == null){ sap[i] = now; dirty = true; }
+    else if (now - sap[i] >= SAP_MS){ O[i] = GROWN[O[i]]; delete sap[i]; grew++; dirty = true; }
+  }
+  if (dirty) saveGlob();
+  if (grew){ save(); toast(grew > 1 ? `🌳 ${grew} pousses sont devenues des arbres` : '🌳 Une pousse est devenue un arbre'); }
+}
 function resOn(){ return glob.story.v === 2 && isStory(); }
 function resv(){ const r = glob.story.res || (glob.story.res = {b:0, p:0}); r.b = r.b || 0; r.p = r.p || 0; return r; }
 function costTxt(c){ return [c.p ? c.p + '🪨' : '', c.b ? c.b + '🪵' : ''].filter(Boolean).join(' '); }
@@ -2820,8 +2834,7 @@ function tide(){
   const coast = i => !O[i] && !fogAt(i % N, (i / N)|0) && G[i] === 's' && near8(i, j => G[j] === 'w');
   const cand = []; for (let i = 0; i < N*N; i++) if (coast(i)) cand.push(i);
   shuffleArr(cand);
-  let grew = 0; for (let i = 0; i < N*N; i++) if (GROWN[O[i]]){ O[i] = GROWN[O[i]]; grew++; }
-  if (grew) groundDirty = true;
+  const grew = 0;
   let w = Math.max(0, 6 - cnt('ŵ')), k = 0;
   while (w-- > 0 && cand.length){ O[cand.pop()] = 'ŵ'; k++; }
   let rk = 0; for (let n = 0; n < 2 && cand.length && cnt('r') < 14; n++){ O[cand.pop()] = 'r'; rk++; }
@@ -2834,6 +2847,7 @@ function sparkle(ox, oy, x, y){
 function interact(x, y){
   const i = y*N + x;
   if (fogAt(x, y)){ hintT('🌫️ La brume est trop épaisse par ici…'); return; }
+  if (GROWN[O[i]]){ const t0 = (glob.story.sap || {})[i] ?? Date.now(), left = Math.max(0, Math.ceil((SAP_MS - (Date.now() - t0))/60000)); toast(left > 1 ? `🌱 Encore ${left} minutes avant de devenir un arbre` : '🌱 Encore moins d’une minute…'); return; }
   if (!handTarget(i)) return;
   if (O[i] === 'Ó'){ O[i] = null; toast('🧺 Débris ramassé'); gain(1, 0); syncWalkers(); updateStats(); queueSave(); return; }
   const id = O[i], key = id + '_' + glob.story.chapter, f = glob.story.found || (glob.story.found = {});
@@ -2891,7 +2905,7 @@ function place(x, y, forceErase){
     if (O[i]){ busyToast(); return; }
     if (!pay(t.id)) return;
     O[i] = resOn() && SAPLING[t.id] ? SAPLING[t.id] : t.id;
-    if (O[i] !== t.id) hintT('🌱 Pousse plantée : elle deviendra un arbre à la prochaine marée (toutes les 3 minutes)');
+    if (O[i] !== t.id){ (glob.story.sap || (glob.story.sap = {}))[i] = Date.now(); saveGlob(); hintT('🌱 Pousse plantée : elle deviendra un arbre dans 3 minutes'); }
   }
   syncWalkers(); updateStats(); queueSave();
 }
@@ -3646,6 +3660,7 @@ function addPage(t){ const p = glob.story.pages || (glob.story.pages = []); if (
 function shiftStoryGeo(off){
   if (glob.story.v !== 2 || !isStory()) return;
   if (glob.story.cont != null) glob.story.cont += off;
+  if (glob.story.sap){ const n0 = N - 2*off, m = {}; for (const [k, t] of Object.entries(glob.story.sap)){ const x = k % n0, y = (k / n0)|0; m[(y + off)*N + x + off] = t; } glob.story.sap = m; }
   for (const g of Object.values(glob.story.isles || {})){ g.cx += off; g.cy += off; }
   for (const f of glob.story.fogs || []){ f.cx += off; f.cy += off; }
   saveGlob();
@@ -4244,6 +4259,7 @@ scDone.onclick = () => {
 const TIDE_MS = 3*60000;
 function checkStory(){
   if (!isStory()) { storyCard.hidden = true; return; }
+  growSaplings();
   if (resOn() && glob.story.name){ const now = Date.now(); if (!glob.story.tideAt) { glob.story.tideAt = now + TIDE_MS; saveGlob(); } else if (now >= glob.story.tideAt && storyBox.hidden){ glob.story.tideAt = now + TIDE_MS; saveGlob(); tide(); } }
   renderStoryCard();
   if (!storyBox.hidden || !giftBox.hidden || Date.now() < storyHold) return;
