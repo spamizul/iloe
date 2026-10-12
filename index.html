@@ -1563,6 +1563,49 @@ function drawObject(o, ox, oy, x, y, withLights){
     else if (o === 'ą'){ R(ox+4, oy+6, 3, 1, leaf); R(ox+9, oy+6, 3, 1, leaf); R(ox+6, oy+5, 4, 1, leaf); }
     else { R(ox+5, oy+6, 3, 2, leaf); R(ox+9, oy+5, 3, 2, leaf); R(ox+7, oy+4, 2, 2, leaf); }
     break; }
+  case 'ǫ': { // rames d'une vieille barque
+    R(ox+2, oy+13, 12, 1, 'rgba(0,0,0,.12)');
+    for (let k = 0; k < 9; k++){ R(ox+3 + k, oy+11 - (k >> 1), 1, 1, '#8a6a48'); R(ox+4 + k, oy+13 - (k >> 1), 1, 1, '#a8845c'); }
+    R(ox+11, oy+5, 3, 3, '#6a4a2e'); R(ox+12, oy+7, 3, 3, '#7a5a3a');
+    sparkle(ox, oy, x, y); break; }
+  case 'ǰ': { // pomme de pin
+    R(ox+5, oy+13, 6, 1, 'rgba(0,0,0,.14)');
+    R(ox+6, oy+7, 4, 6, '#8a5a32'); R(ox+5, oy+8, 6, 4, '#7a4a2a');
+    for (let k = 0; k < 3; k++) R(ox+6, oy+8 + k*2, 4, 1, '#b07a4a');
+    R(ox+7, oy+5, 2, 2, '#4f6a3a');
+    sparkle(ox, oy, x, y); break; }
+  case 'ȼ': { // cristal bleu
+    const tw = reduce ? 1 : (Math.sin(now/280 + x*2 + y)*0.5 + 0.5);
+    R(ox+5, oy+13, 7, 1, 'rgba(0,0,0,.14)');
+    R(ox+7, oy+5, 2, 8, '#5aa8e0'); R(ox+5, oy+8, 2, 5, '#3f7fc0'); R(ox+9, oy+7, 2, 6, '#7cc4f0'); R(ox+7, oy+5, 1, 3, '#d8f0ff');
+    L(ox+8, oy+9, 8 + tw*4, 'win');
+    break; }
+  case 'ɵ': { // lueur égarée
+    const tw = reduce ? 1 : (Math.sin(now/200 + x*3 + y*2)*0.5 + 0.5), bob = reduce ? 0 : Math.round(Math.sin(now/400 + x)*1.5), al = (0.5 + tw*0.5).toFixed(2);
+    R(ox+6, oy+6 + bob, 4, 4, `rgba(140,210,255,${al})`); R(ox+5, oy+7 + bob, 6, 2, `rgba(140,210,255,${al})`); R(ox+7, oy+7 + bob, 2, 2, '#ffffff');
+    lights.push({x:ox+8, y:oy+8 + bob, r:12, kind:'win'});
+    break; }
+  case 'ȶ': { // pierre gravée
+    R(ox+2, oy+13, 12, 1, 'rgba(0,0,0,.15)');
+    R(ox+3, oy+8, 10, 5, '#9aa0a5'); R(ox+3, oy+8, 10, 1, '#b8bec2'); R(ox+3, oy+12, 10, 1, '#7a8085');
+    R(ox+5, oy+10, 1, 1, '#4a5058'); R(ox+7, oy+10, 2, 1, '#4a5058'); R(ox+10, oy+10, 1, 1, '#4a5058'); R(ox+6, oy+11, 3, 1, '#5a6068');
+    sparkle(ox, oy, x, y); break; }
+  case 'ȟ': { // herbes médicinales
+    R(ox+4, oy+13, 8, 1, 'rgba(0,0,0,.12)');
+    R(ox+5, oy+8, 1, 5, '#4f8a3a'); R(ox+8, oy+6, 1, 7, '#4f8a3a'); R(ox+11, oy+9, 1, 4, '#4f8a3a');
+    R(ox+4, oy+8, 3, 2, '#7ab04a'); R(ox+7, oy+6, 3, 2, '#7ab04a'); R(ox+10, oy+9, 3, 2, '#7ab04a'); R(ox+8, oy+5, 1, 1, '#c8a8e8');
+    sparkle(ox, oy, x, y); break; }
+  case 'Ȼ': { // le chat d'Ama, caché
+    R(ox+4, oy+13, 9, 1, 'rgba(0,0,0,.15)');
+    R(ox+5, oy+9, 7, 4, '#d8822b'); R(ox+9, oy+7, 4, 3, '#d8822b'); R(ox+9, oy+6, 1, 1, '#d8822b'); R(ox+12, oy+6, 1, 1, '#d8822b');
+    R(ox+10, oy+8, 1, 1, '#1e1e24'); R(ox+12, oy+8, 1, 1, '#1e1e24'); R(ox+3, oy+9, 2, 1, '#d8822b'); R(ox+6, oy+10, 4, 1, '#b8641a');
+    sparkle(ox, oy, x, y); break; }
+  case 'ȝ': { // la lettre de Mira
+    R(ox+3, oy+13, 10, 1, 'rgba(0,0,0,.12)');
+    R(ox+3, oy+7, 10, 6, '#e8dcc0'); R(ox+3, oy+7, 10, 1, '#f6eedc');
+    for (let k = 0; k < 4; k++){ R(ox+3 + k, oy+8 + k, 1, 1, '#b8a888'); R(ox+12 - k, oy+8 + k, 1, 1, '#b8a888'); }
+    R(ox+7, oy+10, 2, 2, '#2e6fa8');
+    sparkle(ox, oy, x, y); break; }
   case 'ƈ': { // morceau de vieille carte
     const fl = reduce ? 0 : Math.round(Math.sin(now/260 + x + y*2));
     R(ox+3, oy+13, 10, 1, 'rgba(0,0,0,.12)');
@@ -2778,7 +2821,7 @@ function handTarget(i){
 }
 function hintT(msg){ const n = performance.now(); if (n - busyT > 1500){ busyT = n; toast(msg); } }
 /* ---------- matériaux (île de l'histoire seulement) ---------- */
-const COST = {L:{p:4, b:1}, 'à':{p:3, b:2}, J:{b:1}, M:{p:2}, e:{p:2, b:2}, S:{p:3, b:2}, y:{p:1, b:3}, u:{b:1}, 'è':{p:3, b:2}, O:{p:1, b:3}, d:{b:4}, '9':{p:2, b:3}, '£':{b:1}, 'Ĉ':{b:3}, h:{p:2, b:1}, F:{b:1}, b:{b:1}, B:{b:2}, q:{b:1}, n:{b:2}, X:{b:1}, 'Î':{p:1}, 'æ':{p:1}, W:{p:1}, V:{b:1},
+const COST = {'ï':{b:2}, 'ë':{p:4}, Y:{b:2}, 'þ':{p:4}, 'ø':{p:5}, 'ê':{p:3}, L:{p:4, b:1}, 'à':{p:3, b:2}, J:{b:1}, M:{p:2}, e:{p:2, b:2}, S:{p:3, b:2}, y:{p:1, b:3}, u:{b:1}, 'è':{p:3, b:2}, O:{p:1, b:3}, d:{b:4}, '9':{p:2, b:3}, '£':{b:1}, 'Ĉ':{b:3}, h:{p:2, b:1}, F:{b:1}, b:{b:1}, B:{b:2}, q:{b:1}, n:{b:2}, X:{b:1}, 'Î':{p:1}, 'æ':{p:1}, W:{p:1}, V:{b:1},
   '1':{p:4, b:2}, m:{p:3, b:3}, 'Ç':{p:2, b:4}, N:{b:1}, G:{b:4}, Q:{p:3}, '2':{p:2, b:2}, l:{p:1}, '8':{b:1}, 'Ö':{p:3, b:2}, i:{p:4, b:3}, 'Ô':{b:3}, '4':{b:1}, 'Ê':{b:1}, r:{p:3}};
 const TREES = new Set(['t', 'P', 'À']);
 const SAPLING = {t:'ţ', P:'ş', 'À':'ą'}, GROWN = {'ţ':'t', 'ş':'P', 'ą':'À'};
@@ -2852,6 +2895,7 @@ function interact(x, y){
   O[i] = null; f[key] = (f[key] || 0) + 1;
   if (id === 'ǝ'){ const k = glob.story.lpage || 0, t = LETTERS_M[k % LETTERS_M.length]; glob.story.lpage = k + 1; addPage(t + ' — M.'); saveGlob(); toast('✉️ Une lettre : « ' + t + ' »'); }
   else if (id === 'ƥ'){ const k = glob.story.mpage || 0, t = PAGES_M[k % PAGES_M.length]; glob.story.mpage = k + 1; addPage(t); saveGlob(); toast('📜 Une page du carnet ! « ' + t + ' »'); }
+  else if (id === 'ȝ'){ addPage('Si tu lis ceci, la brume a reculé et les lueurs vont pouvoir rentrer chez elles. Il en reste une que je n’ai jamais pu guider : moi. — Mira'); saveGlob(); toast('✉️ Une lettre de Mira…'); }
   else { saveGlob(); toast(COLLECT[id]); }
   if (id === 'ŵ') gain(1, 0); else if (id === 'Ŝ') gain(0, 1);
   gateCheck();
@@ -2903,7 +2947,7 @@ function place(x, y, forceErase){
     if (O[i]){ busyToast(); return; }
     if (!pay(t.id)) return;
     O[i] = resOn() && SAPLING[t.id] ? SAPLING[t.id] : t.id;
-    if (O[i] !== t.id){ (glob.story.sap || (glob.story.sap = {}))[i] = Date.now(); saveGlob(); hintT('🌱 Pousse plantée : elle deviendra un arbre dans 3 minutes'); }
+    if (O[i] !== t.id){ (glob.story.sap || (glob.story.sap = {}))[i] = Date.now(); glob.story.planted = (glob.story.planted || 0) + 1; saveGlob(); hintT('🌱 Pousse plantée : elle deviendra un arbre dans 3 minutes'); }
   }
   syncWalkers(); updateStats(); queueSave();
 }
@@ -3559,6 +3603,8 @@ const PEOPLE = {
   ines:  {name:'Inès', role:'cheffe de gare', skin:'#e0b08a', hair:'#2b2b30', clothes:'#1f3550', hat:'chef', long:true},
   aiko:  {name:'Aiko', role:'cartographe', skin:'#f1d2b0', hair:'#1e1e24', clothes:'#5a6a3a', glasses:true, long:true},
   mei:   {name:'Mei', role:'photographe', skin:'#f1d2b0', hair:'#2b2b30', clothes:'#c8553d'},
+  elias: {name:'Elias', role:'gardien de la forêt', skin:'#d8a07a', hair:'#5a3a22', clothes:'#3f5a3a', beard:'#5a3a22'},
+  ama:   {name:'Ama', role:'soigneuse', skin:'#7a4a2e', hair:'#1e1e24', clothes:'#e9e2d0', long:true},
   nour:  {name:'Nour', role:'jardinière', skin:'#b07a52', hair:'#2b1e14', clothes:'#3f8f5a', long:true},
 };
 const CHAPTERS_V1 = [
@@ -3651,7 +3697,7 @@ const CHAPTERS_V1 = [
 ];
 
 /* ---------- nouvelle histoire : le carnet de Mira ---------- */
-const V2_SEASONS = {1:'Saison 1 · Seul·e au monde', 2:'Saison 2 · Les cartes d’Aiko'};
+const V2_SEASONS = {1:'Saison 1 · Seul·e au monde', 2:'Saison 2 · Les cartes d’Aiko', 3:'Saison 3 · Les lueurs'};
 const inIsle = (i, key) => { const g = (glob.story.isles || {})[key]; if (!g) return false; const x = i % N, y = (i / N)|0; return ((x - g.cx)/(g.rx + 1.5))**2 + ((y - g.cy)/(g.ry + 1.5))**2 <= 1; };
 const cntIn = (id, key) => { let n = 0; for (let i = 0; i < N*N; i++) if (O[i] === id && inIsle(i, key)) n++; return n; };
 const cntGIn = (g, key) => { let n = 0; for (let i = 0; i < N*N; i++) if (G[i] === g && inIsle(i, key)) n++; return n; };
@@ -3754,10 +3800,18 @@ function railToContinent(){
   }
   return false;
 }
+const nearR = (a, b, r) => { const bs = []; O.forEach((o, i) => { if (o === b) bs.push(i); }); let n = 0; O.forEach((o, i) => { if (o === a && bs.some(j => Math.max(Math.abs(i % N - j % N), Math.abs(((i / N)|0) - ((j / N)|0))) <= r)) n++; }); return n; };
+function makePinsCave(){
+  if (O.some((o, i) => o === 'Œ' && inIsle(i, 'pins'))) return;
+  const g = glob.story.isles.pins, cand = [];
+  for (let i = 0; i < N*N; i++) if (inIsle(i, 'pins') && (G[i] === 's' || G[i] === 'g') && ((i / N)|0) < g.cy && near8(i, j => G[j] === 'w')) cand.push(i);
+  const c = shuffleArr(cand)[0]; if (c == null) return;
+  O[c] = 'Œ'; save();
+}
 const islandGare = () => O.reduce((n, o, i) => n + (o === 'i' && !inCont(i) ? 1 : 0), 0);
 function fogAt(x, y){
   if (glob.story.v !== 2 || !isStory()) return false;
-  return (glob.story.fogs || []).some(f => { if ((f.a ?? f.to) <= 0.4) return false; const d = ((x - f.cx)/f.rx)**2 + ((y - f.cy)/f.ry)**2; return f.inv ? d > 1.05 : d < 0.8; });
+  return (glob.story.fogs || []).some(f => { if (f.soft || (f.a ?? f.to) <= 0.4) return false; const d = ((x - f.cx)/f.rx)**2 + ((y - f.cy)/f.ry)**2; return f.inv ? d > 1.05 : d < 0.8; });
 }
 const housesOnPath = () => O.reduce((n, o, i) => n + (o === 'h' && near8(i, j => G[j] === 'c') ? 1 : 0), 0);
 const bridgeTo = key => { const land = j => G[j] !== 'w' && G[j] !== 'n' && G[j] !== '¤'; let a = false, b = false; for (let i = 0; i < N*N; i++) if (G[i] === 'n'){ if (near8(i, j => land(j) && inIsle(j, key))) a = true; if (near8(i, j => land(j) && !inIsle(j, key))) b = true; } return a && b; };
@@ -3875,6 +3929,59 @@ const CHAPTERS_V2 = [
    outro:['À minuit, toutes les îles s’allument en même temps. Les lueurs montent de la mer par centaines et dansent au-dessus de l’archipel.', 'Sur la carte d’Aiko, le nom effacé réapparaît, lettre après lettre : MIRA.', 'Au même moment, une vieille photo glisse du carnet. Une femme devant le phare, entourée de dizaines de petites lumières bleues. Au dos, quelques mots : « Mira, gardienne du phare d’Iloe. Pour tous ceux qui se sont perdus. »'],
    after:() => { addIsle('pins', 10, 10, 7, 5.5, 'pins', {}); save(); syncWalkers(); toast('🌫️ Tout au nord-ouest, une sixième île se devine dans la brume… À suivre !'); },
    goals:[['Ramasse la page envolée', () => found('ƥ'), () => spawned('ƥ', 1)], ['Lanternes', () => cnt('æ'), 20], ['Guirlandes', () => cnt('8'), 10], ['Feux d’artifice', () => cnt('Ï'), 2]], reward:[]},
+  {season:3, title:'La sixième île', who:'tomas', give:['ï'],
+   onIntro:() => { const g = (glob.story.isles || {}).pins; if (!g || g.rx < 10){ v2Grow(); const p = glob.story.isles.pins || {cx:14, cy:14}; addIsle('pins', p.cx, p.cy, 11, 8, 'pins', null); revealIsle('pins'); } spawnSmart('ǫ', 3, i => inIsle(i, 'pins') && G[i] === 's' && !O[i]); save(); syncWalkers(); const q = glob.story.isles.pins; lookAt(q.cx, q.cy); },
+   intro:['La brume s’est retirée du nord-ouest cette nuit. Regarde : une forêt entière, des pins à perte de vue !', 'Sur la plage, une vieille barque échouée a perdu ses rames : ramasse-les, on en aura besoin. Installe d’abord un campement là-bas, une jetée, quelques tentes et un feu… puis les premières maisons. Ce sera le village de la forêt !'],
+   outro:['La première nuit au campement, personne ne dort vraiment. La forêt craque, le vent siffle dans les pins… et entre les troncs, de petites lueurs bleues vont et viennent.', 'Au matin, un homme sort du bois, une hache sur l’épaule. « Vous avez allumé un feu dans ma forêt. Ça faisait longtemps. »'],
+   goals:[['Ramasse les rames', () => found('ǫ'), () => spawned('ǫ', 3)], ['Jetée sur l’île aux pins', () => cntGIn('q', 'pins'), 2], ['Tentes sur l’île aux pins', () => cntIn('ï', 'pins'), 3], ['Feu de camp sur l’île', () => cntIn('4', 'pins'), 1], ['Maisons sur l’île aux pins', () => cntIn('h', 'pins'), 6]], reward:[]},
+  {season:3, title:'Le forestier', who:'elias', give:['£','Ç'],
+   onIntro:() => { glob.story.plantBase = glob.story.planted || 0; saveGlob(); spawnSmart('ǰ', 6, i => inIsle(i, 'pins') && G[i] === 'g' && !O[i]); },
+   intro:['Elias. Je garde cette forêt depuis… depuis plus longtemps que je ne m’en souviens. La brume tourne autour de l’île, mais elle n’entre jamais sous les pins.', 'Si vous voulez vivre ici, respectez la forêt : ramasse des pommes de pin et replante ce que tu coupes. Des sentiers en bois pour ne pas abîmer la mousse, une scierie, une cabane pour moi… et des maisons, puisque vous êtes de plus en plus nombreux.'],
+   outro:['Elias passe la main sur l’écorce d’un jeune sapin. « Bien. La forêt vous accepte. »', '« Il y a une grotte, au nord de l’île. Les lueurs y entrent chaque soir. Je n’ai jamais osé les suivre. »'],
+   goals:[['Ramasse les pommes de pin', () => found('ǰ'), () => spawned('ǰ', 6)], ['Arbres replantés', () => (glob.story.planted || 0) - (glob.story.plantBase || 0), 8], ['Allée en bois sur l’île aux pins', () => cntGIn('£', 'pins'), 10], ['Cabane d’Elias', () => cntIn('Ĉ', 'pins'), 1], ['Scierie (grange) sur l’île', () => cntIn('Ç', 'pins'), 1], ['Maisons sur l’île aux pins', () => cntIn('h', 'pins'), 10]], reward:[]},
+  {season:3, title:'La grotte', who:'elias', give:[],
+   onIntro:() => { makePinsCave(); const c = O.findIndex((o, i) => o === 'Œ' && inIsle(i, 'pins')); spawnSmart('ȼ', 4, i => c >= 0 && !O[i] && (G[i] === 'g' || G[i] === 's') && Math.max(Math.abs(i % N - c % N), Math.abs(((i / N)|0) - ((c / N)|0))) <= 4); if (c >= 0) lookAt(c % N, (c / N)|0); },
+   intro:['La grotte est là, au bord de la falaise. À l’entrée, des cristaux bleus brillent dans le noir : ramasse-les, ils éclaireront le chemin.', 'Allume quatre feux devant l’entrée et trace un chemin jusqu’à elle. Je viens avec toi.'],
+   outro:['Au fond de la grotte, la roche est couverte de dessins très anciens : six îles, un phare… et autour, des centaines de petites lumières.', 'Sous chaque lumière, quelqu’un a gravé un minuscule bateau.'],
+   goals:[['Ramasse les cristaux bleus', () => found('ȼ'), () => spawned('ȼ', 4)], ['Feux devant la grotte', () => nearR('4', 'Œ', 3), 4], ['Chemin jusqu’à la grotte', () => touchesPath('Œ') ? 1 : 0, 1]], reward:[]},
+  {season:3, title:'Les lueurs égarées', who:'aiko', give:[],
+   onIntro:() => spawnSmart('ɵ', 6, i => (G[i] === 'g' || G[i] === 's') && !O[i] && Math.hypot(i % N - (N >> 1), ((i / N)|0) - (N >> 1)) < 14),
+   intro:['Depuis la grotte, je n’arrête pas d’y penser. Ces petites lumières sous des bateaux… et si les lueurs étaient des voyageurs ? Des gens perdus dans la brume ?', 'Cette nuit, certaines se sont égarées entre les maisons. Touche-les doucement : elles retrouveront le chemin du phare. Et mets de la lumière partout, des lampadaires et des guirlandes, pour qu’elles ne se perdent plus.'],
+   outro:['Une à une, les lueurs s’envolent vers le phare et disparaissent dans sa lumière.', 'Le lendemain matin, un petit voilier accoste au port. Une femme en descend, épuisée : « J’ai navigué des jours dans la brume… et cette nuit, une lumière bleue m’a montré le chemin. »'],
+   goals:[['Guide les lueurs égarées', () => found('ɵ'), () => spawned('ɵ', 6)], ['Lampadaires', () => cnt('l'), 12], ['Guirlandes', () => cnt('8'), 8]], reward:[]},
+  {season:3, title:'Le cercle de pierres', who:'lina', give:['þ','ø'],
+   onIntro:() => spawnSmart('ȶ', 4, onIsleOk('vents')),
+   intro:['Sur l’île des vents, des pierres plates sont couvertes de gravures. Aiko dit que ce sont des noms… ramasse-les, je veux savoir.', 'Les anciens avaient un cercle de pierres et un dolmen, là-bas : on les relève ? Et puisque l’île des vents plaît tant, il faudrait encore des maisons : huit en tout.'],
+   outro:['Les gravures sont des noms de bateaux. Des dizaines. À côté de certains, une petite étoile.', 'Lina passe le doigt sur l’un d’eux. « L’Étoile… C’est le nom gravé sur le casier que Tomas a trouvé sur l’îlot. »'],
+   goals:[['Ramasse les pierres gravées', () => found('ȶ'), () => spawned('ȶ', 4)], ['Cercle de pierres sur l’île des vents', () => cntIn('þ', 'vents'), 1], ['Dolmen', () => cnt('ø'), 1], ['Maisons sur l’île des vents', () => cntIn('h', 'vents'), 8]], reward:[]},
+  {season:3, title:'Les sources chaudes', who:'ama', give:['ë','µ','Y'],
+   onIntro:() => spawnSmart('ȟ', 5, onIsleOk('pins')),
+   intro:['Bonjour ! Ama, soigneuse. Je suis arrivée par le train d’hier soir, avec mon chat… qui s’est déjà sauvé, évidemment.', 'Elias m’a parlé de sources chaudes au cœur de la forêt. Il faudrait des bassins, un chemin de vieux pavés et des cabines. Et ramasse les herbes qui poussent autour : j’en ferai des remèdes pour tout le village.'],
+   outro:['Le soir, tout le village trempe dans les bassins fumants. Tomas jure qu’il a rajeuni de dix ans.', 'Ama, elle, regarde les lueurs qui tournent au-dessus de la vapeur. « Elles ont l’air si fatiguées… comme des voyageurs qui ont trop marché. »'],
+   goals:[['Ramasse les herbes', () => found('ȟ'), () => spawned('ȟ', 5)], ['Bassins sur l’île aux pins', () => cntIn('ë', 'pins'), 3], ['Cases de vieux pavés', () => cntG('µ'), 8], ['Cabines', () => cnt('Y'), 2]], reward:[]},
+  {season:3, title:'Ce que disent les lueurs', who:'ama', give:[],
+   onIntro:() => spawnSmart('Ȼ', 1, onIsleOk('pins')),
+   gate:{give:['C'], done:() => found('Ȼ') >= 1, msg:'🐈 Tu peux maintenant placer des chats sur l’île'},
+   intro:['Mon chat ne revient pas… Il suit toujours les lueurs, celui-là. Tu veux bien le chercher ? Je crois qu’il est dans la forêt.', 'Et pendant ce temps, des bancs autour des bassins, pour que les gens se reposent. Il arrive tant de monde, ces jours-ci : il faudrait de quoi loger tout le monde, quarante-six foyers.'],
+   outro:['Tu retrouves le chat assis au bord de l’eau, face à une lueur qui flotte, immobile, comme s’ils se parlaient.', 'Ama comprend enfin. « Ce sont des voyageurs perdus. Des bateaux, des gens que la brume a égarés. Le phare les guide… et c’est grâce à elles que tant de monde trouve l’île. »'],
+   goals:[['Retrouve le chat d’Ama', () => found('Ȼ'), () => spawned('Ȼ', 1)], ['Bancs autour des bassins', () => nearCount('b', 'ë'), 4], ['Foyers', () => residents(), 46]], reward:[]},
+  {season:3, title:'La nuit la plus longue', who:'carnet', give:[], outroWho:'carnet',
+   onIntro:() => { setSeason('hiver'); const fogs = glob.story.fogs || (glob.story.fogs = []); for (const k of NIGHT_ISLES){ const g = (glob.story.isles || {})[k]; if (g && !fogs.some(f => f.key === 'nuit_' + k)) fogs.push({key:'nuit_' + k, cx:g.cx, cy:g.cy, rx:g.rx + 2, ry:g.ry + 2, to:1, a:0, soft:true}); } saveGlob(); spawnSmart('ŵ', 8, i => G[i] === 's' && !O[i] && near8(i, j => G[j] === 'w')); },
+   intro:['Le soir le plus court de l’année, le carnet s’ouvre tout seul : « Elle revient. »', 'Au large, la brume se lève comme un mur et avance sur les îles, une à une. Ramasse du bois flotté sur les plages et allume un grand feu sur chaque île : la lumière la repoussera.'],
+   outro:['Toute la nuit, les feux brûlent sur les six îles. La brume tourne autour, hésite… puis recule, plus loin qu’elle n’a jamais reculé.', 'À l’aube, au pied du vieux phare, tu remarques une fente entre deux pierres que tu n’avais jamais vue.'],
+   onDone:() => { for (const f of glob.story.fogs || []) if (f.key.startsWith('nuit_')) f.to = 0; saveGlob(); },
+   goals:[['Ramasse du bois flotté', () => found('ŵ'), () => spawned('ŵ', 8)], ['Îles protégées (un grand feu sur chacune)', () => NIGHT_ISLES.filter(k => cntIn('Ô', k) > 0).length, 5]], reward:[]},
+  {season:3, title:'L’aube', who:'tomas', give:['ê'],
+   onIntro:() => { setSeason('printemps'); const li = O.indexOf('L'); spawnSmart('ȝ', 1, i => li >= 0 && !O[i] && (G[i] === 'g' || G[i] === 's') && Math.max(Math.abs(i % N - li % N), Math.abs(((i / N)|0) - ((li / N)|0))) <= 2); },
+   intro:['Tu as vu ? La brume a reculé plus loin que jamais. On voit même l’horizon, maintenant.', 'Les anciens dressaient une statue de guetteur face à l’aube, pour remercier la lumière. On en fait une ? Et un deuxième phare, au port, pour que plus aucun bateau ne se perde. Il faudra aussi loger les nouveaux arrivants : cinquante foyers !', 'Et au pied du vieux phare, entre deux pierres… regarde. Une enveloppe.'],
+   outro:['La lettre est de Mira. « Si tu lis ceci, la brume a reculé et les lueurs vont pouvoir rentrer chez elles. »', '« Il en reste une que je n’ai jamais pu guider : moi. »', 'Tomas lève les yeux vers le phare. Tout en haut, une petite lueur bleue tourne, seule, autour de la lampe.'],
+   goals:[['Ramasse l’enveloppe', () => found('ȝ'), () => spawned('ȝ', 1)], ['Statue du guetteur', () => cnt('ê'), 1], ['Phares', () => cnt('L'), 2], ['Foyers', () => residents(), 50]], reward:[]},
+  {season:3, title:'Une voile blanche', who:'sami', give:[],
+   onIntro:() => spawnSmart('ƨ', 4, onIsleOk('pins')),
+   intro:['Le solstice ! Et cette année, on le fête dans la forêt, sur l’île aux pins : guirlandes, lanternes, des bancs pour tout le monde et des feux d’artifice !', 'Le vent a déjà emporté des lampions sur la plage : ramasse-les avant qu’ils filent à la mer.'],
+   outro:['La fête bat son plein quand Sami se fige, les yeux sur l’horizon. « Une voile… Une voile blanche. »', 'Un vieux voilier glisse lentement hors de la brume. À la barre, un vieil homme aux cheveux blancs. Sur la coque, un nom à moitié effacé : « L’Étoile ».'],
+   after:() => toast('⛵ Une voile blanche approche… À suivre !'),
+   goals:[['Ramasse les lampions', () => found('ƨ'), () => spawned('ƨ', 4)], ['Guirlandes sur l’île aux pins', () => cntIn('8', 'pins'), 4], ['Lanternes sur l’île aux pins', () => cntIn('æ', 'pins'), 6], ['Bancs', () => cnt('b'), 16], ['Feux d’artifice', () => cnt('Ï'), 3]], reward:[]},
 ];
 let CHAPTERS = CHAPTERS_V1;
 function pickChapters(){ CHAPTERS = glob.story.v === 2 ? CHAPTERS_V2 : CHAPTERS_V1; }
@@ -3970,7 +4077,7 @@ function applyGrowth(i, late){
   toast(late ? 'L’île s’est agrandie pendant ton absence' : g.msg);
   return true;
 }
-const COLLECT = {'ǝ':'✉️ Une lettre', 'ƈ':'🗺️ Un morceau de la carte !', 'ƒ':'🪶 Une plume bleue', 'ƚ':'🗿 Pierre relevée', 'ƀ':'📦 Caisse ramassée', 'ǥ':'🌱 Des graines !', 'ƨ':'🏮 Lanterne de papier ramassée', 'ŵ':'🪵 Bois flotté · +1 bois', 'Ŝ':'🪨 Pierre taillée · +1 pierre', 'ƥ':'📜 Une page du carnet !', 'Ŋ':'🕸️ Filet ramassé', 'Ğ':'🌾 Sac de grain ramassé', 'Ķ':'🧺 Un vieux casier…', 'Ŧ':'🎫 Le ticket d’Inès !', 'ÿ':'🔍 Indice trouvé !', 'ý':'🤿 Yuna plonge… quelque chose brille au fond !', 'ñ':'✂️ Ronces arrachées'};
+const COLLECT = {'ǫ':'🚣 Une rame retrouvée', 'ǰ':'🌲 Une pomme de pin', 'ȼ':'💎 Un cristal bleu', 'ɵ':'✨ La lueur s’envole vers le phare…', 'ȶ':'🪨 Une pierre gravée', 'ȟ':'🌿 Des herbes ramassées', 'Ȼ':'🐈 Le chat d’Ama est retrouvé !', 'ȝ':'✉️ Une lettre…', 'ǝ':'✉️ Une lettre', 'ƈ':'🗺️ Un morceau de la carte !', 'ƒ':'🪶 Une plume bleue', 'ƚ':'🗿 Pierre relevée', 'ƀ':'📦 Caisse ramassée', 'ǥ':'🌱 Des graines !', 'ƨ':'🏮 Lanterne de papier ramassée', 'ŵ':'🪵 Bois flotté · +1 bois', 'Ŝ':'🪨 Pierre taillée · +1 pierre', 'ƥ':'📜 Une page du carnet !', 'Ŋ':'🕸️ Filet ramassé', 'Ğ':'🌾 Sac de grain ramassé', 'Ķ':'🧺 Un vieux casier…', 'Ŧ':'🎫 Le ticket d’Inès !', 'ÿ':'🔍 Indice trouvé !', 'ý':'🤿 Yuna plonge… quelque chose brille au fond !', 'ñ':'✂️ Ronces arrachées'};
 const shuffleArr = a => { for (let k = a.length - 1; k > 0; k--){ const j = (Math.random()*(k+1))|0; [a[k], a[j]] = [a[j], a[k]]; } return a; };
 function found(id){ return (glob.story.found || {})[id + '_' + glob.story.chapter] || 0; }
 function spawned(id, n){ const v = (glob.story.spawn || {})[id + '_' + glob.story.chapter]; return v == null ? n : v; }
@@ -4302,9 +4409,15 @@ scDone.onclick = () => {
   scDone.hidden = true; completeChapter();
 };
 const TIDE_MS = 3*60000;
+const NIGHT_ISLES = ['ilot', 'oiseaux', 'vents', 'jardins', 'pins'];
+function nightFogs(){
+  let ch = false;
+  for (const f of glob.story.fogs || []) if (f.soft && f.to > 0 && f.key.startsWith('nuit_') && cntIn('Ô', f.key.slice(5)) > 0){ f.to = 0; ch = true; toast('🔥 La brume recule devant le feu !'); }
+  if (ch) saveGlob();
+}
 function checkStory(){
   if (!isStory()) { storyCard.hidden = true; return; }
-  syncUnlocks(); growSaplings();
+  syncUnlocks(); growSaplings(); nightFogs();
   if (resOn() && glob.story.name){ const now = Date.now(); if (!glob.story.tideAt) { glob.story.tideAt = now + TIDE_MS; saveGlob(); } else if (now >= glob.story.tideAt && storyBox.hidden){ glob.story.tideAt = now + TIDE_MS; saveGlob(); tide(); } }
   renderStoryCard();
   if (!storyBox.hidden || !giftBox.hidden || Date.now() < storyHold) return;
