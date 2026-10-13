@@ -468,7 +468,8 @@ html.full .sc-wish{flex-direction:row;align-items:center;font-size:13px;margin:0
 html.full .sc-wish[hidden]{display:none}
 html.full .brand{margin-right:0} html.full .storycard{margin-right:auto}
 .sc-bubble{position:fixed;top:70px;left:12px;z-index:24;max-width:min(300px,calc(100vw - 24px));box-sizing:border-box;background:#f7f1e3;color:#2a2d31;border-radius:4px 14px 14px 14px;padding:9px 12px;font-family:var(--f-body);font-size:13.5px;line-height:1.4;box-shadow:0 6px 18px rgba(0,0,0,.22);cursor:pointer;animation:scIn .25s ease}
-.sc-bubble[hidden]{display:none}.sc-bubble.me{font-style:italic}
+.sc-bubble[hidden]{display:none}
+.gear[hidden],html.full .hdr-right .gear[hidden]{display:none}.sc-bubble.me{font-style:italic}
 .sc-bubble small{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#4f7ea8;font-weight:700;font-style:normal;margin-bottom:2px}
 @keyframes scIn{from{opacity:0;transform:translateY(-4px)}}
 @media (max-width: 520px){ html.full .brand{margin-right:auto} html.full .storycard{order:10;margin-right:auto} html.full .sc-faceWrap,html.full .sc-face{width:54px;height:54px} }
@@ -484,6 +485,8 @@ html.full .brand{margin-right:0} html.full .storycard{margin-right:auto}
       </div>
     <div class="hdr-right">
       <button class="gear giftbtn" id="giftBtn" type="button" aria-label="Ouvrir le cadeau du jour" hidden>🎁</button>
+      <button class="gear" id="scHint" type="button" hidden aria-label="Un indice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></svg></button>
+      <button class="gear" id="scBook" type="button" hidden aria-label="Le carnet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1zM12 6v14"/></svg></button>
       <button class="gear" id="photoBtn" type="button" aria-label="Prendre une photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
       <button class="gear" id="gearBtn" type="button" aria-expanded="false" aria-controls="gearMenu" aria-label="Réglages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
       <div class="menu" id="gearMenu" hidden>
@@ -568,7 +571,7 @@ html.full .brand{margin-right:0} html.full .storycard{margin-right:auto}
         <p class="sc-say" id="scSay" hidden></p>
         <div class="sc-bar" id="scBar" hidden><i></i></div>
         <ul class="sc-goals" id="scGoals"></ul>
-        <div class="sc-act"><button type="button" class="sc-hint" id="scHint" hidden>🔍 Indice</button><button type="button" id="scBook">📖 Carnet</button></div>
+        
       </div>
       <div class="sc-bubble" id="scBubble" hidden></div>
       <div class="sc-pop sc-wish" id="scWish" hidden><span id="scWishTxt"></span><button type="button" id="scWishBtn">Donner</button></div>
@@ -4417,7 +4420,7 @@ const CHAPTERS_V2 = [
    reward:[]},
   {season:1, title:'Le petit port', who:'tomas', give:['q'], extra:['N'],
    onIntro:() => { showIsle('ilot'); setupIlot(); spawnSmart('Ŋ', 4, i => G[i] === 's' && !fogAt(i % N, (i / N)|0) && !inIsle(i, 'ilot')); },
-   intro:['Tomas te fait monter dans sa barque. Au milieu du chemin, la brume se lève doucement sur son îlot : des galets, une petite maison, un potager, un quai minuscule et un casier qui flotte.', '« Voilà chez moi ! C’est petit, hein. Mais il y a du poisson tout autour, tu vas voir. »', '« Maintenant que je pêche pour nous deux, il me faut un quai plus grand, et deux casiers de plus. Le problème, c’est que je n’ai plus rien pour en fabriquer… »'],
+   intro:['Tomas te fait monter dans sa barque. Au milieu du chemin, la brume se lève doucement sur son îlot : des galets, une petite maison, un potager, un quai minuscule et un casier qui flotte.', '« Voilà chez moi ! C’est petit, hein. Mais il y a du poisson tout autour, tu vas voir. »', '« Maintenant que je pêche pour nous trois, avec Job, il me faut un quai plus grand, et deux casiers de plus. Le problème, c’est que je n’ai plus rien pour en fabriquer… »'],
    goals1:[['Agrandis le quai de l’îlot', () => Math.max(0, quaiIlot() - (glob.story.quaiGame ?? 2)), 3, 'Le quai de Tomas est minuscule…', 'Agrandis le quai de Tomas, collé à son îlot.'],
      ['Casiers sur l’îlot', () => cntIn('N', 'ilot'), 3, () => (glob.story.unlocked2 || []).includes('N') ? 'Tomas voulait plus de casiers…' : 'Pour fabriquer des casiers, il faudrait de quoi tresser…', () => (glob.story.unlocked2 || []).includes('N') ? 'Pose 2 casiers de plus sur l’îlot.' : 'La mer rejette parfois de vieux filets sur tes plages : ramasses-en un ✋.']],
    mid:['« Avec tout ce poisson, il faudra bien le ramener chez toi ! Il te faut un vrai port : un quai, et une barque de pêche de plus pour faire l’aller-retour. »'],
@@ -4609,7 +4612,7 @@ function openKitchen(){
   openStoryModal({mode:'trade', who:'lina', kicker:'La boulangerie', title:'La cuisine de Lina', paras:['« Tu m’apportes de quoi cuisiner ? Avec du blé et des légumes de ton potager, je te fais une tarte ! »', box], go:'Merci Lina !'});
 }
 /* ---------- le blé : semer coûte 1 🌾, il mûrit en 3 minutes, la récolte en rend 3 ---------- */
-const WHEAT_MS = 3*60000;
+const WHEAT_MS = 90000;
 function wheatYoung(i){ const w = glob.story.wheat; return !!(w && w[i] != null && Date.now() - w[i] < WHEAT_MS); }
 function growWheat(){
   const w = glob.story.wheat; if (!w || !resOn()) return;
@@ -4665,7 +4668,7 @@ function seasonInfo(i){ const ch = CHAPTERS[i], list = CHAPTERS.filter(c => c.se
 /* rythme : pas de limite de chapitres par jour (mettre un nombre ici pour en remettre une) */
 const PER_DAY = Infinity;
 const PAUSE_MS = 60000;
-const TIERS = [[1, 'Campement', 'ton campement'], [2, 'Hameau', 'ton hameau'], [6, 'Village', 'ton village'], [15, 'Bourg', 'ton bourg'], [30, 'Petite ville', 'ta petite ville'], [50, 'Ville', 'ta ville'], [80, 'Cité des îles', 'ta cité des îles']];
+const TIERS = [[1, 'Campement', 'ton campement'], [2, 'Hameau', 'ton hameau'], [8, 'Village', 'ton village'], [15, 'Bourg', 'ton bourg'], [30, 'Petite ville', 'ta petite ville'], [50, 'Ville', 'ta ville'], [80, 'Cité des îles', 'ta cité des îles']];
 function tierIndex(){ const n = residents(); let k = 0; TIERS.forEach((t, i) => { if (n >= t[0]) k = i; }); return k; }
 function tierName(){ return TIERS[tierIndex()][1]; }
 function checkTier(){
@@ -5117,20 +5120,20 @@ function scPaint(who){
   const cv = document.getElementById('scFaceCv'), p = who && PEOPLE[who];
   if (p) drawPortrait(cv, p); else drawBookFace(cv);
 }
-const RELANCE = {"L’arrivée": {"Dégage la plage": "Ces cailloux, sur la plage… il faudrait les casser.", "Construis ta cabane": "Avec ce bois, je pourrais monter une cabane.", "Monte ton feu de camp": "La nuit va être fraîche. Un feu, vite."}, "Le gardien du phare": {"Torches": "« Encore quelques torches, que l’île ne dorme pas dans le noir ! »", "Une torche au pied du phare": "« Et une petite, au pied du phare ? Mes vieilles jambes t’en remercieraient. »"}, "Le premier voisin": {"Ramasse les pierres taillées": "« Ces pierres taillées dans l’herbe, tu les as vues ? »", "Ta maison": "« Ta cabane ne tiendra pas l’hiver, tu sais… »", "Ton potager": "« Et mes graines ? Un petit potager, ce serait bien. »", "La maison de Tomas": "« Une maison pour moi, à côté de la tienne ? »", "Un chemin entre vos deux maisons": "« Un chemin, que je vienne frapper chez toi ! »", "Un puits": "« Toujours pas de puits… j’ai soif, moi ! »"}, "Le petit port": {"Agrandis le quai de l’îlot": "« Mon quai est trop petit pour deux barques… »", "Casiers sur l’îlot": "« Il me manque encore des casiers, sur l’îlot. »", "Un quai sur ton île": "« Il faut un quai chez toi aussi, pour accoster. »", "Une barque de pêche": "« Une barque, et on fait l’aller-retour ! »"}, "La carrière": {"Atelier du tailleur": "« L’atelier d’abord. Je t’apprendrai à tailler. »", "Des maisons pour les voyageurs": "« Les voyageurs dorment encore sous la tente. »", "Un pont jusqu’à la carrière": "« Un pont jusqu’aux falaises rouges, et on y est. »", "Four à briques": "« Le four, maintenant. »", "De l’argile cuite": "« Il attend son argile, ce four. »"}, "Le pain": {"Du blé en réserve": "« Encore un peu de blé… on y est presque ! »", "Moulin": "« Kofi sait faire un moulin, demande-lui ! »", "Boulangerie": "« Ma boulangerie… j’en rêve la nuit. »", "Une maison pour Lina": "« Et… je dors où, ce soir ? »"}, "L’ermite": {"Une forêt soignée": "« Encore trop de souches. »", "Une scierie": "« Une scierie. Pas de gâchis. »", "Des sentiers en bois": "« Des sentiers. Pour les jeunes pousses. »", "Une cabane pour Elias": "« … Une cabane. Près des arbres. Si tu veux bien. »"}, "La fête de l’été": {"Une place pavée": "« Il faut plus de pavés, pour une vraie place ! »", "Une fontaine sur la place": "« Une fontaine au milieu, ce serait beau… »", "Le marché": "« Et le marché ! »", "De la décoration": "« Encore un peu de déco, des fleurs, des bancs… »", "Des tables pour le banquet": "« Des tables, plein de tables ! »", "Tout le monde est invité": "« Il reste des portes où toquer ! »", "Des lampions": "« Encore des lampions ! »", "Des tartes pour le banquet": "« Les tartes ! Apporte-moi du blé et des légumes. »"}};
+const RELANCE = {"L’arrivée": {"Dégage la plage": "Ces cailloux, sur la plage… il faudrait les casser.", "Construis ta cabane": "Avec ce bois, je pourrais monter une cabane.", "Monte ton feu de camp": "La nuit va être fraîche. Un feu, vite."}, "Le gardien du phare": {"Torches": "« Encore quelques torches, que l’île ne dorme pas dans le noir ! »", "Une torche au pied du phare": "« Et une petite, au pied du phare ? Mes vieilles jambes t’en remercieraient. »"}, "Le premier voisin": {"Ramasse les pierres taillées": "« Ces pierres taillées dans l’herbe, tu les as vues ? »", "Ta maison": "« Ta cabane ne tiendra pas l’hiver, tu sais… »", "Ton potager": "« Et mes graines ? Un petit potager, ce serait bien. »", "La maison de Tomas": "« Une maison pour moi, à côté de la tienne ? »", "Un chemin entre vos deux maisons": "« Un chemin, que je vienne frapper chez toi ! »", "Un puits": "« Toujours pas de puits… j’ai soif, moi ! »"}, "Le petit port": {"Agrandis le quai de l’îlot": "« Mon quai est trop petit pour deux barques… »", "Casiers sur l’îlot": () => (glob.story.unlocked2 || []).includes('N') ? "« Il me manque encore des casiers, sur l’îlot. »" : "« Pour tresser des casiers, il me faudrait de vieux filets… La mer en rejette parfois sur la plage. »", "Un quai sur ton île": "« Il faut un quai chez toi aussi, pour accoster. »", "Une barque de pêche": "« Une barque, et on fait l’aller-retour ! »"}, "La carrière": {"Atelier du tailleur": "« L’atelier d’abord. Je t’apprendrai à tailler. »", "Des maisons pour les voyageurs": "« Les voyageurs dorment encore sous la tente. »", "Un pont jusqu’à la carrière": "« Un pont jusqu’aux falaises rouges, et on y est. »", "Four à briques": "« Le four, maintenant. »", "De l’argile cuite": "« Il attend son argile, ce four. »"}, "Le pain": {"Du blé en réserve": "« Encore un peu de blé… on y est presque ! »", "Moulin": "« Kofi sait faire un moulin, demande-lui ! »", "Boulangerie": "« Ma boulangerie… j’en rêve la nuit. »", "Une maison pour Lina": "« Et… je dors où, ce soir ? »"}, "L’ermite": {"Une forêt soignée": "« Encore trop de souches. »", "Une scierie": "« Une scierie. Pas de gâchis. »", "Des sentiers en bois": "« Des sentiers. Pour les jeunes pousses. »", "Une cabane pour Elias": "« … Une cabane. Près des arbres. Si tu veux bien. »"}, "La fête de l’été": {"Une place pavée": "« Il faut plus de pavés, pour une vraie place ! »", "Une fontaine sur la place": "« Une fontaine au milieu, ce serait beau… »", "Le marché": "« Et le marché ! »", "De la décoration": "« Encore un peu de déco, des fleurs, des bancs… »", "Des tables pour le banquet": "« Des tables, plein de tables ! »", "Tout le monde est invité": "« Il reste des portes où toquer ! »", "Des lampions": "« Encore des lampions ! »", "Des tartes pour le banquet": "« Les tartes ! Apporte-moi du blé et des légumes. »"}};
 let bubbleT = 0;
 function scSayBubble(text, who, ms = 5500){
   const b = document.getElementById('scBubble'); if (!b || !text) return;
   scPopClose(); scPopAt(b);
   const p = who && who !== 'toi' && PEOPLE[who];
-  b.textContent = ''; if (p){ const k = document.createElement('small'); k.textContent = p.name; b.append(k); }
+  b.textContent = ''; { const ch = CHAPTERS[glob.story.chapter], k = document.createElement('small'); k.textContent = [p && p.name, ch && (glob.story.introSeen ?? -1) >= glob.story.chapter && ch.title].filter(Boolean).join(' · '); if (k.textContent) b.append(k); }
   b.append(fmtTxt(text)); b.classList.toggle('me', !p); b.hidden = false;
   clearTimeout(bubbleT); bubbleT = setTimeout(() => { b.hidden = true; }, ms);
 }
 /* le personnage rappelle ce qu'il reste à faire, avec ses mots */
 function relanceLine(ch){
   const g = ch && ch.goals.find(([, f, n]) => f() < needOf(n)); if (!g) return null;
-  return (RELANCE[ch.title] || {})[g[0]] || null;
+  const t = (RELANCE[ch.title] || {})[g[0]]; return (typeof t === 'function' ? t() : t) || null;
 }
 function relance(){
   const i = glob.story.chapter, ch = CHAPTERS[i];
@@ -5150,8 +5153,8 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) setT
 function scPopClose(){ document.getElementById('scPop').hidden = true; document.getElementById('scBubble').hidden = true; document.getElementById('scWish').hidden = true; document.getElementById('scFace').setAttribute('aria-expanded', 'false'); }
 function renderStoryCard(){
   const on = isStory();
-  storyCard.hidden = !on;
-  if (!on) return;
+  storyCard.hidden = !on; document.getElementById('scBook').hidden = !on;
+  if (!on){ document.getElementById('scHint').hidden = true; return; }
   const i = glob.story.chapter, ch = CHAPTERS[i];
   const hb = document.getElementById('scHint'), bar = document.getElementById('scBar'), say = document.getElementById('scSay'), face = document.getElementById('scFace');
   hb.hidden = bar.hidden = !ch || pausing() || (glob.story.introSeen ?? -1) < i || glob.story.pendingOutro != null;
@@ -5194,8 +5197,12 @@ function renderStoryCard(){
   if (!scDone.hidden){ storyCard.classList.add('ready'); scPopClose(); }
 }
 document.getElementById('scFace').onclick = e => {
-  e.stopPropagation(); const pop = document.getElementById('scPop'), open = pop.hidden;
-  scPopClose(); scPopAt(pop); pop.hidden = !open; e.currentTarget.setAttribute('aria-expanded', String(open));
+  e.stopPropagation();
+  const b = document.getElementById('scBubble'); if (!b.hidden){ scPopClose(); return; }
+  const i = glob.story.chapter, ch = CHAPTERS[i];
+  if (!ch){ scSayBubble('« La suite arrive bientôt. En attendant, fais grandir ton île comme tu veux ! »', 'job', 7000); return; }
+  if ((glob.story.introSeen ?? -1) < i){ scSayBubble(chapterReady() ? '« Il se passe quelque chose, sur l’île… »' : '« Repose-toi. Demain, il se passera quelque chose, je le sens. »', 'job', 7000); return; }
+  const t = relanceLine(ch); scSayBubble(t || chapterSay(ch), ch.who, 7000);
 };
 document.getElementById('scWishDot').onclick = e => { e.stopPropagation(); const w = document.getElementById('scWish'), open = w.hidden; scPopClose(); scPopAt(w); w.hidden = !open; };
 function scPopAt(pop){ const r = document.getElementById('storyCard').getBoundingClientRect(); pop.style.top = Math.round(r.bottom + 8) + 'px'; }
@@ -5231,10 +5238,8 @@ document.getElementById('scHint').onclick = e => {
   e.stopPropagation(); scPopClose();
   const i = glob.story.chapter, ch = CHAPTERS[i]; if (!ch) return;
   const gi = ch.goals.findIndex(([, f, n]) => f() < needOf(n));
-  if (gi < 0){ toast('🔍 Tout est prêt : tu peux valider le chapitre ✓', 3000); return; }
-  const g = ch.goals[gi], line = (RELANCE[ch.title] || {})[g[0]], key = i + (phase3(ch) ? 'c' : phase2(ch) ? 'b' : 'a') + gi;
-  const lvl = hintLvl[key] = (hintLvl[key] || 0) + 1;
-  if (lvl % 2 === 1 && line){ scSayBubble(line, ch.who, 7000); return; }
+  if (gi < 0){ scSayBubble('🔍 Tout est prêt : touche le visage pour valider le chapitre ✓', 'toi', 4000); return; }
+  const g = ch.goals[gi];
   let h = g[4]; if (typeof h === 'function') h = h(); if (!h){ h = typeof g[3] === 'function' ? g[3]() : g[3]; }
   if (!h) h = `Il te reste à faire : ${g[0].charAt(0).toLowerCase() + g[0].slice(1)}.`;
   scSayBubble('🔍 ' + h, 'toi', 8000);
