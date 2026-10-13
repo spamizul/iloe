@@ -443,15 +443,15 @@ html.full .toast{bottom:auto;font-size:13px;padding:7px 12px;border-radius:12px;
 /* le chapitre : un simple visage, avec un anneau qui se remplit */
 html.full .storycard{position:relative;background:none;border:0;box-shadow:none;padding:0;width:auto;max-width:none;display:flex;flex-direction:row;align-items:center;gap:6px;align-self:auto}
 html.full .storycard[hidden]{display:none}
-.sc-faceWrap{position:relative;width:42px;height:42px;flex:none}
-.sc-face{width:42px;height:42px;border-radius:50%;padding:3px;border:0;cursor:pointer;background:conic-gradient(#9fd0a8 0 var(--p,0%),var(--glass-strong) 0);box-shadow:0 4px 14px rgba(0,0,0,.18);display:block}
+.sc-faceWrap{position:relative;width:58px;height:58px;flex:none}
+.sc-face{width:58px;height:58px;border-radius:50%;padding:4px;border:0;cursor:pointer;background:conic-gradient(#9fd0a8 0 var(--p,0%),var(--glass-strong) 0);box-shadow:0 4px 14px rgba(0,0,0,.18);display:block}
 .sc-face canvas{width:100%;height:100%;display:block;border-radius:50%;background:#cfe3ef;image-rendering:pixelated}
 .storycard.ready .sc-face{background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 45%,transparent),0 4px 14px rgba(0,0,0,.18);animation:scBob 1.4s ease-in-out infinite}
 @keyframes scBob{50%{transform:translateY(-3px)}}
 @media (prefers-reduced-motion: reduce){.storycard.ready .sc-face{animation:none}}
 html.full .sc-done,html.full .sc-next{position:absolute;inset:0;width:auto;height:auto;margin:0;padding:0;border:0;border-radius:50%;background:transparent;font-size:0;color:transparent;cursor:pointer;box-shadow:none}
 html.full .sc-done[hidden],html.full .sc-next[hidden]{display:none}
-.sc-done::after,.sc-next::after{position:absolute;right:-6px;top:-6px;width:20px;height:20px;border-radius:50%;background:#fff;color:#2a2d31;font:700 12px/20px var(--f-body);text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.sc-done::after,.sc-next::after{position:absolute;right:-5px;top:-5px;width:24px;height:24px;border-radius:50%;background:#fff;color:#2a2d31;font:700 14px/24px var(--f-body);text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .sc-done::after{content:"!"}.sc-next::after{content:"→"}
 .sc-wishdot{width:30px;height:30px;border-radius:50%;border:0;background:var(--glass);box-shadow:0 4px 14px rgba(0,0,0,.18);font-size:14px;cursor:pointer;padding:0;flex:none}
 .sc-wishdot[hidden]{display:none}
@@ -467,7 +467,11 @@ html.full .sc-pop .sc-bar{margin-top:0;height:5px}
 html.full .sc-wish{flex-direction:row;align-items:center;font-size:13px;margin:0}
 html.full .sc-wish[hidden]{display:none}
 html.full .brand{margin-right:0} html.full .storycard{margin-right:auto}
-@media (max-width: 520px){ html.full .brand{margin-right:auto} html.full .storycard{order:10;margin-right:auto} html.full .sc-faceWrap,html.full .sc-face{width:38px;height:38px} }
+.sc-bubble{position:fixed;top:70px;left:12px;z-index:24;max-width:min(300px,calc(100vw - 24px));box-sizing:border-box;background:#f7f1e3;color:#2a2d31;border-radius:4px 14px 14px 14px;padding:9px 12px;font-family:var(--f-body);font-size:13.5px;line-height:1.4;box-shadow:0 6px 18px rgba(0,0,0,.22);cursor:pointer;animation:scIn .25s ease}
+.sc-bubble[hidden]{display:none}.sc-bubble.me{font-style:italic}
+.sc-bubble small{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#4f7ea8;font-weight:700;font-style:normal;margin-bottom:2px}
+@keyframes scIn{from{opacity:0;transform:translateY(-4px)}}
+@media (max-width: 520px){ html.full .brand{margin-right:auto} html.full .storycard{order:10;margin-right:auto} html.full .sc-faceWrap,html.full .sc-face{width:54px;height:54px} }
 </style>
 
 <div class="wrap" lang="fr">
@@ -566,6 +570,7 @@ html.full .brand{margin-right:0} html.full .storycard{margin-right:auto}
         <ul class="sc-goals" id="scGoals"></ul>
         <div class="sc-act"><button type="button" class="sc-hint" id="scHint" hidden>🔍 Indice</button><button type="button" id="scBook">📖 Carnet</button></div>
       </div>
+      <div class="sc-bubble" id="scBubble" hidden></div>
       <div class="sc-pop sc-wish" id="scWish" hidden><span id="scWishTxt"></span><button type="button" id="scWishBtn">Donner</button></div>
     </div>
   </header>
@@ -3131,16 +3136,21 @@ function selectTool(id, fromBar){
   tool = id;
   if (pipMode){ pipMode = false; document.getElementById('pipBtn').setAttribute('aria-pressed', 'false'); }
   if (id !== 'x' && !fromBar && glob.recent[0] !== id){ glob.recent = [id, ...glob.recent.filter(r => r !== id)].slice(0, 8); saveGlob(); renderRecent(); }
+  syncToolUI();
+}
+/* un seul outil entouré à la fois : la main ou la pipette passent devant l'objet choisi */
+function syncToolUI(){
+  const busy = (typeof handMode !== 'undefined' && handMode) || pipMode, id = busy ? null : tool;
   document.querySelectorAll('.tool').forEach(e => e.setAttribute('aria-pressed', e.id === 'tool-' + id));
   document.querySelectorAll('#recent .tb').forEach(e => e.setAttribute('aria-pressed', e.dataset.id === id));
   document.getElementById('eraseBtn').setAttribute('aria-pressed', id === 'x');
 }
-document.getElementById('eraseBtn').onclick = () => selectTool(tool === 'x' ? prevTool : 'x', true);
+document.getElementById('eraseBtn').onclick = () => selectTool(tool === 'x' && !handMode && !pipMode ? prevTool : 'x', true);
 /* pipette : on touche un objet du terrain pour reprendre le même outil */
 const pipBtn = document.getElementById('pipBtn');
 pipBtn.onclick = () => {
   if (handMode) setHand(false);
-  pipMode = !pipMode; pipBtn.setAttribute('aria-pressed', pipMode);
+  pipMode = !pipMode; pipBtn.setAttribute('aria-pressed', pipMode); syncToolUI();
   if (pipMode) toast('Touche un objet ou un sol du terrain');
 };
 function pickAt(x, y){
@@ -3524,7 +3534,7 @@ board.addEventListener('wheel', e => {
   setZoom(zoom * (e.deltaY < 0 ? 1.15 : 1/1.15), (e.clientX - r.left)/r.width, (e.clientY - r.top)/r.height);
 }, {passive:false});
 const handBtn = document.getElementById('handBtn');
-function setHand(on){ handMode = on; handBtn.setAttribute('aria-pressed', on); document.querySelector('.stage').classList.toggle('hand', on); document.body.classList.toggle('hand', on); }
+function setHand(on){ handMode = on; handBtn.setAttribute('aria-pressed', on); syncToolUI(); document.querySelector('.stage').classList.toggle('hand', on); document.body.classList.toggle('hand', on); }
 handBtn.onclick = () => setHand(!handMode);
 /* pavé de flèches et touches du clavier : bouger sans toucher le terrain */
 const padKeys = {dx:0, dy:0}; let padRaf = 0, padLast = 0;
@@ -4564,8 +4574,9 @@ const WISHES = [
 ];
 const RES_ICON = {b:'🪵', p:'🪨', a:'🧱', m:'⚙️', t:'⬜', k:'🐚', w:'🌾', v:'🥕', pie:'🥧'};
 const resTxt = c => Object.entries(c).map(([k, n]) => `${n} ${RES_ICON[k]}`).join(' + ');
+const WISHES_ON = false; // les envies des habitants : en pause, on cherchera une façon plus maligne
 function wishTide(){
-  if (!glob.story.ville || !resOn()) return;
+  if (!WISHES_ON || !glob.story.ville || !resOn()) return;
   const w = glob.story.wish; if (w && w.id) return;
   glob.story.wishN = (glob.story.wishN || 0) + 1;
   if (glob.story.wishN < 3) { saveGlob(); return; }
@@ -5106,7 +5117,37 @@ function scPaint(who){
   const cv = document.getElementById('scFaceCv'), p = who && PEOPLE[who];
   if (p) drawPortrait(cv, p); else drawBookFace(cv);
 }
-function scPopClose(){ document.getElementById('scPop').hidden = true; document.getElementById('scWish').hidden = true; document.getElementById('scFace').setAttribute('aria-expanded', 'false'); }
+const RELANCE = {"L’arrivée": {"Dégage la plage": "Ces cailloux, sur la plage… il faudrait les casser.", "Construis ta cabane": "Avec ce bois, je pourrais monter une cabane.", "Monte ton feu de camp": "La nuit va être fraîche. Un feu, vite."}, "Le gardien du phare": {"Torches": "« Encore quelques torches, que l’île ne dorme pas dans le noir ! »", "Une torche au pied du phare": "« Et une petite, au pied du phare ? Mes vieilles jambes t’en remercieraient. »"}, "Le premier voisin": {"Ramasse les pierres taillées": "« Ces pierres taillées dans l’herbe, tu les as vues ? »", "Ta maison": "« Ta cabane ne tiendra pas l’hiver, tu sais… »", "Ton potager": "« Et mes graines ? Un petit potager, ce serait bien. »", "La maison de Tomas": "« Une maison pour moi, à côté de la tienne ? »", "Un chemin entre vos deux maisons": "« Un chemin, que je vienne frapper chez toi ! »", "Un puits": "« Toujours pas de puits… j’ai soif, moi ! »"}, "Le petit port": {"Agrandis le quai de l’îlot": "« Mon quai est trop petit pour deux barques… »", "Casiers sur l’îlot": "« Il me manque encore des casiers, sur l’îlot. »", "Un quai sur ton île": "« Il faut un quai chez toi aussi, pour accoster. »", "Une barque de pêche": "« Une barque, et on fait l’aller-retour ! »"}, "La carrière": {"Atelier du tailleur": "« L’atelier d’abord. Je t’apprendrai à tailler. »", "Des maisons pour les voyageurs": "« Les voyageurs dorment encore sous la tente. »", "Un pont jusqu’à la carrière": "« Un pont jusqu’aux falaises rouges, et on y est. »", "Four à briques": "« Le four, maintenant. »", "De l’argile cuite": "« Il attend son argile, ce four. »"}, "Le pain": {"Du blé en réserve": "« Encore un peu de blé… on y est presque ! »", "Moulin": "« Kofi sait faire un moulin, demande-lui ! »", "Boulangerie": "« Ma boulangerie… j’en rêve la nuit. »", "Une maison pour Lina": "« Et… je dors où, ce soir ? »"}, "L’ermite": {"Une forêt soignée": "« Encore trop de souches. »", "Une scierie": "« Une scierie. Pas de gâchis. »", "Des sentiers en bois": "« Des sentiers. Pour les jeunes pousses. »", "Une cabane pour Elias": "« … Une cabane. Près des arbres. Si tu veux bien. »"}, "La fête de l’été": {"Une place pavée": "« Il faut plus de pavés, pour une vraie place ! »", "Une fontaine sur la place": "« Une fontaine au milieu, ce serait beau… »", "Le marché": "« Et le marché ! »", "De la décoration": "« Encore un peu de déco, des fleurs, des bancs… »", "Des tables pour le banquet": "« Des tables, plein de tables ! »", "Tout le monde est invité": "« Il reste des portes où toquer ! »", "Des lampions": "« Encore des lampions ! »", "Des tartes pour le banquet": "« Les tartes ! Apporte-moi du blé et des légumes. »"}};
+let bubbleT = 0;
+function scSayBubble(text, who, ms = 5500){
+  const b = document.getElementById('scBubble'); if (!b || !text) return;
+  scPopClose(); scPopAt(b);
+  const p = who && who !== 'toi' && PEOPLE[who];
+  b.textContent = ''; if (p){ const k = document.createElement('small'); k.textContent = p.name; b.append(k); }
+  b.append(fmtTxt(text)); b.classList.toggle('me', !p); b.hidden = false;
+  clearTimeout(bubbleT); bubbleT = setTimeout(() => { b.hidden = true; }, ms);
+}
+/* le personnage rappelle ce qu'il reste à faire, avec ses mots */
+function relanceLine(ch){
+  const g = ch && ch.goals.find(([, f, n]) => f() < needOf(n)); if (!g) return null;
+  return (RELANCE[ch.title] || {})[g[0]] || null;
+}
+function relance(){
+  const i = glob.story.chapter, ch = CHAPTERS[i];
+  if (!ch || !isStory() || !storyBox.hidden || pausing() || (glob.story.introSeen ?? -1) < i || glob.story.pendingOutro != null) return;
+  const t = relanceLine(ch); if (t) scSayBubble(t, ch.who);
+}
+let relSig = null;
+function relanceWatch(ch, okCount){
+  const sig = glob.story.chapter + (phase3(ch) ? 'c' : phase2(ch) ? 'b' : 'a');
+  if (!relSig || relSig.k !== sig){ relSig = {k:sig, n:okCount}; return; }
+  if (okCount > relSig.n && okCount < ch.goals.length) setTimeout(relance, 900);
+  relSig.n = okCount;
+}
+document.getElementById('scBubble').onclick = e => { e.currentTarget.hidden = true; };
+setTimeout(relance, 2500);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(relance, 800); });
+function scPopClose(){ document.getElementById('scPop').hidden = true; document.getElementById('scBubble').hidden = true; document.getElementById('scWish').hidden = true; document.getElementById('scFace').setAttribute('aria-expanded', 'false'); }
 function renderStoryCard(){
   const on = isStory();
   storyCard.hidden = !on;
@@ -5116,7 +5157,7 @@ function renderStoryCard(){
   hb.hidden = bar.hidden = !ch || pausing() || (glob.story.introSeen ?? -1) < i || glob.story.pendingOutro != null;
   say.hidden = true;
   { const wb = document.getElementById('scWishDot'), w = WISHES.find(x => x.id === (glob.story.wish || {}).id);
-    wb.hidden = !w || pausing() || glob.story.pendingOutro != null; if (wb.hidden) document.getElementById('scWish').hidden = true;
+    wb.hidden = !WISHES_ON || !w || pausing() || glob.story.pendingOutro != null; if (wb.hidden) document.getElementById('scWish').hidden = true;
     if (w){ document.getElementById('scWishTxt').textContent = `${PEOPLE[w.who].name} : ${w.text}`; const r = resv(), ok = !Object.entries(w.need).some(([k, n]) => (r[k] || 0) < n); const bt = document.getElementById('scWishBtn'); bt.textContent = `Donner ${resTxt(w.need)}`; bt.disabled = !ok; } }
   scGoals.innerHTML = '';
   const scNext = document.getElementById('scNext'); scNext.hidden = true; scDone.hidden = true;
@@ -5144,6 +5185,7 @@ function renderStoryCard(){
   titled(head, ch.title);
   const q = chapterSay(ch); if (q){ say.textContent = q; say.hidden = false; }
   const okCount = ch.goals.filter(([, f, n]) => f() >= needOf(n)).length;
+  relanceWatch(ch, okCount);
   { let p = 0; for (const [, f, need] of ch.goals){ const nd = needOf(need); p += nd > 0 ? Math.min(1, Math.max(0, f()) / nd) : 1; } p /= ch.goals.length || 1;
     if (ch.goals3) p = phase3(ch) ? 2/3 + p/3 : phase2(ch) ? 1/3 + p/3 : p/3;
     else if (ch.goals2) p = phase2(ch) ? 0.5 + p/2 : p/2;
@@ -5190,11 +5232,12 @@ document.getElementById('scHint').onclick = e => {
   const i = glob.story.chapter, ch = CHAPTERS[i]; if (!ch) return;
   const gi = ch.goals.findIndex(([, f, n]) => f() < needOf(n));
   if (gi < 0){ toast('🔍 Tout est prêt : tu peux valider le chapitre ✓', 3000); return; }
-  const g = ch.goals[gi], h1 = typeof g[3] === 'function' ? g[3]() : g[3], key = i + (phase3(ch) ? 'c' : phase2(ch) ? 'b' : 'a') + gi + ':' + (h1 || '');
-  const lvl = hintLvl[key] = Math.min(2, (hintLvl[key] || 0) + 1);
-  let h = lvl === 1 ? h1 : g[4]; if (typeof h === 'function') h = h();
-  if (!h) h = lvl === 1 ? 'Relis ce qu’on t’a dit dans ton carnet 📖…' : `Il te reste à faire : ${g[0].charAt(0).toLowerCase() + g[0].slice(1)}.`;
-  toast('🔍 ' + fmtTxt(h), 6000);
+  const g = ch.goals[gi], line = (RELANCE[ch.title] || {})[g[0]], key = i + (phase3(ch) ? 'c' : phase2(ch) ? 'b' : 'a') + gi;
+  const lvl = hintLvl[key] = (hintLvl[key] || 0) + 1;
+  if (lvl % 2 === 1 && line){ scSayBubble(line, ch.who, 7000); return; }
+  let h = g[4]; if (typeof h === 'function') h = h(); if (!h){ h = typeof g[3] === 'function' ? g[3]() : g[3]; }
+  if (!h) h = `Il te reste à faire : ${g[0].charAt(0).toLowerCase() + g[0].slice(1)}.`;
+  scSayBubble('🔍 ' + h, 'toi', 8000);
 };
 function checkStory(){
   if (!isStory()) { storyCard.hidden = true; return; }
