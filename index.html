@@ -2862,6 +2862,7 @@ function render(full){
   if (stormT > 0){
     c2.fillStyle = `rgba(40,50,70,${(0.35*Math.min(1, stormT/2)).toFixed(3)})`; c2.fillRect(vx, vy, s, sh);
     for (let k = 0; k < 70; k++){ const rx = vx + ((k*97 + now*0.35) % s), ry = vy + ((k*53 + now*0.9) % sh); R(Math.round(rx), Math.round(ry), 1, 4, 'rgba(200,220,255,.45)'); }
+    if (stormHold && !reduce){ const ph = (now % 5200) / 5200; if (ph < 0.025 || (ph > 0.05 && ph < 0.065)){ c2.fillStyle = 'rgba(235,240,255,.55)'; c2.fillRect(vx, vy, s, sh); } }
   }
   if (weather === 'pluie' && stormT <= 0){
     const dk = curDark;
@@ -2909,7 +2910,7 @@ function frame(ts){
   now = reduce ? 0 : ts;
   if (autoTime && !reduce) { const t0 = tday; tday = (tday + dt/720) % 1; if (t0 < 0.22 && tday >= 0.22) nextWeather(); }
   if (!reduce){ updateWalkers(dt); updateCars(dt); updateBoats(dt); updateTrains(dt); updateAnimals(dt); updateFireworks(dt); if (!eco) updateParticles(dt); }
-  if (stormT > 0) stormT = Math.max(0, stormT - dt);
+  if (stormT > 0) stormT = stormHold ? Math.max(stormT, 6) : Math.max(0, stormT - dt);
   if (ts - lastStoryCheck > 1500){ lastStoryCheck = ts; if (isStory()) checkStory(); }
   render(); updateClock();
 }
@@ -3279,7 +3280,7 @@ function tide(){
     const c2 = []; for (let i = 0; i < N*N; i++) if (inIsle(i, key) && !O[i] && G[i] !== 'w' && !fogAt(i % N, (i / N)|0)) c2.push(i);
     for (const i of shuffleArr(c2).slice(0, 2)) { O[i] = id; k++; }
   }
-  if (glob.story.chapter >= 9 && Math.random() < 0.25 && cand.length && !cnt('ȸ')){ O[cand.pop()] = 'ȸ'; k++; }
+  if (glob.story.chapter >= 10 && Math.random() < 0.25 && cand.length && !cnt('ȸ')){ O[cand.pop()] = 'ȸ'; k++; }
   if (shellsOn()) for (let n = 0, m = 1 + (Math.random() < 0.5 ? 1 : 0); n < m && cand.length && cnt('ȿ') < 4; n++){ O[cand.pop()] = 'ȿ'; k++; }
   merchantTide();
   feedTide();
@@ -3366,6 +3367,11 @@ function bonusPick(id, i){
     const ms = SHELL_STEPS.find(([k]) => k === n);
     if (ms){ unlockItem(ms[1]); saveGlob(); buildTools(); renderRecent(); toast(`🐚 Ta collection : ${n} coquillages ! Nouveau : ${TOOLS.find(t => t.id === ms[1]).name}`, 4500); }
     else toast(`🐚 Coquillage nacré · ta collection : ${n}` + (SHELL_STEPS.find(([k]) => k > n) ? ` (prochain cadeau à ${SHELL_STEPS.find(([k]) => k > n)[0]})` : ''), 2500);
+    return true; }
+  if (id === 'ȸ' && ch.title === 'Après la tempête'){
+    const n = glob.story.bottleN = (glob.story.bottleN || 0) + 1; saveGlob();
+    if (n < 3){ toast(n === 1 ? '🍾 Vide… juste un peu de sable.' : '🍾 Vide, elle aussi. Mais il en reste une…', 3000); return true; }
+    setTimeout(() => openStoryModal({mode:'letter', who:'toi', kicker:'🍾 Une bouteille à la mer', title:'Un message', paras:['Au fond de la dernière bouteille, un petit papier roulé, un peu mouillé. L’écriture est soignée.', '« À qui trouvera cette bouteille : j’ai perdu ma chaussette gauche. Elle est rayée bleu et jaune. Si vous la voyez, gardez-la au chaud. Merci. — R. »'], go:'Rire un bon coup'}), 300);
     return true; }
   if (id === 'ȸ'){
     const r = Math.random();
@@ -4515,8 +4521,20 @@ const CHAPTERS_V2 = [
    get goals(){ return phase3(this) ? this.goals3 : phase2(this) ? this.goals2 : this.goals1; },
    onDone:() => { const r = resv(); r.pie = Math.max(0, r.pie - 3); saveGlob(); renderRes(); tday = 22/24; forceDraw = true; },
    outroWho:'toi',
-   outro:['Le soir venu, toute l’île est réunie sur la place. Les lampions se balancent doucement, les tables croulent sous les tartes de Lina.', 'Tomas raconte pour la dixième fois comment il a glissé sur un galet le jour de son arrivée. Kofi rit aux éclats. Les voyageurs dansent en rond. Même Job est descendu de son phare, et il tape du pied en rythme.', 'Gaspard a accosté pour l’occasion, avec une bouteille de cidre du continent. Elias reste un peu à l’écart, adossé à un arbre… mais il sourit.', 'Vers minuit, Elias se redresse d’un coup. Il fixe l’horizon. « Le vent tourne. »', 'Une première rafale souffle les lampions, un à un. Puis une autre. Au loin, le ciel devient noir, et la mer se met à gronder.', '« Tout le monde à l’abri ! » crie Job en courant vers son phare.', 'Toute la nuit, la tempête hurle sur l’île. Les volets claquent, les vagues frappent le quai, la lumière du phare tourne, tourne, sans s’arrêter.', 'Et puis, au petit matin… le silence.'],
-   reward:[]}
+   outro:['Le soir venu, toute l’île est réunie sur la place. Les lampions se balancent doucement, les tables croulent sous les tartes de Lina.', 'Tomas raconte pour la dixième fois comment il a glissé sur un galet le jour de son arrivée. Kofi rit aux éclats. Les voyageurs dansent en rond. Même Job est descendu de son phare, et il tape du pied en rythme.', 'Gaspard a accosté pour l’occasion, avec une bouteille de cidre du continent. Elias reste un peu à l’écart, adossé à un arbre… mais il sourit.', 'Vers minuit, Elias se redresse d’un coup. Il fixe l’horizon. « Le vent tourne. »', {t:'Une première rafale souffle les lampions, un à un. Puis une autre. Au loin, le ciel devient noir, et la mer se met à gronder.', fx:'storm'}, '« Tout le monde à l’abri ! » crie Job en courant vers son phare.', 'Toute la nuit, la tempête hurle sur l’île. Les volets claquent, les vagues frappent le quai, la lumière du phare tourne, tourne, sans s’arrêter.', {t:'Et puis, au petit matin… le silence.', fx:'dawn'}],
+   reward:[]},
+  {season:2, title:'Après la tempête', who:'job', give:[],
+   onIntro:() => { stormDamage(); },
+   intro:[{who:'toi', t:'L’île se réveille doucement. Un à un, les habitants sortent de chez eux et découvrent les dégâts, encore un peu sonnés.'}, 'Job descend de son phare, les yeux rouges de fatigue. « Elle a tenu toute la nuit, ma vieille lumière. Tout le monde va bien ? »', {who:'tomas', t:'« Ma barque… elle est sur le sable ! Et le bout du quai a disparu. »'}, {who:'lina', t:'« Allez, on se retrousse les manches. Ensemble, ça ira vite ! »'}],
+   goals1:[['Les débris', () => Math.max(0, (glob.story.debris0 || 0) - cnt('Ó')), () => glob.story.debris0 || 1, 'Il reste des débris un peu partout sur l’île…', 'Ramasse les débris à la main ✋ : sur la plage, sur la place, là où les arbres sont tombés.'],
+     ['La barque à l’eau', () => O.some((o, i) => o === 'B' && G[i] !== 'w') ? 0 : 1, 1, 'La barque de Tomas est toujours sur le sable…', 'Casse la barque échouée avec la pioche, puis repose une barque sur l’eau.'],
+     ['Le quai réparé', () => Math.min(glob.story.quai0 || 0, O.reduce((n, o, i) => n + (G[i] === 'q' && !inIsle(i, 'ilot') ? 1 : 0), 0)), () => glob.story.quai0 || 1, 'Le bout du quai a été emporté…', 'Reconstruis le bout du quai, sur l’eau.']],
+   mid:[{who:'toi', t:'En fin de matinée, le vent se lève à nouveau, mais doux, cette fois. D’un coup, il déchire la brume, {dir:champs}. Une immense plaine verte apparaît, à perte de vue.'}, {who:'elias', t:'Elias, tout bas : « … Je ne l’avais jamais vue. »'}, {who:'tomas', t:'Tomas, sur la plage : « Hé ! Venez voir ! La mer a rapporté des bouteilles ! »'}],
+   onMid:() => { nextIsle('champs', -6, 'm', 7, 5, 'champs', '🌾 La brume s’est déchirée : une immense plaine apparaît !'); showIsle('champs'); const land = mainLand(); spawnSmart('ȸ', 3, i => land[i] && G[i] === 's' && !fogAt(i % N, (i / N)|0)); },
+   goals2:[['Les bouteilles', () => Math.min(3, glob.story.bottleN || 0), 3, 'La mer a rapporté des bouteilles sur la plage…', 'Ramasse les bouteilles sur la plage, à la main ✋.']],
+   get goals(){ return phase2(this) ? this.goals2 : this.goals1; },
+   outro:[{who:'toi', t:'Tout le monde éclate de rire. Kofi accroche le message au mur du café, « pour les générations futures ».'}, {who:'lina', t:'Le soir, Lina regarde la grande plaine, {dir:champs}. « Tout ce blé qu’on pourrait faire pousser, là-bas… »'}],
+   reward:[]},
 ];
 let CHAPTERS = CHAPTERS_V1;
 /* chapitres en deux temps : un dialogue au milieu, puis de nouveaux objectifs */
@@ -5083,12 +5101,43 @@ function setSpeaker(who){
   storyFace.hidden = !p; if (p){ if (p.book) drawBookFace(storyFace); else drawPortrait(storyFace, p); }
   storyWho.hidden = !p; storyWho.textContent = p ? `${p.name}, ${p.role}` : '';
 }
+/* effets pendant un récit : la tempête, puis l'aube */
+let stormHold = false;
+function storyFx(fx){
+  if (fx === 'storm'){ stormHold = true; stormT = 8; tday = 23.6/24; forceDraw = true; for (let i = 0; i < N*N; i++) if (O[i] === 'ɮ' && Math.random() < 0.5) O[i] = null; }
+  if (fx === 'dawn'){ stormHold = false; stormT = 1.5; tday = 6/24; forceDraw = true; stormDamage(); if (typeof updateClock === 'function') updateClock(); }
+}
+function stormDamage(){
+  if (!isStory() || glob.story.stormDone) return;
+  glob.story.stormDone = 1;
+  const land = mainLand(), shuffle = a => { for (let k = a.length - 1; k > 0; k--){ const j = (Math.random()*(k+1))|0; [a[k], a[j]] = [a[j], a[k]]; } return a; };
+  const free = test => { const a = []; for (let i = 0; i < N*N; i++) if (!O[i] && test(i) && !fogAt(i % N, (i / N)|0)) a.push(i); return shuffle(a); };
+  // les lampions arrachés, les tables du banquet renversées en tas de bois
+  for (let i = 0; i < N*N; i++){ if (O[i] === 'ɮ') O[i] = null; if (O[i] === 'ɟ') O[i] = 'Ó'; }
+  // quelques arbres déracinés
+  const trees = []; for (let i = 0; i < N*N; i++) if (land[i] && TREES.has(O[i])) trees.push(i);
+  for (const i of shuffle(trees).slice(0, 3)) O[i] = 'Ó';
+  // une barque échouée sur le sable
+  const boats = []; for (let i = 0; i < N*N; i++) if (O[i] === 'B' && !inIsle(i, 'ilot')) boats.push(i);
+  const sand = free(i => land[i] && G[i] === 's' && near8(i, j => G[j] === 'w' || G[j] === 'q'));
+  if (boats.length && sand.length){ O[boats[0]] = null; O[sand.pop()] = 'B'; }
+  // le quai abîmé : le bout du quai est emporté
+  const quai = []; for (let i = 0; i < N*N; i++) if (G[i] === 'q' && !inIsle(i, 'ilot') && !O[i]) quai.push(i);
+  const ends = quai.filter(i => [1, -1, N, -N].filter(d => G[i + d] === 'q').length <= 1);
+  glob.story.quai0 = quai.length + O.filter((o, i) => G[i] === 'q' && o && !inIsle(i, 'ilot')).length;
+  for (const i of shuffle(ends).slice(0, 2)){ G[i] = 'w'; }
+  // la plage couverte de débris
+  for (const i of sand.slice(0, 6)) O[i] = 'Ó';
+  for (const i of sand.slice(6, 9)) O[i] = 'Ŋ';
+  glob.story.debris = O.filter(o => o === 'Ó').length; glob.story.debris0 = glob.story.debris;
+  groundDirty = true; save(); saveGlob(); syncWalkers(); updateStats();
+}
 function openStoryModal({mode, who, kicker, title, paras, rewards, go, alt}){
   storyMode = mode;
   setSpeaker(who); storySpeaker = who;
   storyKicker.textContent = kicker; storyTitle.textContent = title;
   storyBody.innerHTML = '';
-  for (const t0 of paras){ const t = t0 && typeof t0 === 'object' && t0.t ? t0.t : t0; if (typeof t === 'string'){ const el = document.createElement('p'); el.textContent = fmtTxt(t); if (t0.who) el.dataset.who = t0.who; if (/^« .* »$/.test(el.textContent) && mode !== 'intro') el.className = 'carnet-line'; storyBody.append(el); } else storyBody.append(t); }
+  for (const t0 of paras){ const t = t0 && typeof t0 === 'object' && t0.t ? t0.t : t0; if (typeof t === 'string'){ const el = document.createElement('p'); el.textContent = fmtTxt(t); if (t0.who) el.dataset.who = t0.who; if (t0.fx) el.dataset.fx = t0.fx; if (/^« .* »$/.test(el.textContent) && mode !== 'intro') el.className = 'carnet-line'; storyBody.append(el); } else storyBody.append(t); }
   storyRewards.innerHTML = ''; storyRewards.hidden = !(rewards && rewards.length);
   if (rewards && rewards.length){ const lb = document.createElement('div'); lb.className = 'label rw-label'; lb.textContent = mode === 'intro' ? 'Pour cette mission' : 'Tu as gagné'; storyRewards.append(lb); }
   for (const id of rewards || []){
@@ -5110,6 +5159,7 @@ function showStoryPage(){
   const sp = storyPages, last = sp.k === sp.texts.length - 1;
   for (const el of sp.kids) el.hidden = el.tagName === 'P' ? el !== sp.texts[sp.k] : !last;
   setSpeaker(sp.texts[sp.k].dataset.who || storySpeaker);
+  if (sp.texts[sp.k].dataset.fx) storyFx(sp.texts[sp.k].dataset.fx);
   storyRewards.hidden = !(last && sp.rw);
   storyGo.textContent = last ? sp.go : 'Suivant →';
   storyBox.querySelector('.story-card').scrollTop = 0;
@@ -5124,7 +5174,7 @@ function openChapter(kind, i){
   const si = seasonInfo(i);
   if (kind === 'intro'){
     // un nouveau chapitre commence de jour : s'il fait nuit, on passe au lendemain matin
-    if (isStory() && i > 0){ const hh = tday*24; if (hh >= 20 || hh < 6.5){ tday = 8/24; forceDraw = true; if (typeof updateClock === 'function') updateClock(); setTimeout(() => toast('☀️ Le lendemain matin…'), 400); } }
+    if (isStory() && i > 0){ const hh = tday*24; if (hh >= 20 || hh < 5.9){ tday = 8/24; forceDraw = true; if (typeof updateClock === 'function') updateClock(); setTimeout(() => toast('☀️ Le lendemain matin…'), 400); } }
     glob.story.introSeen = Math.max(glob.story.introSeen ?? -1, i);
     let given = false; for (const id of ch.give || []) given = unlockItem(id) || given;
     saveGlob(); if (given){ buildTools(); renderRecent(); }
@@ -5223,7 +5273,7 @@ function scPaint(who){
   const cv = document.getElementById('scFaceCv'), p = who && PEOPLE[who];
   if (p) drawPortrait(cv, p); else drawBookFace(cv);
 }
-const RELANCE = {"L’architecte": {"Les plans de Margaux": "« Encore des plans qui traînent… le vent les a emportés partout ! »", "Un café": "« Un café, d’abord ! On ne réfléchit pas bien sans café. »", "Une crêperie": "« Une crêperie, ce serait la fête tous les jours ! »", "Une épicerie": "« Une épicerie, pour les légumes et le pain de Lina. »", "Des lampadaires": "« Encore des lampadaires, le long des chemins. »", "Des bacs à fleurs": "« Des fleurs, des fleurs, des fleurs ! »"}, "L’arrivée": {"Dégage la plage": "Ces cailloux, sur la plage… il faudrait les casser.", "Construis ta cabane": "Avec ce bois, je pourrais monter une cabane.", "Monte ton feu de camp": "La nuit va être fraîche. Un feu, vite."}, "Le gardien du phare": {"Torches": "« Encore quelques torches, que l’île ne dorme pas dans le noir ! »", "Une torche au pied du phare": "« Et une petite, au pied du phare ? Mes vieilles jambes t’en remercieraient. »"}, "Le premier voisin": {"Ramasse les pierres taillées": "« Ces pierres taillées dans l’herbe, tu les as vues ? »", "Ta maison": "« Ta cabane ne tiendra pas l’hiver, tu sais… »", "Ton potager": "« Et mes graines ? Un petit potager, ce serait bien. »", "La maison de Tomas": "« Une maison pour moi, à côté de la tienne ? »", "Un chemin entre vos deux maisons": "« Un chemin, que je vienne frapper chez toi ! »", "Un puits": "« Toujours pas de puits… j’ai soif, moi ! »"}, "Le petit port": {"Agrandis le quai de l’îlot": "« Mon quai est trop petit pour deux barques… »", "Casiers sur l’îlot": () => (glob.story.unlocked2 || []).includes('N') ? "« Il me manque encore des casiers, sur l’îlot. »" : "« Pour tresser des casiers, il me faudrait de vieux filets… La mer en rejette parfois sur la plage. »", "Un quai sur ton île": "« Il faut un quai chez toi aussi, pour accoster. »", "Une barque de pêche": "« Une barque, et on fait l’aller-retour ! »"}, "La carrière": {"Atelier du tailleur": "« L’atelier d’abord. Je t’apprendrai à tailler. »", "Des maisons pour les voyageurs": "« Les voyageurs dorment encore sous la tente. »", "Un pont jusqu’à la carrière": "« Un pont jusqu’aux falaises rouges, et on y est. »", "Four à briques": "« Le four, maintenant. »", "De l’argile cuite": "« Il attend son argile, ce four. »"}, "Le pain": {"Du blé en réserve": "« Encore un peu de blé… on y est presque ! »", "Moulin": "« Kofi sait faire un moulin, demande-lui ! »", "Boulangerie": "« Ma boulangerie… j’en rêve la nuit. »", "Une maison pour Lina": "« Et… je dors où, ce soir ? »"}, "L’ermite": {"Une forêt soignée": "« Encore trop de souches. »", "Une scierie": "« Une scierie. Pas de gâchis. »", "Des sentiers en bois": "« Des sentiers. Pour les jeunes pousses. »", "Une cabane pour Elias": "« … Une cabane. Près des arbres. Si tu veux bien. »"}, "La fête de l’été": {"Une place pavée": "« Il faut plus de pavés, pour une vraie place ! »", "Une fontaine sur la place": "« Une fontaine au milieu, ce serait beau… »", "Le marché": "« Et le marché ! »", "De la décoration": "« Encore un peu de déco, des fleurs, des bancs… »", "Des tables pour le banquet": "« Des tables, plein de tables ! »", "Tout le monde est invité": "« Il reste des portes où toquer ! »", "Des lampions": "« Encore des lampions ! »", "Des tartes pour le banquet": "« Les tartes ! Apporte-moi du blé et des légumes. »"}};
+const RELANCE = {"Après la tempête": {"Les débris": "« Il reste des débris un peu partout… »", "La barque à l’eau": "« La barque de Tomas est toujours sur le sable. »", "Le quai réparé": "« Le bout du quai a été emporté. Il faut le reconstruire. »", "Les bouteilles": "« Il en reste, sur la plage, de ces bouteilles ! »"}, "L’architecte": {"Les plans de Margaux": "« Encore des plans qui traînent… le vent les a emportés partout ! »", "Un café": "« Un café, d’abord ! On ne réfléchit pas bien sans café. »", "Une crêperie": "« Une crêperie, ce serait la fête tous les jours ! »", "Une épicerie": "« Une épicerie, pour les légumes et le pain de Lina. »", "Des lampadaires": "« Encore des lampadaires, le long des chemins. »", "Des bacs à fleurs": "« Des fleurs, des fleurs, des fleurs ! »"}, "L’arrivée": {"Dégage la plage": "Ces cailloux, sur la plage… il faudrait les casser.", "Construis ta cabane": "Avec ce bois, je pourrais monter une cabane.", "Monte ton feu de camp": "La nuit va être fraîche. Un feu, vite."}, "Le gardien du phare": {"Torches": "« Encore quelques torches, que l’île ne dorme pas dans le noir ! »", "Une torche au pied du phare": "« Et une petite, au pied du phare ? Mes vieilles jambes t’en remercieraient. »"}, "Le premier voisin": {"Ramasse les pierres taillées": "« Ces pierres taillées dans l’herbe, tu les as vues ? »", "Ta maison": "« Ta cabane ne tiendra pas l’hiver, tu sais… »", "Ton potager": "« Et mes graines ? Un petit potager, ce serait bien. »", "La maison de Tomas": "« Une maison pour moi, à côté de la tienne ? »", "Un chemin entre vos deux maisons": "« Un chemin, que je vienne frapper chez toi ! »", "Un puits": "« Toujours pas de puits… j’ai soif, moi ! »"}, "Le petit port": {"Agrandis le quai de l’îlot": "« Mon quai est trop petit pour deux barques… »", "Casiers sur l’îlot": () => (glob.story.unlocked2 || []).includes('N') ? "« Il me manque encore des casiers, sur l’îlot. »" : "« Pour tresser des casiers, il me faudrait de vieux filets… La mer en rejette parfois sur la plage. »", "Un quai sur ton île": "« Il faut un quai chez toi aussi, pour accoster. »", "Une barque de pêche": "« Une barque, et on fait l’aller-retour ! »"}, "La carrière": {"Atelier du tailleur": "« L’atelier d’abord. Je t’apprendrai à tailler. »", "Des maisons pour les voyageurs": "« Les voyageurs dorment encore sous la tente. »", "Un pont jusqu’à la carrière": "« Un pont jusqu’aux falaises rouges, et on y est. »", "Four à briques": "« Le four, maintenant. »", "De l’argile cuite": "« Il attend son argile, ce four. »"}, "Le pain": {"Du blé en réserve": "« Encore un peu de blé… on y est presque ! »", "Moulin": "« Kofi sait faire un moulin, demande-lui ! »", "Boulangerie": "« Ma boulangerie… j’en rêve la nuit. »", "Une maison pour Lina": "« Et… je dors où, ce soir ? »"}, "L’ermite": {"Une forêt soignée": "« Encore trop de souches. »", "Une scierie": "« Une scierie. Pas de gâchis. »", "Des sentiers en bois": "« Des sentiers. Pour les jeunes pousses. »", "Une cabane pour Elias": "« … Une cabane. Près des arbres. Si tu veux bien. »"}, "La fête de l’été": {"Une place pavée": "« Il faut plus de pavés, pour une vraie place ! »", "Une fontaine sur la place": "« Une fontaine au milieu, ce serait beau… »", "Le marché": "« Et le marché ! »", "De la décoration": "« Encore un peu de déco, des fleurs, des bancs… »", "Des tables pour le banquet": "« Des tables, plein de tables ! »", "Tout le monde est invité": "« Il reste des portes où toquer ! »", "Des lampions": "« Encore des lampions ! »", "Des tartes pour le banquet": "« Les tartes ! Apporte-moi du blé et des légumes. »"}};
 let bubbleT = 0;
 function scSayBubble(text, who, ms = 5500){
   const b = document.getElementById('scBubble'); if (!b || !text) return;
