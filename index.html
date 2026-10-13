@@ -469,10 +469,21 @@ html.full .sc-wish[hidden]{display:none}
 html.full .brand{margin-right:0} html.full .storycard{margin-right:auto}
 .sc-bubble{position:fixed;top:70px;left:12px;z-index:24;max-width:min(300px,calc(100vw - 24px));box-sizing:border-box;background:#f7f1e3;color:#2a2d31;border-radius:4px 14px 14px 14px;padding:9px 12px;font-family:var(--f-body);font-size:13.5px;line-height:1.4;box-shadow:0 6px 18px rgba(0,0,0,.22);cursor:pointer;animation:scIn .25s ease}
 .sc-bubble[hidden]{display:none}
-.gear[hidden],html.full .hdr-right .gear[hidden]{display:none}.sc-bubble.me{font-style:italic}
+.gear[hidden],html.full .hdr-right .gear[hidden]{display:none}
+.news-btn{align-self:flex-end;position:relative;width:38px;height:38px;border-radius:50%;border:0;background:var(--glass);box-shadow:0 4px 14px rgba(0,0,0,.18);font-size:17px;cursor:pointer;padding:0;flex:none}
+.news-btn[hidden]{display:none}
+.news-btn i{display:none;position:absolute;right:1px;top:1px;width:10px;height:10px;border-radius:50%;background:#e8604a;border:2px solid #fff}
+.news-btn.new i{display:block}
+.news-btn.new{animation:scBob 1.6s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){.news-btn.new{animation:none}}
+.news-pop{left:auto;right:12px;border-radius:14px 4px 14px 14px;font-style:normal}
+.news-pop .np{display:flex;gap:9px;align-items:flex-start}
+.news-pop canvas{width:34px;height:34px;flex:none;border-radius:50%;background:#cfe3ef;image-rendering:pixelated}
+.news-pop button{margin-top:7px;border:1px solid #4f7ea8;background:#e4eef6;color:#2a4f70;border-radius:8px;padding:5px 10px;font:inherit;font-size:12.5px;cursor:pointer}
+.news-pop button:disabled{opacity:.5;cursor:default}.sc-bubble.me{font-style:italic}
 .sc-bubble small{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#4f7ea8;font-weight:700;font-style:normal;margin-bottom:2px}
 @keyframes scIn{from{opacity:0;transform:translateY(-4px)}}
-@media (max-width: 520px){ html.full .brand{margin-right:auto} html.full .storycard{order:10;margin-right:auto} html.full .sc-faceWrap,html.full .sc-face{width:54px;height:54px} }
+@media (max-width: 520px){ html.full .brand{margin-right:auto} html.full .storycard{order:10;margin-right:auto} html.full .sc-faceWrap,html.full .sc-face{width:50px;height:50px} html.full .res-hud{gap:7px;padding:0 9px;font-size:11.5px;letter-spacing:-.02em} }
 </style>
 
 <div class="wrap" lang="fr">
@@ -576,6 +587,8 @@ html.full .brand{margin-right:0} html.full .storycard{margin-right:auto}
       <div class="sc-bubble" id="scBubble" hidden></div>
       <div class="sc-pop sc-wish" id="scWish" hidden><span id="scWishTxt"></span><button type="button" id="scWishBtn">Donner</button></div>
     </div>
+    <button type="button" class="news-btn" id="newsBtn" hidden aria-label="Des nouvelles de l’île">💬<i></i></button>
+    <div class="sc-bubble news-pop" id="newsPop" hidden></div>
   </header>
 
   <div class="app">
@@ -1763,7 +1776,9 @@ function drawObject(o, ox, oy, x, y, withLights){
     R(ox+4, oy+4, 8, 3, '#b8573a'); R(ox+6, oy+3, 4, 1, '#b8573a'); R(ox+6, oy+10, 4, 4, '#2b1e1a');
     R(ox+7, oy+11, 2, 2, curDark > 0.4 ? '#ffb24a' : '#e8762e'); L(ox+8, oy+12, 9, 'win');
     R(ox+11, oy, 2, 4, '#6a5a50');
-    if (!reduce){ const t = (now/700 + x) % 1; R(ox+11 + Math.round(t*2), oy - 2 - Math.round(t*4), 2, 2, `rgba(220,220,220,${(0.6*(1-t)).toFixed(2)})`); }
+    { const busy = Date.now() < ovenUntil;
+      if (busy){ R(ox+6, oy+10, 4, 4, (now/120|0) % 2 ? '#ffd25a' : '#ff9a3a'); L(ox+8, oy+12, 14, 'win'); const k = ((Date.now() - ovenUntil + OVEN_MS) / OVEN_MS); if (k > 0.55){ const hop = Math.round(Math.sin(Math.min(1, (k - 0.55)/0.45) * Math.PI) * 3); R(ox+13, oy+11 - hop, 3, 2, '#c0603a'); R(ox+13, oy+11 - hop, 3, 1, '#d97a52'); } }
+      if (!reduce) for (let p = 0; p < (busy ? 3 : 1); p++){ const t = (now/(busy ? 450 : 700) + x + p/3) % 1; const sz = busy ? 3 : 2; R(ox+11 + Math.round(t*(busy ? 4 : 2)), oy - 2 - Math.round(t*(busy ? 8 : 4)), sz, sz, `rgba(225,225,225,${((busy ? 0.8 : 0.6)*(1-t)).toFixed(2)})`); } }
     break; }
   case 'ɖ': { // guirlande de coquillages
     R(ox+1, oy+14, 14, 1, 'rgba(0,0,0,.14)');
@@ -2318,7 +2333,8 @@ const DOGS = ['#8a5a32','#2b2b30','#e8dcc8','#c98a4a'];
 function syncWalkers(){
   groundDirty = true;
   const cells = walkCells();
-  const want = cells.length ? Math.min(Math.round(inhabitants()/3) + 1 + (glob.story.v === 2 && isStory() ? 2*(glob.story.joy || 0) + (glob.story.fed ? 2 : 0) + (glob.story.fedV ? 2 : 0) : 0), Math.round(16 * N / 24)) : 0;
+  const v2 = glob.story.v === 2 && isStory();
+  const want = cells.length ? Math.min(v2 ? Math.round(inhabitants()/6) + 1 + Math.min(3, happyCount()) + (glob.story.fed ? 1 : 0) + (glob.story.fedV ? 1 : 0) : Math.round(inhabitants()/3) + 1, Math.round(16 * N / 24)) : 0;
   const ok = new Set(cells);
   walkers = walkers.filter(w => walkable(gAt(w.cx, w.cy)) && walkable(gAt(w.tx, w.ty)) && ok.has(w.cy*N + w.cx));
   while (walkers.length > want) walkers.pop();
@@ -2941,7 +2957,7 @@ const TOOLS = [
   {id:'y', kind:'obj', name:'Serre', group:'Campagne', gift:true},
   {id:'I', kind:'obj', name:'Immeuble', group:'Ville'},
   {id:'T', kind:'obj', name:'Tour', group:'Ville'},
-  {id:'S', kind:'obj', name:'Magasin', group:'Ville'},
+  {id:'S', kind:'obj', name:'Épicerie', group:'Ville'},
   {id:'A', kind:'obj', name:'Mairie', group:'Ville'},
   {id:'E', kind:'obj', name:'École', group:'Ville'},
   {id:'é', kind:'obj', name:'Hôpital', group:'Ville'},
@@ -3195,7 +3211,7 @@ function handTarget(i){
 }
 function hintT(msg){ const n = performance.now(); if (n - busyT > 1500){ busyT = n; toast(msg); } }
 /* ---------- matériaux (île de l'histoire seulement) ---------- */
-const COST = {'Ĉ':{b:3}, h:{p:1, b:1, t:1}, F:{b:1}, b:{b:1}, B:{b:2}, q:{b:1}, n:{b:2}, X:{b:1}, 'Î':{p:1}, 'æ':{p:1}, W:{t:1}, V:{b:1}, r:{p:3}, '4':{b:1}, 'Ô':{b:3}, 'Ê':{b:1}, '8':{b:1}, l:{p:1, m:1}, '£':{b:1}, 'ŧ':{b:1}, 'Ț':{b:4, p:4}, 'ɖ':{b:1}, 'ɱ':{t:2}, k:{w:1}, 'ɟ':{b:2}, 'ɮ':{b:1}, R:{p:1},
+const COST = {'Ĉ':{b:3}, h:{p:1, b:1, t:1}, F:{b:1}, b:{b:1}, B:{b:2}, q:{b:1}, n:{b:2}, X:{b:1}, 'Î':{p:1}, 'æ':{p:1}, W:{t:1}, V:{b:1}, r:{p:3}, '4':{b:1}, 'Ô':{b:3}, 'Ê':{b:1}, '8':{b:1}, l:{p:1, b:1}, '£':{b:1}, 'ŧ':{b:1}, 'Ț':{b:4, p:4}, 'ɖ':{b:1}, 'ɱ':{t:2}, k:{w:1}, 'ɟ':{b:2}, 'ɮ':{b:1}, K:{b:2, a:2}, S:{b:2, p:2}, 'î':{p:1}, R:{p:1},
   N:{b:1}, G:{b:4}, 'Ç':{p:2, b:4}, 'Ƀ':{p:6}, 'Ś':{b:4, p:2}, 'Ƒ':{p:4, a:4},
   '1':{p:2, a:3}, m:{b:3, a:2}, '9':{b:3}, '2':{b:2, a:2}, Q:{t:3}, A:{a:4, t:2}, E:{p:2, a:4}, I:{a:6, m:2}, i:{a:4, m:3}, O:{b:3, m:1}, L:{p:2, b:1, t:2}, 'ê':{t:3}, e:{p:2, m:2}};
 const TREES = new Set(['t', 'P', 'À']);
@@ -3235,6 +3251,7 @@ function pay(id){
   r.b -= c.b || 0; r.p -= c.p || 0; r.a -= c.a || 0; r.m -= c.m || 0; r.t -= c.t || 0; r.w -= c.w || 0; saveGlob(); renderRes();
   return true;
 }
+let ovenUntil = 0; const OVEN_MS = 2600;
 function gain(b, p, msg, a = 0, m = 0, t = 0){ if (!resOn()) return; const r = resv(); r.b += b; r.p += p; r.a += a; r.m += m; r.t += t; saveGlob(); renderRes(true); if (msg) toast(msg); }
 /* la pioche récolte (arbre, rocher) ou rend la moitié des matériaux */
 function harvest(o){
@@ -3336,8 +3353,8 @@ function openTrade(){
 /* ce que rapporte chaque objet ramassé */
 function bonusPick(id, i){
   const ch = CHAPTERS[glob.story.chapter] || {};
-  if (id === 'ƿ'){ const t = ch.plan && TOOLS.find(t => t.id === ch.plan); if (t){ unlockItem(t.id); saveGlob(); buildTools(); renderRecent(); toast(`📜 Plan trouvé : ${t.name} ! Tu peux le construire`); } else toast('📜 Un vieux plan…'); return true; }
-  if (id === 'ɋ'){ gain(0, 0, '🧱 Argile cuite dans ton four · +2 briques', 2); return true; }
+  if (id === 'ƿ'){ const pid = ch.plans ? ch.plans.find(x => !unlocked(x)) : ch.plan, t = pid && TOOLS.find(t => t.id === pid); if (t){ unlockItem(t.id); saveGlob(); buildTools(); renderRecent(); toast(`📜 Plan trouvé : ${t.name} ! Tu peux le construire`); } else toast('📜 Un vieux plan…'); return true; }
+  if (id === 'ɋ'){ ovenUntil = Date.now() + OVEN_MS; forceDraw = true; toast('🔥 Le four cuit ton argile…', 2400); setTimeout(() => gain(0, 0, '🧱 Les briques sont cuites · +2 briques', 2), OVEN_MS); return true; }
   if (id === 'ɍ'){ gain(0, 0, '⚙️ Minerai fondu à la forge · +2 métal', 0, 2); return true; }
   if (id === 'Ŋ'){
     if (ch.extra && ch.extra.includes('N') && !(glob.story.unlocked2 || []).includes('N')){ unlockItem('N'); saveGlob(); buildTools(); renderRecent(); gain(1, 0); toast('🕸️ Tomas : « Un vieux filet ! Avec ça, je peux tresser des casiers ! » · Casier débloqué', 5000); return true; }
@@ -4111,6 +4128,7 @@ const PEOPLE = {
   ines:  {name:'Inès', role:'cheffe de gare', skin:'#e0b08a', hair:'#2b2b30', clothes:'#1f3550', hat:'chef', long:true},
   aiko:  {name:'Aiko', role:'cartographe', skin:'#f1d2b0', hair:'#1e1e24', clothes:'#5a6a3a', glasses:true, long:true},
   mei:   {name:'Mei', role:'photographe', skin:'#f1d2b0', hair:'#2b2b30', clothes:'#c8553d'},
+  margaux: {name:'Margaux', role:'architecte', skin:'#f1c9a5', hair:'#3a2a22', clothes:'#c8553d', long:true},
   elias: {name:'Elias', role:'ermite au canoë', skin:'#d8a07a', hair:'#5a3a22', clothes:'#3f5a3a', beard:'#5a3a22'},
   ama:   {name:'Ama', role:'soigneuse', skin:'#7a4a2e', hair:'#1e1e24', clothes:'#e9e2d0', long:true},
   nour:  {name:'Nour', role:'jardinière', skin:'#b07a52', hair:'#2b1e14', clothes:'#3f8f5a', long:true},
@@ -4444,8 +4462,8 @@ const CHAPTERS_V2 = [
    outro:['Les premières briques sortent du four, encore chaudes. Kofi en tape deux l’une contre l’autre, l’oreille tendue. « Écoute ce son. Une bonne brique, ça chante. »'],
    reward:[]},
   {season:1, title:'Le pain', who:'lina', give:['k'],
-   onIntro:() => { const m = glob.story.merchant || (glob.story.merchant = {n:0}); m.met = 1; if (!glob.story.seedGiven){ glob.story.seedGiven = 1; resv().w = Math.max(resv().w, 1); saveGlob(); renderRes(true); } },
-   get intro(){ const met = (glob.story.met || []).includes('gaspard') || (glob.story.merchant || {}).met; return [...(met ? [{who:'gaspard', t:'Le voilier de Gaspard accoste plus tôt que prévu. « Je t’amène quelqu’un ! » lance-t-il en aidant une jeune femme à descendre.'}] : [{who:'gaspard', t:'Une voile rayée rouge et blanc approche de ton port. Un vieil homme à barbe blanche saute sur le quai, tout sourire.'}, {who:'gaspard', t:'« Ho ho ! Un quai, ici, de nouveau ! Je m’appelle Gaspard. Ça fait trente ans que je fais la navette entre les îles et le continent. Avant, il y avait un vrai port, sur cette île… Et le vieux Job, il tient toujours son phare ? Tu lui diras que Gaspard le salue ! »'}, {who:'gaspard', t:'« Je repasserai de temps en temps : apporte-moi les coquillages nacrés de tes plages, je t’échangerai ce que j’ai dans ma cale. Mais aujourd’hui, je t’amène quelqu’un ! »'}]), 'Une jeune femme descend du voilier, un petit sac de toile serré contre elle… et manque d’oublier son chapeau sur le pont.', '« Bonjour ! Lina, boulangère. Gaspard m’a parlé de vous pendant toute la traversée… Ici, j’aimerais refaire du pain. Du vrai. »', '« J’ai gardé une graine de blé. Une seule, la toute dernière… Il lui faudrait un coin de terre bien au soleil, sur ton île. Si on la plante, elle en donnera d’autres, et ainsi de suite… jusqu’à une belle réserve de blé. On est patients, hein ? »']; },   goals1:[['Du blé en réserve', () => resv().w, 10, () => cntG('k') === 0 && resv().w <= 1 ? 'La graine de Lina attend un coin de terre…' : 'Le blé, ça se cultive avec patience…', () => cntG('k') === 0 ? 'Sème le blé sur une case de terre (dans les Objets), puis attends qu’il mûrisse.' : 'Quand le blé est doré, récolte-le à la main ✋… et resème une partie, pour faire grossir ta réserve !']],
+   onIntro:() => { const m = glob.story.merchant || (glob.story.merchant = {n:0}); m.met = 1; if (!glob.story.seedGiven){ glob.story.seedGiven = 1; resv().w = Math.max(resv().w, 3); saveGlob(); renderRes(true); } },
+   get intro(){ const met = (glob.story.met || []).includes('gaspard') || (glob.story.merchant || {}).met; return [...(met ? [{who:'gaspard', t:'Le voilier de Gaspard accoste plus tôt que prévu. « Je t’amène quelqu’un ! » lance-t-il en aidant une jeune femme à descendre.'}] : [{who:'gaspard', t:'Une voile rayée rouge et blanc approche de ton port. Un vieil homme à barbe blanche saute sur le quai, tout sourire.'}, {who:'gaspard', t:'« Ho ho ! Un quai, ici, de nouveau ! Je m’appelle Gaspard. Ça fait trente ans que je fais la navette entre les îles et le continent. Avant, il y avait un vrai port, sur cette île… Et le vieux Job, il tient toujours son phare ? Tu lui diras que Gaspard le salue ! »'}, {who:'gaspard', t:'« Je repasserai de temps en temps : apporte-moi les coquillages nacrés de tes plages, je t’échangerai ce que j’ai dans ma cale. Mais aujourd’hui, je t’amène quelqu’un ! »'}]), 'Une jeune femme descend du voilier, un petit sac de toile serré contre elle… et manque d’oublier son chapeau sur le pont.', '« Bonjour ! Lina, boulangère. Gaspard m’a parlé de vous pendant toute la traversée… Ici, j’aimerais refaire du pain. Du vrai. »', '« J’ai gardé trois graines de blé. Les toutes dernières… Il leur faudrait un coin de terre bien au soleil, sur ton île. Si on les plante, elles en donneront d’autres, et ainsi de suite… jusqu’à une belle réserve de blé. On est patients, hein ? »']; },   goals1:[['Du blé en réserve', () => resv().w, 10, () => cntG('k') === 0 && resv().w <= 1 ? 'La graine de Lina attend un coin de terre…' : 'Le blé, ça se cultive avec patience…', () => cntG('k') === 0 ? 'Sème le blé sur une case de terre (dans les Objets), puis attends qu’il mûrisse.' : 'Quand le blé est doré, récolte-le à la main ✋… et resème une partie, pour faire grossir ta réserve !']],
    mid:['« Regarde-moi tout ce blé ! Maintenant, il faudrait le moudre… et cuire le pain. Une boulangerie en briques, ce serait parfait. Ah, et… je ne sais pas encore où je vais dormir, ce soir. »', {who:'kofi', t:'« Un moulin ? J’en ai monté trois, sur le continent. Je te montre comment faire. »'}],
    give2:['m','1'],
    goals2:[['Moulin', () => Math.min(1, cnt('m')), 1, 'Kofi sait construire un moulin…', 'Construis un moulin (il faut des briques 🧱).'],
@@ -4467,12 +4485,25 @@ const CHAPTERS_V2 = [
    get goals(){ return phase2(this) ? this.goals2 : this.goals1; },
    outro:['Le soir, Elias s’assoit devant sa cabane. Il taille un bout de bois avec son couteau, sans rien dire. Tomas vient s’asseoir à côté de lui, et pour une fois, il ne parle pas non plus.', 'Au bout d’un long moment, Elias lève les yeux vers la mer. « Là-bas, d’où je viens… il y avait des pins à perte de vue. Avant. »', 'Il ne dit rien de plus. Mais la nuit, sa lampe reste allumée très tard, et on le voit regarder l’horizon, comme s’il attendait quelque chose.', '« J’ai déjà vu le ciel prendre cette couleur, une fois… », murmure-t-il en rentrant.'],
    reward:[]},
+  {season:1, title:'L’architecte', who:'margaux', give:[], plans:['2','K','S','l','î'],
+   onIntro:() => { const land = mainLand(); spawnSmart('ƿ', 5, i => land[i] && G[i] === 'g' && !fogAt(i % N, (i / N)|0)); },
+   intro:['Le voilier de Gaspard accoste, et une jeune femme saute sur le quai avant même qu’il soit amarré. Un crayon derrière l’oreille, un carnet de croquis sous le bras, et dans le dos un grand tube plein de rouleaux de papier.', '« Margaux, architecte ! Oh là là, regarde-moi ça… Tout est à faire ! Un café ici, une crêperie là… »', 'Un coup de vent arrache le couvercle du tube. Les plans s’envolent par-dessus les toits. « Non non non ! Mes plans ! »', '« Ils ne sont pas allés bien loin… Tu m’aides à les retrouver ? »'],
+   goals1:[['Les plans de Margaux', () => found('ƿ'), 5, 'Le vent a emporté les plans de Margaux un peu partout…', 'Retrouve les 5 plans sur ton île, et ramasse-les à la main ✋.']],
+   mid:['Margaux lisse ses plans sur une pierre, ravie. « Tous là ! Bon. Un village, ça vit dans ses rues. Il faut un endroit où boire un café, manger une crêpe, acheter son pain et ses légumes… »', '« Et la nuit, on ne voit rien, ici ! Des lampadaires, le long des chemins. Et des fleurs, partout. »'],
+   goals2:[['Un café', () => Math.min(1, countTouchPath('2')), 1, 'Margaux voulait un endroit où boire un café…', 'Construis le café, au bord d’un chemin.'],
+     ['Une crêperie', () => Math.min(1, countTouchPath('K')), 1, 'Et pour manger une crêpe ?', 'Construis la crêperie, au bord d’un chemin.'],
+     ['Une épicerie', () => Math.min(1, countTouchPath('S')), 1, 'Où acheter ses légumes et son pain ?', 'Construis l’épicerie, au bord d’un chemin.'],
+     ['Des lampadaires', () => cnt('l'), 4, 'La nuit, on ne voit rien dans les rues…', 'Pose des lampadaires le long des chemins.'],
+     ['Des bacs à fleurs', () => cnt('î'), 4, 'Margaux voulait des fleurs partout…', 'Pose des bacs à fleurs dans les rues.']],
+   get goals(){ return phase2(this) ? this.goals2 : this.goals1; },
+   outro:['Le soir, les lampadaires s’allument un à un. Les habitants sortent, s’installent en terrasse du café, et une odeur de crêpes flotte dans la rue.', 'Margaux s’assoit sur un banc, son carnet sur les genoux, et regarde le village comme si elle le dessinait déjà. « Tu sais, sur le continent, tout est déjà construit. Ici, tout reste à inventer… »', 'Elle referme son carnet. « Ce petit hameau, j’ai envie de le voir grandir. Je crois que je vais rester ! »'],
+   reward:[]},
   {season:1, title:'La fête de l’été', who:'lina', give:['p','Q','9','b'],
    intro:['Un matin, Lina déboule chez toi, les joues pleines de farine. « Tu as vu tout ce qu’on a construit ? Les maisons, le port, la boulangerie… Il manque juste un cœur, à ce village ! »', {who:'tomas', t:'Tomas arrive derrière elle, tout excité. « Une vraie place ! Avec des pavés, une fontaine au milieu… et un marché, pour qu’on puisse tous s’y retrouver. »'}, '« Et un peu de décoration, hein ? Des bancs, des fleurs… que ce soit joli ! »'],
    goals1:[['Une place pavée', () => cntG('p'), 12, 'Tomas rêvait d’une grande place pavée…', 'Pave une belle place, au cœur du village.'],
      ['Une fontaine sur la place', () => O.some((o, i) => o === 'Q' && (G[i] === 'p' || near8(i, j => G[j] === 'p'))) ? 1 : 0, 1, 'Une place, sans fontaine au milieu…', 'Pose une fontaine sur ta place pavée.'],
      ['Le marché', () => Math.min(1, cnt('9')), 1, 'Où les habitants vont-ils se retrouver ?', 'Construis le marché, près de la place.'],
-     ['De la décoration', () => O.reduce((n, o, i) => n + ((o === 'b' || o === 'f' || o === 'ɖ' || o === 'Ê' || o === '8' || o === 'ɮ') && (G[i] === 'p' || near8(i, j => G[j] === 'p')) ? 1 : 0), 0), 4, 'Lina voulait que ce soit joli…', 'Ajoute des bancs et des fleurs autour de la place.']],
+     ['De la décoration', () => O.reduce((n, o, i) => n + ((o === 'b' || o === 'f' || o === 'î' || o === 'ɖ' || o === 'Ê' || o === '8' || o === 'ɮ') && (G[i] === 'p' || near8(i, j => G[j] === 'p')) ? 1 : 0), 0), 4, 'Lina voulait que ce soit joli…', 'Ajoute des bancs et des fleurs autour de la place.']],
    mid:['Lina tourne autour de la place, ravie. « C’est magnifique ! Il faut fêter ça… une grande fête, avec un banquet pour toute l’île ! »', {who:'tomas', t:'« Il nous faudra des tables, beaucoup de tables ! Et il faut inviter tout le monde. Tu passerais toquer chez chacun ? »'}],
    give2:['ɟ'],
    goals2:[['Des tables pour le banquet', () => cnt('ɟ'), 4, 'Le banquet a besoin de tables…', 'Installe des tables de banquet sur la place.'],
@@ -4577,7 +4608,7 @@ const WISHES = [
 ];
 const RES_ICON = {b:'🪵', p:'🪨', a:'🧱', m:'⚙️', t:'⬜', k:'🐚', w:'🌾', v:'🥕', pie:'🥧'};
 const resTxt = c => Object.entries(c).map(([k, n]) => `${n} ${RES_ICON[k]}`).join(' + ');
-const WISHES_ON = false; // les envies des habitants : en pause, on cherchera une façon plus maligne
+const WISHES_ON = true; // les envies des habitants : en pause, on cherchera une façon plus maligne
 function wishTide(){
   if (!WISHES_ON || !glob.story.ville || !resOn()) return;
   const w = glob.story.wish; if (w && w.id) return;
@@ -4587,6 +4618,78 @@ function wishTide(){
   const nx = WISHES.find(x => !done.includes(x.id) && met.includes(x.who) && glob.story.chapter >= x.min);
   if (nx){ glob.story.wish = {id:nx.id}; glob.story.wishN = 0; saveGlob(); renderStoryCard(); }
 }
+/* ---------- les quartiers et les nouvelles de l'île ---------- */
+const DECO = new Set(['f', 'î', 'b', 'H', 'ɖ', 'Ê', '8', 'Q', 'ɱ', 'ê']), LIGHTS = new Set(['ŧ', 'l', 'ɮ', '4', 'æ']);
+let qCache = null, qAt = 0;
+function quartiers(){
+  if (qCache && Date.now() - qAt < 800) return qCache;
+  const land = mainLand(), homes = [];
+  for (let i = 0; i < N*N; i++) if (land[i] && (O[i] === 'h' || O[i] === 'Ĉ')) homes.push(i);
+  const par = homes.map((_, k) => k), find = k => par[k] === k ? k : (par[k] = find(par[k]));
+  for (let a = 0; a < homes.length; a++) for (let b = a + 1; b < homes.length; b++){
+    const ia = homes[a], ib = homes[b];
+    if (Math.max(Math.abs(ia % N - ib % N), Math.abs(((ia / N)|0) - ((ib / N)|0))) <= 3) par[find(a)] = find(b);
+  }
+  const groups = {}; homes.forEach((h, k) => (groups[find(k)] || (groups[find(k)] = [])).push(h));
+  let mx = 0, my = 0, mn = 0; for (let i = 0; i < N*N; i++) if (land[i]){ mx += i % N; my += (i / N)|0; mn++; }
+  mx /= mn || 1; my /= mn || 1;
+  qCache = Object.values(groups).map(hs => {
+    const near = new Set(); for (const h of hs){ const x = h % N, y = (h / N)|0; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++){ const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < N && yy < N) near.add(yy*N + xx); } }
+    let deco = 0, light = 0; for (const j of near){ if (DECO.has(O[j])) deco++; if (LIGHTS.has(O[j])) light++; }
+    const cx = hs.reduce((a, h) => a + h % N, 0) / hs.length, cy = hs.reduce((a, h) => a + ((h / N)|0), 0) / hs.length;
+    const close = (test, r) => { for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++){ const xx = Math.round(cx) + dx, yy = Math.round(cy) + dy; if (xx >= 0 && yy >= 0 && xx < N && yy < N && test(yy*N + xx)) return true; } return false; };
+    const name = close(j => O[j] === '1', 5) ? 'autour de la boulangerie' : close(j => O[j] === 'L', 5) ? 'au pied du phare' : close(j => O[j] === 'Q' || G[j] === 'p', 4) ? 'autour de la place' : close(j => O[j] === '2' || O[j] === 'K', 4) ? 'dans la rue du café' : close(j => G[j] === 'q', 5) ? 'près du port' : close(j => O[j] === 'm', 5) ? 'près du moulin' : close(j => G[j] === 's', 3) ? 'au bord de la plage'
+      : (Math.abs(cx - mx) > Math.abs(cy - my) ? (cx > mx ? 'à l’est de l’île' : 'à l’ouest de l’île') : (cy > my ? 'au sud de l’île' : 'au nord de l’île'));
+    const needDeco = Math.ceil(hs.length / 2);
+    return {hs, n:hs.length, deco, light, needDeco, name, happy:deco >= needDeco && light >= 1, who:NAMES[hs[0] % NAMES.length]};
+  }).filter(q => q.n >= 2 || q.hs.some(h => O[h] === 'h'));
+  qAt = Date.now(); return qCache;
+}
+const happyCount = () => { try { return glob.story.ville && glob.story.chapter >= 2 ? quartiers().filter(q => q.happy).length : 0; } catch(e){ return 0; } };
+function islandNews(){
+  if (!glob.story.ville || !resOn() || !isStory() || glob.story.chapter < 2) return null;
+  const qs = quartiers(), cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  if (glob.story.chapter >= 3 && glob.story.fedV === false){ const q = qs[0]; return {k:'faim', name:q ? q.who : 'Tomas', who:q ? null : 'tomas', text:'« Plus une carotte dans les assiettes depuis la marée… Le potager n’en donne pas assez ? »'}; }
+  if (glob.story.chapter > 5 && cnt('1') && glob.story.fed === false) return {k:'pain', who:'lina', text:'« Je n’ai plus de blé pour le pain ! Les gens repartent les mains vides… »'};
+  const sad = qs.filter(q => !q.happy).sort((a, b) => b.n - a.n)[0];
+  if (sad){
+    const lamp = unlocked('l') ? 'des lampadaires' : 'une torche ou deux';
+    const fl = unlocked('î') ? 'des fleurs, un bac à fleurs' : unlocked('b') ? 'des fleurs, un banc' : 'quelques fleurs';
+    const t = sad.light < 1 && sad.deco < sad.needDeco ? `Notre coin, ${sad.name}, est bien triste… Et le soir, il fait tout noir. ${cap(fl)}, ${lamp} ?` : sad.light < 1 ? `Il fait tout noir ${sad.name}, le soir. ${cap(lamp)}, ce serait rassurant…` : `Notre coin, ${sad.name}, est un peu triste… ${cap(fl)} ?`;
+    return {k:'triste', name:sad.who, text:'« ' + t + ' »'};
+  }
+  const w = WISHES.find(x => x.id === (glob.story.wish || {}).id);
+  if (w) return {k:'envie', who:w.who, text:w.text, wish:w};
+  if (qs.length){ const q = qs[(Math.floor(Date.now() / 600000)) % qs.length]; const lines = [`On est bien, ${q.name}. Merci pour tout !`, `Tu as vu comme c’est joli, ${q.name}, maintenant ?`, `Le soir, ${q.name}, les enfants jouent dehors jusqu’à la nuit.`]; return {k:'ok', name:q.who, text:'« ' + lines[q.hs[0] % lines.length] + ' »'}; }
+  return null;
+}
+const newsBtn = document.getElementById('newsBtn'), newsPop = document.getElementById('newsPop');
+let newsCur = null;
+function renderNews(){
+  const n = islandNews(); newsCur = n;
+  newsBtn.hidden = !n; if (!n){ newsPop.hidden = true; return; }
+  const sig = n.k + '|' + n.text;
+  newsBtn.classList.toggle('new', glob.story.newsSeen !== sig && n.k !== 'ok');
+  if (!newsPop.hidden) fillNews();
+}
+function fillNews(){
+  const n = newsCur; if (!n) return;
+  newsPop.textContent = '';
+  const row = document.createElement('div'); row.className = 'np';
+  const cv = document.createElement('canvas'); cv.width = 16; cv.height = 16; drawPortrait(cv, n.who ? PEOPLE[n.who] : residentLook(n.name));
+  const tx = document.createElement('div'); const k = document.createElement('small'); k.textContent = n.who ? PEOPLE[n.who].name : n.name; tx.append(k, n.text);
+  if (n.wish){ const b = document.createElement('button'); b.type = 'button'; b.textContent = `Donner ${resTxt(n.wish.need)}`; const r = resv(); b.disabled = Object.entries(n.wish.need).some(([kk, v]) => (r[kk] || 0) < v); b.onclick = e => { e.stopPropagation(); giveWish(); newsPop.hidden = true; renderNews(); }; tx.append(document.createElement('br'), b); }
+  row.append(cv, tx); newsPop.append(row);
+}
+newsBtn.onclick = e => {
+  e.stopPropagation();
+  if (!newsPop.hidden){ newsPop.hidden = true; return; }
+  renderNews(); if (!newsCur) return;
+  scPopClose(); fillNews();
+  const r = newsBtn.getBoundingClientRect(); newsPop.style.top = Math.round(r.bottom + 8) + 'px'; newsPop.hidden = false;
+  glob.story.newsSeen = newsCur.k + '|' + newsCur.text; saveGlob(); newsBtn.classList.remove('new');
+};
+document.addEventListener('pointerdown', e => { if (!e.target.closest || !e.target.closest('#newsBtn, #newsPop')) newsPop.hidden = true; }, true);
 function giveWish(){
   const w = WISHES.find(x => x.id === (glob.story.wish || {}).id); if (!w) return;
   const r = resv(); if (Object.entries(w.need).some(([k, n]) => (r[k] || 0) < n)){ hintT(`Il te faut ${resTxt(w.need)}`); return; }
@@ -5120,7 +5223,7 @@ function scPaint(who){
   const cv = document.getElementById('scFaceCv'), p = who && PEOPLE[who];
   if (p) drawPortrait(cv, p); else drawBookFace(cv);
 }
-const RELANCE = {"L’arrivée": {"Dégage la plage": "Ces cailloux, sur la plage… il faudrait les casser.", "Construis ta cabane": "Avec ce bois, je pourrais monter une cabane.", "Monte ton feu de camp": "La nuit va être fraîche. Un feu, vite."}, "Le gardien du phare": {"Torches": "« Encore quelques torches, que l’île ne dorme pas dans le noir ! »", "Une torche au pied du phare": "« Et une petite, au pied du phare ? Mes vieilles jambes t’en remercieraient. »"}, "Le premier voisin": {"Ramasse les pierres taillées": "« Ces pierres taillées dans l’herbe, tu les as vues ? »", "Ta maison": "« Ta cabane ne tiendra pas l’hiver, tu sais… »", "Ton potager": "« Et mes graines ? Un petit potager, ce serait bien. »", "La maison de Tomas": "« Une maison pour moi, à côté de la tienne ? »", "Un chemin entre vos deux maisons": "« Un chemin, que je vienne frapper chez toi ! »", "Un puits": "« Toujours pas de puits… j’ai soif, moi ! »"}, "Le petit port": {"Agrandis le quai de l’îlot": "« Mon quai est trop petit pour deux barques… »", "Casiers sur l’îlot": () => (glob.story.unlocked2 || []).includes('N') ? "« Il me manque encore des casiers, sur l’îlot. »" : "« Pour tresser des casiers, il me faudrait de vieux filets… La mer en rejette parfois sur la plage. »", "Un quai sur ton île": "« Il faut un quai chez toi aussi, pour accoster. »", "Une barque de pêche": "« Une barque, et on fait l’aller-retour ! »"}, "La carrière": {"Atelier du tailleur": "« L’atelier d’abord. Je t’apprendrai à tailler. »", "Des maisons pour les voyageurs": "« Les voyageurs dorment encore sous la tente. »", "Un pont jusqu’à la carrière": "« Un pont jusqu’aux falaises rouges, et on y est. »", "Four à briques": "« Le four, maintenant. »", "De l’argile cuite": "« Il attend son argile, ce four. »"}, "Le pain": {"Du blé en réserve": "« Encore un peu de blé… on y est presque ! »", "Moulin": "« Kofi sait faire un moulin, demande-lui ! »", "Boulangerie": "« Ma boulangerie… j’en rêve la nuit. »", "Une maison pour Lina": "« Et… je dors où, ce soir ? »"}, "L’ermite": {"Une forêt soignée": "« Encore trop de souches. »", "Une scierie": "« Une scierie. Pas de gâchis. »", "Des sentiers en bois": "« Des sentiers. Pour les jeunes pousses. »", "Une cabane pour Elias": "« … Une cabane. Près des arbres. Si tu veux bien. »"}, "La fête de l’été": {"Une place pavée": "« Il faut plus de pavés, pour une vraie place ! »", "Une fontaine sur la place": "« Une fontaine au milieu, ce serait beau… »", "Le marché": "« Et le marché ! »", "De la décoration": "« Encore un peu de déco, des fleurs, des bancs… »", "Des tables pour le banquet": "« Des tables, plein de tables ! »", "Tout le monde est invité": "« Il reste des portes où toquer ! »", "Des lampions": "« Encore des lampions ! »", "Des tartes pour le banquet": "« Les tartes ! Apporte-moi du blé et des légumes. »"}};
+const RELANCE = {"L’architecte": {"Les plans de Margaux": "« Encore des plans qui traînent… le vent les a emportés partout ! »", "Un café": "« Un café, d’abord ! On ne réfléchit pas bien sans café. »", "Une crêperie": "« Une crêperie, ce serait la fête tous les jours ! »", "Une épicerie": "« Une épicerie, pour les légumes et le pain de Lina. »", "Des lampadaires": "« Encore des lampadaires, le long des chemins. »", "Des bacs à fleurs": "« Des fleurs, des fleurs, des fleurs ! »"}, "L’arrivée": {"Dégage la plage": "Ces cailloux, sur la plage… il faudrait les casser.", "Construis ta cabane": "Avec ce bois, je pourrais monter une cabane.", "Monte ton feu de camp": "La nuit va être fraîche. Un feu, vite."}, "Le gardien du phare": {"Torches": "« Encore quelques torches, que l’île ne dorme pas dans le noir ! »", "Une torche au pied du phare": "« Et une petite, au pied du phare ? Mes vieilles jambes t’en remercieraient. »"}, "Le premier voisin": {"Ramasse les pierres taillées": "« Ces pierres taillées dans l’herbe, tu les as vues ? »", "Ta maison": "« Ta cabane ne tiendra pas l’hiver, tu sais… »", "Ton potager": "« Et mes graines ? Un petit potager, ce serait bien. »", "La maison de Tomas": "« Une maison pour moi, à côté de la tienne ? »", "Un chemin entre vos deux maisons": "« Un chemin, que je vienne frapper chez toi ! »", "Un puits": "« Toujours pas de puits… j’ai soif, moi ! »"}, "Le petit port": {"Agrandis le quai de l’îlot": "« Mon quai est trop petit pour deux barques… »", "Casiers sur l’îlot": () => (glob.story.unlocked2 || []).includes('N') ? "« Il me manque encore des casiers, sur l’îlot. »" : "« Pour tresser des casiers, il me faudrait de vieux filets… La mer en rejette parfois sur la plage. »", "Un quai sur ton île": "« Il faut un quai chez toi aussi, pour accoster. »", "Une barque de pêche": "« Une barque, et on fait l’aller-retour ! »"}, "La carrière": {"Atelier du tailleur": "« L’atelier d’abord. Je t’apprendrai à tailler. »", "Des maisons pour les voyageurs": "« Les voyageurs dorment encore sous la tente. »", "Un pont jusqu’à la carrière": "« Un pont jusqu’aux falaises rouges, et on y est. »", "Four à briques": "« Le four, maintenant. »", "De l’argile cuite": "« Il attend son argile, ce four. »"}, "Le pain": {"Du blé en réserve": "« Encore un peu de blé… on y est presque ! »", "Moulin": "« Kofi sait faire un moulin, demande-lui ! »", "Boulangerie": "« Ma boulangerie… j’en rêve la nuit. »", "Une maison pour Lina": "« Et… je dors où, ce soir ? »"}, "L’ermite": {"Une forêt soignée": "« Encore trop de souches. »", "Une scierie": "« Une scierie. Pas de gâchis. »", "Des sentiers en bois": "« Des sentiers. Pour les jeunes pousses. »", "Une cabane pour Elias": "« … Une cabane. Près des arbres. Si tu veux bien. »"}, "La fête de l’été": {"Une place pavée": "« Il faut plus de pavés, pour une vraie place ! »", "Une fontaine sur la place": "« Une fontaine au milieu, ce serait beau… »", "Le marché": "« Et le marché ! »", "De la décoration": "« Encore un peu de déco, des fleurs, des bancs… »", "Des tables pour le banquet": "« Des tables, plein de tables ! »", "Tout le monde est invité": "« Il reste des portes où toquer ! »", "Des lampions": "« Encore des lampions ! »", "Des tartes pour le banquet": "« Les tartes ! Apporte-moi du blé et des légumes. »"}};
 let bubbleT = 0;
 function scSayBubble(text, who, ms = 5500){
   const b = document.getElementById('scBubble'); if (!b || !text) return;
@@ -5152,6 +5255,7 @@ setTimeout(relance, 2500);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(relance, 800); });
 function scPopClose(){ document.getElementById('scPop').hidden = true; document.getElementById('scBubble').hidden = true; document.getElementById('scWish').hidden = true; document.getElementById('scFace').setAttribute('aria-expanded', 'false'); }
 function renderStoryCard(){
+  try { renderNews(); } catch(e){}
   const on = isStory();
   storyCard.hidden = !on; document.getElementById('scBook').hidden = !on;
   if (!on){ document.getElementById('scHint').hidden = true; return; }
@@ -5160,7 +5264,7 @@ function renderStoryCard(){
   hb.hidden = bar.hidden = !ch || pausing() || (glob.story.introSeen ?? -1) < i || glob.story.pendingOutro != null;
   say.hidden = true;
   { const wb = document.getElementById('scWishDot'), w = WISHES.find(x => x.id === (glob.story.wish || {}).id);
-    wb.hidden = !WISHES_ON || !w || pausing() || glob.story.pendingOutro != null; if (wb.hidden) document.getElementById('scWish').hidden = true;
+    wb.hidden = true || !w || pausing() || glob.story.pendingOutro != null; if (wb.hidden) document.getElementById('scWish').hidden = true;
     if (w){ document.getElementById('scWishTxt').textContent = `${PEOPLE[w.who].name} : ${w.text}`; const r = resv(), ok = !Object.entries(w.need).some(([k, n]) => (r[k] || 0) < n); const bt = document.getElementById('scWishBtn'); bt.textContent = `Donner ${resTxt(w.need)}`; bt.disabled = !ok; } }
   scGoals.innerHTML = '';
   const scNext = document.getElementById('scNext'); scNext.hidden = true; scDone.hidden = true;
@@ -5253,7 +5357,16 @@ function checkStory(){
   }
   syncUnlocks(); growSaplings(); growWheat(); growVeg(); nightFogs(); checkTier();
   if (glob.story.ville && glob.story.chapter > CHAPTERS.length){ glob.story.chapter = CHAPTERS.length; saveGlob(); }
-  if (glob.story.ville && glob.story.chapter === 5 && (glob.story.introSeen ?? -1) >= 5 && !glob.story.seedGiven){ glob.story.seedGiven = 1; resv().w = Math.max(resv().w, 1); saveGlob(); renderRes(true); }
+  // Margaux arrive avant la fête : les anciennes sauvegardes la rencontrent avant de refaire la fête
+  if (glob.story.ville && !glob.story.m8){ glob.story.m8 = 1;
+    if (glob.story.chapter >= 7 && (glob.story.introSeen ?? -1) >= 7){
+      for (const k of ['phase2', 'phase3']) if (glob.story[k] && glob.story[k][7] != null){ glob.story[k][8] = glob.story[k][7]; delete glob.story[k][7]; }
+      if (glob.story.events){ delete glob.story.events[7]; delete glob.story.events[8]; }
+      glob.story.chapter = 7; glob.story.introSeen = 6; glob.story.pendingOutro = null; glob.story.nextAt = 1;
+    }
+    saveGlob();
+  }
+  if (glob.story.ville && glob.story.chapter === 5 && (glob.story.introSeen ?? -1) >= 5 && !glob.story.seedGiven){ glob.story.seedGiven = 1; resv().w = Math.max(resv().w, 3); saveGlob(); renderRes(true); }
   if (glob.story.ville && glob.story.chapter === 5 && glob.story.seedGiven && (glob.story.introSeen ?? -1) >= 5 && resv().w === 0 && cntG('k') === 0){ resv().w = 1; saveGlob(); renderRes(true); toast('🌾 Lina fouille dans sa poche… « Oh ! Il m’en restait une, regarde ! »', 4500); }
   if (glob.story.ville && glob.story.chapter >= 4 && !glob.story.tentsSet) placeTents();
   // rattrapage : l'îlot de Tomas doit avoir sa petite maison, son quai et son casier
@@ -5321,7 +5434,8 @@ const FACTS = {
   tomas:[['Pêcheur, il vivait seul sur le petit îlot au nord-est.'], ['Timide, bavard… et un peu maladroit.'], ['Son puits a été détruit par la dernière tempête.', () => phaseOrPast(2)], ['Habite maintenant à côté de chez toi.', () => glob.story.chapter > 2], ['Pêche pour toute l’île depuis qu’il a un vrai port.', () => glob.story.chapter > 3]],
   voyageurs:[['Venus du continent, fatigués du bruit et de la foule.'], ['Ils ont vu la brume se lever sur les îles et sont venus voir.']],
   kofi:[['Charpentier, venu du continent avec les voyageurs.'], ['Calme et pédagogue : il adore transmettre son métier.'], ['Il t’a appris à tailler la pierre.', () => phaseOrPast(4)], ['Pour lui, une bonne brique, ça chante.', () => glob.story.chapter > 4]],
-  lina:[['Boulangère, arrivée sur le voilier de Gaspard.'], ['Douce… et un peu tête en l’air.'], ['Elle n’avait plus qu’une seule graine de blé.'], ['Sa boulangerie a besoin de blé chaque jour pour nourrir l’île.', () => glob.story.chapter > 5]],
+  margaux:[['Architecte, arrivée sur le voilier de Gaspard.'], ['Dessine sur tout ce qui lui tombe sous la main.'], ['Sur le continent, tout est déjà construit. Ici, tout reste à inventer.', () => glob.story.chapter > 7]],
+  lina:[['Boulangère, arrivée sur le voilier de Gaspard.'], ['Douce… et un peu tête en l’air.'], ['Elle n’avait plus que trois graines de blé.'], ['Sa boulangerie a besoin de blé chaque jour pour nourrir l’île.', () => glob.story.chapter > 5]],
   elias:[['Arrivé en canoë, un canoë rafistolé de partout.'], ['Un peu perdu… il ne dit pas d’où il vient.'], ['Là d’où il vient, il y avait des pins à perte de vue. Avant.', () => glob.story.chapter > 6]],
   gaspard:[['Fait la navette entre les îles et le continent depuis trente ans.'], ['A vu du blé sauvage pousser quelque part, au sud.', () => glob.story.chapter > 5], ['Se souvient de l’ancien port, emporté par la grande tempête.'], ['Échange tes coquillages contre des matériaux.']]
 };
