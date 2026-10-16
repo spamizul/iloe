@@ -4263,6 +4263,7 @@ function place(x, y, forceErase){
     { const k = O[i] ? i : (() => { const bl = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x])); return bl ? bl[0]*N + x : -1; })();
       const msg = k >= 0 && resOn() ? PROTECTED[O[k]] : null; if (msg){ hintT(msg); return; }
       if (k >= 0 && resOn() && glob.story.ville && inIsle(k, 'pins') && TREES.has(O[k]) && glob.story.chapter >= S3I('La forêt d’Elias')){ hintT('🌲 Elias : « Pas celui-là. Il est vivant. »'); return; }
+      if (k >= 0 && O[k] === 'Ċ' && resOn() && (glob.story.balOff || []).includes(k)){ relight(k); return; }
       if (k >= 0 && O[k] === 'h') releaseHome(k); }
     if (O[i] === 'ř'){ harvest('ř'); if (!resOn()) toast('⛏️ Rocher cassé'); O[i] = null; setTimeout(gateCheck, 0); }
     else if (O[i] === 'Ć' || O[i] === 'ć'){ const a = longereAnchor(i); for (const j of [a, a + 1, a + 2]) if (j >= 0 && (O[j] === 'Ć' || O[j] === 'ć')) O[j] = null; }
@@ -4295,6 +4296,7 @@ function place(x, y, forceErase){
     else if (G[i] === 'c' && t.id !== 'ɥ' && t.id !== 'ʃ'){ toast('Les chemins restent libres pour les promeneurs'); return; }
     else if (G[i] === 'R' || G[i] === '+'){ toast('Les routes restent libres pour les voitures'); return; }
     else if (G[i] === 'X' || G[i] === '=' || G[i] === '¤'){ toast('Les rails restent libres pour le train'); return; }
+    if (O[i] === 'Ċ' && resOn() && (glob.story.balOff || []).includes(i)){ relight(i); return; }
     if (O[i] === 'č' && t.id === 'W') O[i] = null;
     if (O[i] === t.id || (SAPLING[t.id] && O[i] === SAPLING[t.id])) return;
     if (O[i]){ busyToast(); return; }
@@ -6133,6 +6135,12 @@ function balNeed(){
   glob.story.balNeed = Math.max(3, Math.min(8, Math.ceil(gap / (balR() + 0.8)) + 1)); saveGlob(); return glob.story.balNeed;
 }
 /* le canoë d'Elias, le soir de la fête : il avance de balise en balise */
+/* une balise éteinte qui n'existe plus (cassée, annulée) ne bloque jamais l'histoire */
+function balClean(){
+  const off = glob.story.balOff || [], ok = off.filter(j => O[j] === 'Ċ');
+  if (ok.length !== off.length){ glob.story.balOff = ok; if (!ok.length && s3Ch() === 'La brume qui tourne' && glob.story.windDone) glob.story.relit = 1; saveGlob(); renderStoryCard(); }
+  const c = glob.story.canoe; if (c && c.path){ const p2 = c.path.filter((j, k) => k <= c.k || O[j] === 'Ċ'); if (p2.length !== c.path.length){ c.path = p2; saveGlob(); } }
+}
 function canoeTick(){
   const c = glob.story.canoe; if (!c || glob.story.canoeIn || s3Ch() !== 'La fête des lumières' || !storyBox.hidden) return;
   if (Date.now() - (c.t || 0) < 2600) return;
@@ -7456,7 +7464,7 @@ function checkStory(){
   const ch = CHAPTERS[glob.story.chapter];
   storyHints(ch);
   if (ch && (glob.story.introSeen ?? -1) < glob.story.chapter){ if (chapterReady() && !pausing()) openChapter('intro', glob.story.chapter); return; }
-  try { canoeTick(); } catch(e){}
+  try { balClean(); canoeTick(); } catch(e){}
   if (ch && (glob.story.introSeen ?? -1) >= glob.story.chapter && glob.story.pendingOutro == null && maybeMid(ch)) return;
   if (ch && ch.goals.every(([, f, n]) => f() >= needOf(n)) && glob.story.readyToast !== glob.story.chapter){
     glob.story.readyToast = glob.story.chapter; saveGlob(); 
