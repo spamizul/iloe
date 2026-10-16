@@ -3219,7 +3219,7 @@ function groundAnim(x, y){
     for (let r = 0; r < 5; r++) R(x*T + ((r*5 + sw + 16) % 16), y*T + r*3, 1, 1, '#fff1b8');
   }
 }
-let mistT = 0; const mistCv = document.createElement('canvas');
+let balHintUntil = 0; let mistT = 0; const mistCv = document.createElement('canvas');
 function drawMist(c2){
   const fogs = glob.story.fogs || [], dk = darkness(tday).dark, t = now || 0;
   const dt = Math.min(0.2, (performance.now() - (mistT || performance.now()))/1000); mistT = performance.now();
@@ -3251,14 +3251,15 @@ function drawMist(c2){
       g.addColorStop(0, `rgba(${col},0)`); g.addColorStop(0.62, `rgba(${col},0)`); g.addColorStop(0.86, `rgba(${col},${(0.8*f.a).toFixed(3)})`); g.addColorStop(1, `rgba(${col},${(0.93*f.a).toFixed(3)})`);
       c2.fillStyle = g; c2.fillRect(-60, -60, 120, 120); c2.restore(); continue;
     }
-    const holes = f.key === 'pins' && f.thick && isStory() ? balLit() : [];
-    if (holes.length){
+    const holes = f.key === 'pins' && f.thick && isStory() ? balLit() : [], offs = f.key === 'pins' && f.thick && isStory() ? (glob.story.balOff || []).filter(j => O[j] === 'Ċ') : [];
+    if (holes.length || offs.length){
       c2.restore(); const bw = Math.ceil(f.rx*T*2) + 4, bh = Math.ceil(f.ry*T*2) + 4; if (mistCv.width !== bw || mistCv.height !== bh){ mistCv.width = bw; mistCv.height = bh; }
       const m = mistCv.getContext('2d'); m.clearRect(0, 0, bw, bh); m.save(); m.translate(bw/2, bh/2); m.scale(f.rx*T, f.ry*T);
       const gm = m.createRadialGradient(0, 0, 0, 0, 0, 1); gm.addColorStop(0, `rgba(${col},${(0.98*f.a).toFixed(3)})`); gm.addColorStop(0.72, `rgba(${col},${(0.95*f.a).toFixed(3)})`); gm.addColorStop(0.9, `rgba(${col},${(0.6*f.a).toFixed(3)})`); gm.addColorStop(1, `rgba(${col},0)`);
       m.fillStyle = gm; m.beginPath(); m.arc(0, 0, 1, 0, 6.29); m.fill(); m.restore();
       m.globalCompositeOperation = 'destination-out';
       for (const j of holes){ const hx = (j % N)*T + 8 - (f.cx*T + 8) + bw/2, hy = ((j / N)|0)*T + 8 - (f.cy*T + 8) + bh/2, rr = (balR() + 1.2)*T; const hg = m.createRadialGradient(hx, hy, 0, hx, hy, rr); hg.addColorStop(0, 'rgba(0,0,0,1)'); hg.addColorStop(0.55, 'rgba(0,0,0,.92)'); hg.addColorStop(1, 'rgba(0,0,0,0)'); m.fillStyle = hg; m.fillRect(hx - rr, hy - rr, rr*2, rr*2); }
+      for (const j of offs){ const hx = (j % N)*T + 8 - (f.cx*T + 8) + bw/2, hy = ((j / N)|0)*T + 8 - (f.cy*T + 8) + bh/2, rr = 1.3*T; const hg = m.createRadialGradient(hx, hy, 0, hx, hy, rr); hg.addColorStop(0, 'rgba(0,0,0,1)'); hg.addColorStop(0.6, 'rgba(0,0,0,.85)'); hg.addColorStop(1, 'rgba(0,0,0,0)'); m.fillStyle = hg; m.fillRect(hx - rr, hy - rr, rr*2, rr*2); }
       m.globalCompositeOperation = 'source-over';
       c2.drawImage(mistCv, Math.round(f.cx*T + 8 - bw/2), Math.round(f.cy*T + 8 - bh/2)); continue;
     }
@@ -3268,6 +3269,7 @@ function drawMist(c2){
     c2.fillStyle = g; c2.beginPath(); c2.arc(0, 0, 1, 0, 6.29); c2.fill(); c2.restore();
   }
   if (changed){ glob.story.fogs = fogs.filter(f => f.to > 0 || f.a > 0); saveGlob(); }
+  if (isStory() && (glob.story.balOff || []).length && Date.now() < balHintUntil){ const pu = reduce ? 0.5 : (Math.sin(now/260) + 1)/2; for (const j of glob.story.balOff){ if (O[j] !== 'Ċ') continue; const x = (j % N)*T + 8, y = ((j / N)|0)*T + 8; c2.save(); c2.strokeStyle = `rgba(255,170,60,${(0.55 + pu*0.45).toFixed(2)})`; c2.lineWidth = 1.5; c2.beginPath(); c2.arc(x, y + 2, 9 + pu*4, 0, 6.29); c2.stroke(); c2.fillStyle = '#fffaf0'; c2.fillRect(x - 3, y - 19 - Math.round(pu*2), 7, 9); c2.fillStyle = '#e2574c'; c2.fillRect(x, y - 17 - Math.round(pu*2), 1, 4); c2.fillRect(x, y - 12 - Math.round(pu*2), 1, 1); c2.restore(); } forceDraw = true; }
   if (pinsSmoke && glob.story.smoke && !reduce){ const [cx, cy] = pinsSmoke; for (let k = 0; k < 6; k++){ const ph = ((t / 2600) + k / 6) % 1, x = cx + Math.sin(ph * 6 + k) * 3 + ph * 10, y = cy - 6 - ph * 46, r = 2 + ph * 5;
       c2.fillStyle = `rgba(${dk > 0.4 ? '120,130,140' : '150,158,166'},${(0.5 * (1 - ph)).toFixed(3)})`; c2.beginPath(); c2.arc(x, y, r, 0, 6.29); c2.fill(); } forceDraw = true; }
   // lueurs : de petites lumières bleues autour de la brume, et autour du phare une fois rallumé
@@ -3750,7 +3752,7 @@ function renderDesk(){
   if (!avail.some(t => t.group === dkGroup)) dkGroup = GROUP_ORDER.find(g => avail.some(t => t.group === g)) || dkGroup;
   cats.innerHTML = '';
   for (const g of GROUP_ORDER){
-    const has = avail.some(t => t.group === g), b = document.createElement('button'); b.type = 'button';
+    const has = avail.some(t => t.group === g); if (!has) continue; const b = document.createElement('button'); b.type = 'button';
     b.className = 'dk-cat' + (g !== dkGroup && avail.some(t => t.group === g && fresh.includes(t.id)) ? ' fresh' : '');
     b.textContent = g; b.disabled = !has; b.setAttribute('aria-pressed', g === dkGroup);
     b.onclick = () => { dkGroup = g; items.scrollLeft = 0; renderDesk(); };
@@ -3797,6 +3799,9 @@ function placeToast(){
   let top = th && th.offsetParent ? th.getBoundingClientRect().top : innerHeight - 70;
   if (document.body.classList.contains('sheet')){ const pn = document.querySelector('.panel'); if (pn){ const r = pn.getBoundingClientRect(); if (r.height && r.top < top) top = r.top; } }
   for (const id of ['scBubble', 'scPop', 'scWish', 'newsPop', 'bagPop']){ const e = document.getElementById(id); if (!e || e.hidden) continue; const r = e.getBoundingClientRect(); if (r.height && r.bottom > innerHeight * 0.55 && r.top < top) top = r.top; }
+  // une fenêtre d'histoire ouverte : la bulle passe au-dessus du texte, ou en dessous, jamais devant
+  try { if (typeof storyBox !== 'undefined' && !storyBox.hidden){ const cd = storyBox.querySelector('.story-card'), r = cd && cd.getBoundingClientRect();
+    if (r && r.height){ if (r.top >= 64) top = Math.min(top, r.top); else if (innerHeight - r.bottom >= 64){ toastEl.style.bottom = 'auto'; toastEl.style.top = Math.round(r.bottom + 10) + 'px'; return; } else { toastEl.style.bottom = 'auto'; toastEl.style.top = '10px'; return; } } } } catch(e){}
   toastEl.style.top = 'auto'; toastEl.style.bottom = Math.round(Math.max(70, innerHeight - top + 10)) + 'px';
 }
 function toast(msg, ms = 1800){ placeToast(); toastEl.textContent = msg; toastEl.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('on'), ms); }
@@ -3943,7 +3948,7 @@ function merchantTide(){
   m.n = (m.n || 0) + 1;
   if (m.met && m.n < 3) { saveGlob(); return; }
   const spot = merchantSpot(); if (spot == null){ saveGlob(); return; }
-  O[spot] = 'Ȝ'; m.at = spot; m.stay = 2; m.n = 0; saveGlob(); save();
+  O[spot] = 'Ȝ'; m.at = spot; m.stay = 2; m.n = 0; try { m.ask = pickAsk(); } catch(e){ m.ask = null; } saveGlob(); save();
   setTimeout(() => toast(m.met ? '⛵ Le voilier de Gaspard est à quai ! Touche-le avec la main ✋' : '⛵ Une voile rayée approche de ton port…', 4500), 2600);
 }
 const GASPARD_HELLO = ['« Ho ho ! Un quai, ici, de nouveau ! Ça alors… Je m’appelle Gaspard. Ça fait trente ans que je fais la navette entre les îles et le continent. »', '« Avant la grande tempête, il y avait un vrai port sur cette île, avec des barques partout. La tempête a tout emporté… Depuis, je ne m’arrêtais plus ici. »', '« Et le vieux Job, il tient toujours son phare ? Il va bien ? Tu lui diras que Gaspard le salue ! »', '« Bon, parlons affaires : sur le continent, les coquillages nacrés de vos plages valent de l’or. Apporte-m’en, et je t’échange ce que j’ai dans ma cale. Je repasserai de temps en temps ! »'];
@@ -3953,6 +3958,16 @@ function openMerchant(){
   if (!m.met){ m.met = 1; saveGlob(); openStoryModal({mode:'gaspard', who:'gaspard', kicker:'Une visite au port', title:'Le marchand', paras:GASPARD_HELLO, go:'Voir sa cale'}); return; }
   openTrade();
 }
+/* la demande du continent : à chaque visite, Gaspard réclame une seule chose, payée en coquillages */
+const ASKS = [
+  {id:'miel', pay:{miel:3}, k:5, t:'«\u00a0Sur le continent, ils raffolent de votre miel\u00a0! Trois pots, et je te paie en coquillages.\u00a0»', ok:() => glob.story.honey},
+  {id:'gateau', pay:{gateau:2}, k:4, t:'«\u00a0Deux gâteaux de Lina, pour l’épicière de la côte\u00a0? Elle m’en réclame à chaque voyage.\u00a0»', ok:() => glob.story.honey},
+  {id:'crepe', pay:{crepe:3}, k:4, t:'«\u00a0Trois crêpes pour la traversée\u00a0! Mes matelots ne parlent que de ça.\u00a0»', ok:() => glob.story.farm},
+  {id:'lait', pay:{lait:4}, k:4, t:'«\u00a0Le fromager du port voudrait goûter votre lait. Quatre bidons\u00a0?\u00a0»', ok:() => glob.story.farm},
+  {id:'oeuf', pay:{oeuf:6}, k:5, t:'«\u00a0Six œufs frais, pour le marché du continent\u00a0? Ils partent comme des petits pains\u00a0!\u00a0»', ok:() => glob.story.hensBack},
+  {id:'pie', pay:{pie:1}, k:3, t:'«\u00a0Une tarte de Lina, pour ma sœur\u00a0? Elle n’en a jamais goûté d’aussi bonne.\u00a0»', ok:() => glob.story.chapter > 6},
+  {id:'w', pay:{w:10}, k:3, t:'«\u00a0Dix grains de blé de la plaine\u00a0? Le meunier du continent est curieux.\u00a0»', ok:() => (glob.story.isles || {}).champs}];
+function pickAsk(){ const ok = ASKS.filter(a => a.ok()); if (!ok.length) return null; const m = glob.story.merchant || {}; const pool = ok.filter(a => a.id !== m.lastAsk); const a = (pool.length ? pool : ok)[(Math.random()*(pool.length ? pool : ok).length)|0]; m.lastAsk = a.id; return {id:a.id, done:0}; }
 /* ---------- le sac : les objets qu'on possède vraiment ---------- */
 const GASPARD_RARE = [['ê', 9], ['J', 5], ['Û', 11], ['d', 12], ['j', 12], ['Ý', 9], ['C', 6], ['ô', 5], ['Z', 6], ['0', 8], ['U', 5], ['Y', 6], ['N', 3]];
 const ORDERS = [['O', 30], ['e', 35], ['ë', 40]];
@@ -4029,10 +4044,11 @@ function openTrade(){
   { // trois échanges au hasard, les mêmes pendant tout le passage
     let seed = Math.floor(((glob.story.stock || {}).pick || 0.5) * 233280); const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
     for (let k = basics.length - 1; k > 0; k--){ const j = (rnd()*(k+1))|0; [basics[k], basics[j]] = [basics[j], basics[k]]; } basics.length = Math.min(3, basics.length); }
-  const deals = [...rares.map(([id, k]) => ({pay:{k}, get:{bag:id}, if:() => glob.story.chapter >= 6})), {pay:{k:20}, get:{cap:12}, if:() => glob.story.chapter >= 6 && bagCap() < 12}, ...basics, ...((resv().gateau || 0) > 0 ? [{pay:{gateau:1}, get:{a:3}}] : []), ...((resv().crepe || 0) > 1 ? [{pay:{crepe:2}, get:{b:5}}] : []), ...((resv().lait || 0) >= 4 ? [{pay:{lait:4}, get:{b:4}}] : []), ...((resv().miel || 0) >= 3 ? [{pay:{miel:3}, get:{p:4}}] : []), ...((resv().w || 0) >= 15 ? [{pay:{w:5}, get:{p:3}}] : []), ...((resv().oeuf || 0) >= 6 ? [{pay:{oeuf:6}, get:{p:4}}] : []), ...(marketOn() ? ORDERS.map(([id, k]) => ({pay:{k}, get:{bag:id}, order:true})) : [])];
+  const askM = (glob.story.merchant || {}).ask, askD = askM && !askM.done ? ASKS.find(a => a.id === askM.id) : null;
+  const deals = [...(askD ? [{pay:askD.pay, get:{k:askD.k}, ask:true}] : []), ...rares.map(([id, k]) => ({pay:{k}, get:{bag:id}, if:() => glob.story.chapter >= 6})), {pay:{k:20}, get:{cap:12}, if:() => glob.story.chapter >= 6 && bagCap() < 12}, ...basics, ...((resv().gateau || 0) > 0 ? [{pay:{gateau:1}, get:{a:3}}] : []), ...((resv().crepe || 0) > 1 ? [{pay:{crepe:2}, get:{b:5}}] : []), ...((resv().lait || 0) >= 4 ? [{pay:{lait:4}, get:{b:4}}] : []), ...((resv().miel || 0) >= 3 ? [{pay:{miel:3}, get:{p:4}}] : []), ...((resv().w || 0) >= 15 ? [{pay:{w:5}, get:{p:3}}] : []), ...((resv().oeuf || 0) >= 6 ? [{pay:{oeuf:6}, get:{p:4}}] : []), ...(marketOn() ? ORDERS.map(([id, k]) => ({pay:{k}, get:{bag:id}, order:true})) : [])];
   const btns = [];
   const can = d => { const r = resv(); if (d.get.bag && bagCount() >= bagCap()) return false; return !Object.entries(d.pay).some(([k, n]) => (r[k] || 0) < n); };
-  const label = d => d.order ? `Commande du continent : ${resTxt(d.pay)} → ${(TOOLS.find(t => t.id === d.get.bag) || {}).name} 🎒` : d.get.bag ? `${resTxt(d.pay)} → ${(TOOLS.find(t => t.id === d.get.bag) || {}).name} 🎒` : d.get.cap ? `${resTxt(d.pay)} → un grand sac à dos (12 places) 🎒` : `${resTxt(d.pay)} → ${resTxt(d.get)}`;
+  const label = d => d.ask ? `Demande du continent : ${resTxt(d.pay)} → ${resTxt(d.get)}` : d.order ? `Commande du continent : ${resTxt(d.pay)} → ${(TOOLS.find(t => t.id === d.get.bag) || {}).name} 🎒` : d.get.bag ? `${resTxt(d.pay)} → ${(TOOLS.find(t => t.id === d.get.bag) || {}).name} 🎒` : d.get.cap ? `${resTxt(d.pay)} → un grand sac à dos (12 places) 🎒` : `${resTxt(d.pay)} → ${resTxt(d.get)}`;
   const refresh = () => { const r = resv(); have.textContent = `Dans ta poche : ${r.k} 🐚` + (glob.story.chapter >= 3 ? ` · ${r.v} 🥕` : '') + (r.pie ? ` · ${r.pie} 🥧` : ''); for (const [b, d] of btns) b.disabled = !can(d); };
   for (const d of deals){
     if (d.if && !d.if()) continue;
@@ -4040,11 +4056,12 @@ function openTrade(){
     b.onclick = () => { if (!can(d)) return; const r = resv(); for (const [k, n] of Object.entries(d.pay)) r[k] -= n; if (d.get.bag){ bagAdd(d.get.bag); if (!d.order){ const s = glob.story.stock; if (s) s.items = s.items.filter(([x]) => x !== d.get.bag); b.remove(); } }
       else if (d.get.cap){ glob.story.bagCap = d.get.cap; glob.story.bagSeen = 1; b.remove(); renderBag(); }
       else for (const [k, n] of Object.entries(d.get)) r[k] = (r[k] || 0) + n;
+      if (d.ask){ const mm = glob.story.merchant || {}; if (mm.ask) mm.ask.done = 1; b.remove(); }
       saveGlob(); renderRes(true); toast(d.get.bag ? '🎒 Dans ton sac !' : d.get.cap ? '🎒 Un grand sac à dos : 12 places !' : '🤝 Marché conclu !', 1800); refresh(); };
     btns.push([b, d]); box.append(b);
   }
   box.prepend(have); refresh();
-  openStoryModal({mode:'trade', who:'gaspard', kicker:'Le voilier de Gaspard', title:'La cale', paras:[(glob.story.isles || {}).champs && !glob.story.gPlain ? (glob.story.gPlain = 1, saveGlob(), '« Alors, la plaine s’est découverte ? Quand j’étais mousse, on y faisait escale. Il y poussait du blé sauvage, des épis hauts comme ça ! »') : GASPARD_LINES[(Math.random()*GASPARD_LINES.length)|0], box], go:'Au revoir !'});
+  openStoryModal({mode:'trade', who:'gaspard', kicker:'Le voilier de Gaspard', title:'La cale', paras:[askD ? askD.t : (glob.story.isles || {}).champs && !glob.story.gPlain ? (glob.story.gPlain = 1, saveGlob(), '« Alors, la plaine s’est découverte ? Quand j’étais mousse, on y faisait escale. Il y poussait du blé sauvage, des épis hauts comme ça ! »') : GASPARD_LINES[(Math.random()*GASPARD_LINES.length)|0], box], go:'Au revoir !'});
 }
 /* ce que rapporte chaque objet ramassé */
 function bonusPick(id, i){
@@ -4153,7 +4170,7 @@ function nameOf(i){
   if (o === 'Ȝ') return 'Le voilier de Gaspard';
   if (o === 'ɓ') return 'La barge de Philippe';
   if (o === 'ć'){ const a = longereAnchor(i); return a >= 0 ? nameOf(a) : 'Longère'; }
-  if (o === 'Ć' && isStory() && glob.story && glob.story.v === 2) return glob.story.longere && glob.story.longere.i === i && glob.story.longere.s < 3 ? 'Chantier de la longère' : 'Longère de la famille de Philippe';
+  if (o === 'Ć' && isStory() && glob.story && glob.story.v === 2) return glob.story.longere && glob.story.longere.i === i && glob.story.longere.s < 3 ? `Chantier de la longère · ${['les fondations', 'les murs', 'le toit'][glob.story.longere.s]} : ${resTxt(LONG_STEPS[glob.story.longere.s])}` : 'Longère de la famille de Philippe';
   if (o === 'Ĉ' && isStory() && glob.story && glob.story.v === 2 && inIsle(i, 'pins')) return 'Cabane d’Elias';
   { const sp = {'Č':'Pin mort', 'č':'La source', 'Ď':'Le canoë d’Elias'}[o]; if (sp) return sp; }
   if (o === 'Ą' && isStory()){ const p = (glob.story.stalls || {})[i]; if (MARKET[p]) return `Étal · ${MARKET[p][0].toLowerCase()}`; }
@@ -5830,11 +5847,11 @@ const CHAPTERS_V2 = [
    onIntro:() => { glob.story.longere = null; glob.story.kids = {}; saveGlob(); },
    intro:[{who:'toi', t:'Le voilier de Gaspard accoste avec une famille entière : deux parents, trois enfants, un chien et une montagne de valises.'}, '« Ce sont mes cousins ! Antoine, Clémence, et les petits : Léon, Jules et Rose. Je leur ai tellement parlé de la plaine qu’ils ont tout quitté pour venir. »', '« Mais à cinq, une petite maison, ça ne suffira jamais… Il leur faut une longère, une vraie grande maison de ferme, avec un toit de chaume ! »'],
    goals1:[['Le chantier de la longère', () => glob.story.longere && O[glob.story.longere.i] === 'Ć' ? 1 : 0, 1, '« Sur la plaine, au milieu des champs. Il faut de la place ! »', 'La longère est dans l’onglet Campagne des Objets. Elle prend 3 cases côte à côte : déplace une clôture ou un champ s’il le faut.'],
-     ['Les fondations', () => (glob.story.longere || {}).s >= 1 ? 1 : 0, 1, {who:'antoine', t:'« On commence par du solide ! 8 pierres. »'}, 'Touche le chantier avec la main ✋ pour livrer 8 🪨.'],
-     ['Les murs', () => (glob.story.longere || {}).s >= 2 ? 1 : 0, 1, {who:'kofi', t:'« Les murs, maintenant. 6 pierres et 6 bois. »'}, 'Touche le chantier avec la main ✋ pour livrer 6 🪨 et 6 🪵.'],
-     ['Le toit de chaume', () => (glob.story.longere || {}).s >= 3 ? 1 : 0, 1, '« Le chaume, c’est la paille du blé. Il en faut beaucoup ! »', 'Récolte le blé doré, puis touche le chantier avec la main ✋ pour livrer 12 🌾.']],
+     ['Les fondations : 8 🪨', () => (glob.story.longere || {}).s >= 1 ? 1 : 0, 1, {who:'antoine', t:'« On commence par du solide ! 8 pierres. »'}, 'Touche le chantier avec la main ✋ pour livrer 8 🪨.'],
+     ['Les murs : 6 🪨 + 6 🪵', () => (glob.story.longere || {}).s >= 2 ? 1 : 0, 1, {who:'kofi', t:'« Les murs, maintenant. 6 pierres et 6 bois. »'}, 'Touche le chantier avec la main ✋ pour livrer 6 🪨 et 6 🪵.'],
+     ['Le toit de chaume : 12 🌾', () => (glob.story.longere || {}).s >= 3 ? 1 : 0, 1, '« Le chaume, c’est la paille du blé. Il en faut beaucoup ! »', 'Récolte le blé doré, puis touche le chantier avec la main ✋ pour livrer 12 🌾.']],
    wants:i => { const a = longereAnchor(i); return a >= 0 && glob.story.longere && glob.story.longere.i === a && glob.story.longere.s < 3; },
-   actLabel:() => 'Livrer',
+   actLabel:() => { const lg = glob.story.longere; return lg && lg.s < 3 ? `Livrer ${resTxt(LONG_STEPS[lg.s])}` : 'Livrer'; },
    tap:i => { const a = longereAnchor(i); if (a < 0 || !glob.story.longere || glob.story.longere.i !== a) return false; return deliverLongere(a); },
    mid:[{who:'toi', t:'La longère est debout. Philippe grimpe sur l’échelle, un bouquet de fleurs des champs à la main.'}, '« Chez nous, on dit qu’un toit sans bouquet ne protège pas la maison ! »', {who:'jules', t:'Jules tire sur ta manche. « On joue à cache-cache ? Tu comptes ! »'}],
    onMid:() => {
@@ -6100,7 +6117,7 @@ function balPlaced(i){
   const all = []; for (let j = 0; j < N*N; j++) if (O[j] === 'Ċ') all.push(j);
   if (!glob.story.windDone && (all.length >= 3 || balReach())){
     const lit = balLit().filter(j => j !== i); if (!lit.length) return;
-    glob.story.windDone = 1; glob.story.balOff = [lit[(Math.random()*lit.length)|0]]; saveGlob(); forceDraw = true; renderStoryCard();
+    glob.story.windDone = 1; const offB = lit[(Math.random()*lit.length)|0]; glob.story.balOff = [offB]; saveGlob(); forceDraw = true; renderStoryCard();
     setTimeout(() => { toast('💨 Un coup de vent ! Une balise s’est éteinte…', 3500); sayLater('« Le vent l’a soufflée ! Vite, rallume-la avant que la brume se referme ! »', 'tomas', 400); }, 600);
   }
 }
@@ -7378,6 +7395,7 @@ document.getElementById('scWishBtn').onclick = e => { e.stopPropagation(); giveW
 document.getElementById('scHint').onclick = e => {
   e.stopPropagation(); scPopClose();
   const i = glob.story.chapter, ch = CHAPTERS[i]; if (!ch) return;
+  try { const off = (glob.story.balOff || []).filter(j => O[j] === 'Ċ'); if (off.length && ['La brume qui tourne', 'La fête des lumières'].includes(ch.title)){ balHintUntil = Date.now() + 7000; lookAt(off[0] % N, (off[0] / N)|0); forceDraw = true; scSayBubble('Une balise s’est éteinte : elle clignote en orange. Touche-la avec la main pour la rallumer.', 'toi', 6000); return; } } catch(e){}
   const gi = ch.goals.findIndex(([, f, n]) => f() < needOf(n));
   if (gi < 0){ scSayBubble('Tout est prêt ! Touche le visage pour valider le chapitre.', 'toi', 4000); return; }
   const g = ch.goals[gi];
