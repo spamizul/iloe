@@ -180,6 +180,33 @@ button.fold{flex:none;width:32px;height:30px;border:1px solid var(--line);backgr
 .at-veil{position:fixed;inset:0;z-index:96;background:rgba(10,16,22,.55);display:grid;place-items:center}
 .at-veil-in{background:var(--surface);color:var(--ink);border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;gap:4px;font-family:var(--f-body);max-width:80vw}
 
+
+/* ---------- les bulles de dialogue : une ou deux phrases, qui sortent du visage ---------- */
+#storyBox.bulle{background:rgba(6,12,22,.3);display:block;padding:0}
+#storyBox.bulle .story-card{position:fixed;margin:0;box-sizing:border-box;align-items:stretch;width:min(440px,calc(100vw - 24px));max-width:none;border-radius:18px;padding:12px 14px 12px 68px;gap:8px;box-shadow:0 10px 30px rgba(0,0,0,.35);text-align:left;animation:sbIn .22s ease-out}
+#storyBox.bulle #storyFace{position:absolute;left:12px;top:12px;width:44px;height:44px;border-radius:50%}
+#storyBox.bulle .story-top{display:block;text-align:left}
+#storyBox.bulle .story-head{text-align:left}
+#storyBox.bulle #storyKicker,#storyBox.bulle #storyTitle{display:none}
+#storyBox.bulle .story-who{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.05em;margin:0 0 2px}
+#storyBox.bulle .story-body p{font-size:16px;line-height:1.42;margin:0;font-family:inherit;font-style:normal;color:var(--ink);border:0;padding:0}
+#storyBox.bulle .story-body p b{color:var(--accent);font-weight:700}
+#storyBox.bulle .story-body p i{color:var(--muted)}
+#storyBox.bulle .story-rewards{justify-content:flex-start;gap:12px;padding:2px 0 0}
+#storyBox.bulle .row.center{justify-content:flex-end !important;align-items:center;margin-top:2px;align-self:stretch}
+#storyBox.bulle .row.center .btn{padding:8px 14px}
+#storyBox:not(.bulle) .sb-mis,#storyBox:not(.bulle) .sb-read,#storyBox:not(.bulle) .sb-tip{display:none}
+.sb-mis{margin-top:8px;padding-top:9px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.sb-mis .lab{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.sb-mis .g{display:flex;align-items:baseline;gap:8px;font-size:15px;font-weight:600;line-height:1.3}
+.sb-mis .g em{font-style:normal;margin-left:auto;color:var(--muted);font-weight:500;font-size:13px;white-space:nowrap}
+.sb-read{display:block;background:none;border:0;padding:4px 0 0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;text-align:left}
+.sb-tip{position:fixed;width:14px;height:14px;background:var(--surface);transform:rotate(45deg);border-radius:3px;z-index:31;pointer-events:none}
+@keyframes sbIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+/* ---------- la nuit entre deux chapitres ---------- */
+.night-cap{position:fixed;inset:0;z-index:45;display:flex;align-items:flex-start;justify-content:center;padding-top:22vh;cursor:pointer}
+.night-cap span{background:rgba(10,18,32,.72);color:#f4ecd8;font-family:var(--f-display);font-size:19px;padding:10px 18px;border-radius:14px;transition:opacity .5s;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+@media (prefers-reduced-motion: reduce){#storyBox.bulle .story-card{animation:none}}
 /* ---------- l'aide pas à pas : une bulle qui montre le vrai bouton ---------- */
 .coach{position:fixed;z-index:41;width:max-content;max-width:min(290px,calc(100vw - 24px));background:var(--surface);color:var(--ink);border:2px solid var(--accent);border-radius:14px;padding:10px 34px 10px 13px;font-size:15px;line-height:1.4;box-shadow:0 8px 24px rgba(0,0,0,.28);animation:coachIn .25s ease-out}
 .coach[hidden]{display:none}
@@ -1437,8 +1464,8 @@ function drawObject(o, ox, oy, x, y, withLights){
     R(ox+7, oy+10, 3, 5, '#2e6fa8'); R(ox+9, oy+12, 1, 1, '#f2c14e');
     R(ox+3, oy+8, 3, 3, '#9cc8e8'); R(ox+11, oy+8, 2, 3, '#9cc8e8');
     R(ox+2, oy+8, 1, 3, '#2e6fa8'); R(ox+6, oy+8, 1, 3, '#2e6fa8');
-    L(ox+4.5, oy+9.5, 14, 'win'); L(ox+12, oy+9.5, 10, 'win');
-    if (withLights) lights.push({x:ox+3, y:oy+8, w:3, h:3, kind:'pane'}, {x:ox+11, y:oy+8, w:2, h:3, kind:'pane'});
+    if (!houseEmpty(y*N + x)){ L(ox+4.5, oy+9.5, 14, 'win'); L(ox+12, oy+9.5, 10, 'win');
+    if (withLights) lights.push({x:ox+3, y:oy+8, w:3, h:3, kind:'pane'}, {x:ox+11, y:oy+8, w:2, h:3, kind:'pane'}); }
     break; }
   case 'b': {
     R(ox+3, oy+12, 10, 2, 'rgba(0,0,0,.12)');
@@ -6043,7 +6070,7 @@ function maybeMid(ch){
   if (given){ buildTools(); renderRecent(); }
   const hook = stage === 2 ? ch.onMid : ch.onMid2; if (hook) hook();
   const si = seasonInfo(i);
-  openStoryModal({mode:'mid', who:ch.who, kicker:`Saison ${si.s} · chapitre ${si.k} · la suite`, title:ch.title, paras:[...(typeof text === 'function' ? text() : text)], rewards:give, go:'C’est parti !', times:storyTimes(ch, stage === 2 ? 'mid' : 'mid2')});
+  openStoryModal({mode:'mid', who:ch.who, kicker:`Saison ${si.s} · chapitre ${si.k} · la suite`, title:ch.title, paras:[...(typeof text === 'function' ? text() : text)], rewards:give, go:'C’est parti !', times:storyTimes(ch, stage === 2 ? 'mid' : 'mid2'), short:shortFor(ch, stage === 2 ? 'mid' : 'mid2'), ch});
   renderStoryCard(); return true;
 }
 /* deux maisons reliées par un chemin */
@@ -6458,37 +6485,54 @@ function quartiers(){
 const happyCount = () => { try { return glob.story.ville && glob.story.chapter >= 2 ? quartiers().filter(q => q.happy).length : 0; } catch(e){ return 0; } };
 /* ---------- les villageois : des nouveaux venus sans grande histoire ---------- */
 const V_JOBS = [['couturier', 'couturière'], ['peintre', 'peintre'], ['pêcheur', 'pêcheuse'], ['maître d’école', 'maîtresse d’école'], ['potier', 'potière'], ['musicien', 'musicienne'], ['jardinier', 'jardinière'], ['cordonnier', 'cordonnière'], ['libraire', 'libraire'], ['apiculteur', 'apicultrice'], ['menuisier', 'menuisière'], ['conteur', 'conteuse']];
-const V_FEM = new Set(['Maëlle', 'Gwenaëlle', 'Soizic', 'Nolwenn', 'Rozenn', 'Anaïg', 'Katell']);
+const V_FEM = new Set(['Maëlle', 'Gwenaëlle', 'Soizic', 'Nolwenn', 'Rozenn', 'Anaïg', 'Katell', 'Alma', 'Léa', 'Amara', 'Sofia', 'Lou', 'Hana', 'Lucía', 'Mila', 'Zoé', 'Aïcha', 'Yuki', 'Clara']);
+const V_NAMES = NAMES.concat(['Alma', 'Samuel', 'Léa', 'Basile', 'Amara', 'Hugo', 'Sofia', 'Nassim', 'Lou', 'Mateo', 'Hana', 'Oscar', 'Lucía', 'Kenji', 'Mila', 'Adam', 'Zoé', 'Jonas', 'Aïcha', 'Elio', 'Yuki', 'Rafael', 'Clara', 'Malik']);
 const V_TRAITS = ['chante en étendant son linge', 'connaît le nom de toutes les étoiles', 'ne sort jamais sans son chapeau', 'collectionne les galets ronds', 'rit très fort, et très souvent', 'se lève avant le soleil', 'parle à ses plantes', 'a toujours un bonbon dans la poche', 'siffle faux, mais avec cœur', 'écrit de longues lettres, jamais envoyées'];
 const villagers = () => glob.story.villagers || (glob.story.villagers = []);
 const waitingV = () => villagers().filter(v => v.home == null);
-function arriveVillagers(n){
+function houseEmpty(i){
+  try { if (!glob.story || !glob.story.ville || glob.story.v !== 2 || !isStory() || O[i] !== 'h') return false;
+    if ((glob.story.homes || {})[i] || inIsle(i, 'ilot')) return false;
+    return !villagers().some(v => v.home === i); } catch(e){ return false; }
+}
+function emptyHouses(){ const a = []; for (let i = 0; i < N*N; i++) if (O[i] === 'h' && houseEmpty(i) && !fogAt(i % N, (i / N)|0)) a.push(i); return a; }
+/* une maison vide attire, au bout d'un moment, quelqu'un du continent */
+function villagerTrickle(){
+  if (!glob.story.ville || glob.story.v !== 2 || glob.story.chapter <= 4 || waitingV().length) return;
+  const empty = emptyHouses(), now = Date.now();
+  if (!empty.length){ if (glob.story.nextArr){ glob.story.nextArr = 0; saveGlob(); } return; }
+  if (!V_NAMES.some(x => !villagers().some(v => v.name === x))) return;
+  if (!glob.story.nextArr){ glob.story.nextArr = now + 90000; saveGlob(); return; }
+  if (now < glob.story.nextArr) return;
+  glob.story.nextArr = 0; arriveVillagers(1, true);
+}
+function arriveVillagers(n, direct){
   const vs = villagers(), used = new Set(vs.map(v => v.name)), land = mainLand();
   const taken = glob.story.takenHomes || (glob.story.takenHomes = []);
-  for (let i = 0; i < N*N; i++) if (O[i] === 'h' && land[i] && !taken.includes(i)) taken.push(i);
   const spots = []; for (let i = 0; i < N*N; i++) if (!O[i] && land[i] && (G[i] === 's' || G[i] === 'g') && !fogAt(i % N, (i / N)|0) && near8(i, j => G[j] === 'q' && !inIsle(j, 'ilot'))) spots.push(i);
   for (let k = 0; k < n; k++){
-    const free = NAMES.filter(x => !used.has(x)); if (!free.length) break;
+    const free = V_NAMES.filter(x => !used.has(x)); if (!free.length) break;
     const name = free[(Math.random()*free.length)|0]; used.add(name);
-    const tent = spots.length ? spots.splice((Math.random()*spots.length)|0, 1)[0] : null; if (tent != null) O[tent] = 'ï';
+    const tent = !direct && spots.length && emptyHouses().length < k + 1 ? spots.splice((Math.random()*spots.length)|0, 1)[0] : null; if (tent != null) O[tent] = 'ï';
     const usedJ = new Set(vs.map(v => v.job)), usedT = new Set(vs.map(v => v.trait));
     const jobs = V_JOBS.filter(j => !usedJ.has(j[0]) && !usedJ.has(j[1])), traits = V_TRAITS.filter(t => !usedT.has(t));
     const jp = (jobs.length ? jobs : V_JOBS)[(Math.random()*(jobs.length || V_JOBS.length))|0], tr = (traits.length ? traits : V_TRAITS)[(Math.random()*(traits.length || V_TRAITS.length))|0];
-    vs.push({name, job:jp[V_FEM.has(name) ? 1 : 0], trait:tr, home:null, tent});
+    vs.push({name, job:jp[V_FEM.has(name) ? 1 : 0], trait:tr, home:null, tent, direct:!!direct});
   }
   saveGlob(); save(); syncWalkers(); renderStoryCard();
-  toast(n > 1 ? '⛵ Des nouveaux venus débarquent au port…' : '⛵ Quelqu’un débarque au port…', 3500);
+  if (!direct) toast(n > 1 ? '⛵ Des nouveaux venus débarquent au port…' : '⛵ Quelqu’un débarque au port…', 3500);
 }
 /* une nouvelle maison ? le premier qui attend s'y installe */
 function settleVillagers(){
   const wait = waitingV(); if (!wait.length) return;
   { const ch = CHAPTERS[glob.story.chapter]; if (ch && ch.homeFor && !glob.story[ch.homeFor + 'Home']) return; }
-  const land = mainLand(), taken = glob.story.takenHomes || (glob.story.takenHomes = []);
-  for (let i = 0; i < N*N && wait.length; i++){
-    if (O[i] !== 'h' || !land[i] || taken.includes(i) || (glob.story.homes || {})[i]) continue;
-    const v = wait.shift(); taken.push(i); v.home = i;
+  const taken = glob.story.takenHomes || (glob.story.takenHomes = []);
+  for (const i of emptyHouses()){
+    if (!wait.length) break;
+    const v = wait.shift(); if (!taken.includes(i)) taken.push(i); v.home = i;
     if (v.tent != null && O[v.tent] === 'ï') O[v.tent] = null;
-    saveGlob(); save(); syncWalkers(); toast(`🏡 ${v.name} s’installe dans sa nouvelle maison !`, 3500);
+    const nw = v.direct; delete v.direct;
+    saveGlob(); save(); syncWalkers(); forceDraw = true; toast(nw ? `⛵ ${v.name} arrive du continent et s’installe dans une maison vide !` : `🏡 ${v.name} s’installe dans sa nouvelle maison !`, 3500);
   }
 }
 const villagerAt = hs => villagers().find(v => v.home != null && hs.includes(v.home) && O[v.home] === 'h');
@@ -7106,12 +7150,352 @@ function stormDamage(){
   glob.story.debris = O.filter(o => o === 'Ó').length; glob.story.debris0 = glob.story.debris;
   groundDirty = true; save(); saveGlob(); syncWalkers(); updateStats();
 }
-function openStoryModal({mode, who, kicker, title, paras, rewards, go, alt, times}){
+/* ---------- les versions courtes : ce que disent les bulles (le texte long reste dans le carnet) ---------- */
+/* {w: qui parle ('carnet' = le récit), p: petit bout de récit en italique avant la réplique, t: la réplique ; **mot** = en couleur} */
+const B = (w, t, p) => ({w, t, p});
+const SHORT = {
+  // ---------------- Saison 1 ----------------
+  'L’arrivée': {
+    mid:[B('carnet', 'Le soleil se couche et le vent du large se lève… Un petit **feu** devant ta cabane te ferait du bien.')],
+    outro:[B('carnet', 'Le feu crépite. Ta cabane n’est pas bien grande, mais le vent ne passe pas. Pour la première fois, tu te sens un peu chez toi.')],
+    dawn:[B('carnet', 'Pendant la nuit, le vent a chassé la brume. Une prairie, une plage, un vieux **phare** qui tourne encore au nord…'), B('carnet', 'Et au large, une petite forme se devine.')]
+  },
+  'Le gardien du phare': {
+    intro:[B('job', '« Bonjour, et bienvenue ! Je m’appelle **Job**, je garde le vieux phare, là-haut. Ça fait plaisir de voir quelqu’un s’installer ici. »'),
+      B('job', '« Je ne peux pas quitter mon phare : il faut surveiller la mer, jour et nuit… Tu planterais quelques **torches** pour éclairer l’île ? »'),
+      B('job', '« Une torche, c’est juste un bout de bois. Et chaque **marée** en rapporte un peu sur les plages. »')],
+    outro:[B('carnet', 'De petites flammes dansent partout sur l’île. Là-haut, Job te fait un grand signe.'),
+      B('job', '« Merci ! Les bateaux sauront qu’il y a quelqu’un ici… Regarde, une **barque** approche déjà ! »')]
+  },
+  'Le premier voisin': {
+    intro:[B('carnet', 'Un homme en ciré saute de sa barque, glisse sur un galet… et se rattrape de justesse.'),
+      B('tomas', '« Pardon ! **Tomas**, j’habite sur le petit îlot, là-bas. Hier soir, il y avait plein de lumières chez toi, alors je suis venu voir, hein ! »'),
+      B('tomas', '« Ta cabane, au premier coup de vent… Tu as vu ces **vieilles pierres** dans l’herbe ? De quoi faire une vraie **maison** ! Et tiens, mes graines, pour un **potager**. »')],
+    mid:[B('tomas', '« Elle est belle, ta maison… Dis, mon puits s’est effondré pendant la dernière tempête. Je n’ai plus d’eau douce. »'),
+      B('tomas', '« Et puis je me sens bien, ici. Si je construisais ma **maison** à côté de la tienne ? Un **chemin** entre les deux, et un **puits** pour nous deux ! »')],
+    outro:[B('carnet', 'Tomas remonte le premier seau, boit une grande gorgée… et s’en renverse la moitié sur le ciré.'),
+      B('tomas', '« De l’eau douce ! Et avec le puits tout près, ton potager poussera deux fois plus vite. Demain, je t’emmène sur mon îlot ! »')]
+  },
+  'Le petit port': {
+    intro:[B('carnet', 'La brume se lève sur l’îlot : une petite maison, un potager, un quai minuscule.'),
+      B('tomas', '« Voilà chez moi ! C’est petit, hein. Mais pour pêcher pour nous trois, avec Job, il me faut un **quai** plus grand et des **casiers**… »')],
+    mid:[B('tomas', '« Avec tout ce poisson, il te faut un vrai **port** chez toi : un **quai**, et une **barque** pour faire l’aller-retour ! »')],
+    outro:[B('carnet', 'Le soir, deux voiles approchent. Des voyageurs fatigués plantent leurs **tentes** près du port.'),
+      B('voyageurs', '« On vient du continent. Là-bas, c’est le bruit, la foule… On cherchait un endroit tranquille. »'),
+      B('carnet', 'Parmi eux, **Kofi**, charpentier, les mains pleines de sciure, regarde déjà les falaises rouges {vers:carriere}.')]
+  },
+  'La carrière': {
+    intro:[B('kofi', '« Kofi, charpentier. Enchanté. Tes voisins ont dormi sous la tente… Il leur faudrait de vraies **maisons**, non ? »'),
+      B('kofi', '« Construis-moi un **atelier** : je taillerai tes pierres, et chaque maison t’en coûtera une de moins. Regarde bien comment on fait. »')],
+    mid:[B('kofi', '« Tu apprends vite ! Ces falaises rouges, {dir:carriere} : de la pierre à volonté, et de l’**argile**. Cuite au four, ça fait de la **brique**. »'),
+      B('kofi', '« Le souci… ma caisse s’est renversée en débarquant. Mes **plans** sont éparpillés sur la plage. »')],
+    outro:[B('kofi', '« Écoute ce son. Une bonne brique, ça chante. »', 'Kofi tape deux briques encore chaudes, l’oreille tendue.')]
+  },
+  'Le pain': {
+    get intro(){
+      const met = (glob.story.met || []).includes('gaspard') || (glob.story.merchant || {}).met;
+      const lina = B('lina', '« Bonjour ! **Lina**, boulangère. J’ai gardé trois **graines de blé**, les toutes dernières. Si on les plante, elles en donneront d’autres… On est patients, hein ? »', 'Elle manque d’oublier son chapeau sur le pont.');
+      return met ? [B('gaspard', '« Je t’amène quelqu’un ! »', 'Le voilier de Gaspard accoste plus tôt que prévu.'), lina]
+        : [B('gaspard', '« Ho ho ! Un quai, ici, de nouveau ! **Gaspard**, trente ans de navette entre les îles et le continent. Le vieux Job tient toujours son phare ? Salue-le pour moi ! »'),
+           B('gaspard', '« Apporte-moi les **coquillages nacrés** de tes plages, je t’échangerai ce que j’ai dans ma cale. Mais aujourd’hui… je t’amène quelqu’un ! »'), lina];
+    },
+    mid:[B('lina', '« Regarde-moi tout ce blé ! Il faudrait un **moulin** pour le moudre, et une **boulangerie** en briques. Ah, et… je ne sais pas encore où je vais **dormir** ce soir. »'),
+      B('kofi', '« Un moulin ? J’en ai monté trois, sur le continent. Je te montre. »')],
+    outro:[B('carnet', 'Le premier pain sort du four. Lina a de la farine partout, même sur le nez. Tomas fait la queue en premier, évidemment.'),
+      B('lina', '« Ma boulangerie aura besoin de **blé chaque jour**. Et apporte-moi des **légumes**, je te ferai des tartes ! »'),
+      B('gaspard', '« Dis donc… du **blé sauvage**, j’en ai vu pousser {dir:champs}. Je te le noterai sur ta carte. »')]
+  },
+  'L’ermite': {
+    get intro(){
+      const arr = B('carnet', 'Un canoë rafistolé s’échoue d’un coup sec sur ta plage. Un grand gars en saute, sans même être essoufflé.');
+      return treesMain() >= 25 ? [arr, B('elias', '« **Elias**. Je… je passais. Tu prends soin de ta forêt. C’est rare, ça. »')]
+        : [arr, B('elias', '« **Elias**. Je passais. Que de souches… Une **forêt**, ça se soigne. Sinon un jour, il n’y a plus rien. »'),
+           B('elias', '« Les **pommes de pin** tombées par terre, si on les plante, ça fait des arbres. »')];
+    },
+    mid:[B('elias', '« Couper un arbre entier pour trois planches, c’est du gâchis. Une **scierie**. Et des **sentiers en bois**, pour ne pas piétiner les jeunes pousses. »'),
+      B('elias', '« … Je pourrais rester un jour ou deux ? Une petite **cabane** près des arbres, ça me suffirait. »')],
+    outro:[B('carnet', 'Le soir, Elias taille un bout de bois devant sa cabane. Tomas s’assoit à côté de lui… et pour une fois, il ne dit rien non plus.'),
+      B('elias', '« Là-bas, d’où je viens… il y avait des pins à perte de vue. Avant. »'),
+      B('elias', '« J’ai déjà vu le ciel prendre cette couleur, une fois… »', 'Sa lampe reste allumée très tard.')]
+  },
+  'L’architecte': {
+    intro:[B('margaux', '« **Margaux**, architecte ! Oh là là, tout est à faire ! »', 'Une jeune femme saute sur le quai avant même que le voilier soit amarré, un crayon derrière l’oreille.'),
+      B('margaux', '« Non non non ! Tu m’aides à les **retrouver** ? »', 'Un coup de vent ouvre son grand tube… et ses plans s’envolent par-dessus les toits.')],
+    mid:[B('margaux', '« Tous là ! Un village, ça vit dans ses rues : un **café**, une **épicerie**… et une **crêperie** ! Ma grand-mère en tenait une, au bord de la mer. »'),
+      B('margaux', '« Et la nuit, on ne voit rien, ici ! Des **lampadaires** le long des chemins, et une **terrasse** devant le café. »'),
+      B('margaux', '« Et moi… il me faudrait une **maison**. Avec de la lumière et de la vue, pour dessiner ! »')],
+    outro:[B('carnet', 'Les lampadaires s’allument un à un, et une odeur de crêpes flotte dans la rue.'),
+      B('margaux', '« Sur le continent, tout est déjà construit. Ici, tout reste à inventer… Je crois que je vais rester ! Une architecte, ça a besoin de carburant. »')]
+  },
+  'La fête de l’été': {
+    intro:[B('lina', '« Tout ce qu’on a construit ! Mais il manque un cœur, à ce village ! »', 'Lina déboule, les joues pleines de farine.'),
+      B('tomas', '« Une vraie **place** ! Une **fontaine** au milieu, un **marché**… et des bancs, des fleurs, que ce soit **joli**, hein ! »')],
+    mid:[B('lina', '« C’est magnifique ! Il faut fêter ça : un grand **banquet** pour toute l’île ! »'),
+      B('tomas', '« Il faudra des **tables**, beaucoup de tables ! Et tu passerais **toquer chez chacun** pour inviter tout le monde ? »')],
+    mid2:[B('lina', '« Tout le monde vient, même Job ! Il faut des **lampions** pour le soir… et je fais les **tartes**, si tu m’apportes des légumes et du blé ! »', 'Lina sautille sur place.')]
+  },
+  // ---------------- Saison 2 ----------------
+  'Après la tempête': {
+    intro:[B('carnet', 'L’île se réveille doucement. Les habitants sortent un à un et découvrent les **dégâts**.'),
+      B('job', '« Elle a tenu toute la nuit, ma vieille lumière. Tout le monde va bien ? »', 'Job descend de son phare, les yeux rouges de fatigue.'),
+      B('tomas', '« Ma **barque** est sur le sable ! Et le bout du **quai** a disparu… »')],
+    outro:[B('carnet', 'Le soir, tout est réparé. Toute l’île s’assoit au bout du quai, les jambes dans le vide, fatiguée mais contente.'),
+      B('tomas', '« Si une autre tempête arrive, le quai repartira… Il nous faudrait une **digue**, pour casser les vagues. »')]
+  },
+  'Ce que la mer rapporte': {
+    intro:[B('carnet', 'Le lendemain, la mer est redevenue calme, toute douce, comme pour se faire pardonner.'),
+      B('tomas', '« Hé ! Venez voir ! La mer a rapporté des **bouteilles** ! »')],
+    mid:[B('carnet', 'Le vent tourne. {Dir:champs}, la brume se déchire… et une immense **plaine** apparaît, dorée à perte de vue.'),
+      B('elias', '« … Je ne l’avais jamais vue. »'),
+      B('tomas', '« Bon. Avant d’aller rêver là-bas… il nous faudrait une **digue**, pour casser les vagues. »')],
+    mid2:[B('tomas', '« … Bon. Au moins, ma barque est au sec. »', 'Une grosse vague se brise sur la digue… et retombe pile sur Tomas, trempé pour la deuxième fois en deux jours.'),
+      B('job', '« Montez ! De là-haut, avec ma **longue-vue**, on voit toute la plaine. »')],
+    outro:[B('paloma', '« Bonsoir ! **Paloma**. La tempête m’a fait dériver jusqu’ici… Je peux planter ma **tente** au bord du quai ? Mon bateau, prenez-le quand vous voulez, il est à tout le monde ! »', 'Un hors-bord blanc accoste ; une femme saute sur le quai, les cheveux pleins de sel.'),
+      B('carnet', 'Sur la coque, un nom a été repeint à la hâte. Dessous, on devine encore une lettre : un R.'),
+      B('job', '« Dériver, avec un moteur ? Par ce vent-là… Elle venait droit sur nous. »', 'Job te glisse tout bas :')]
+  },
+  'La grande plaine': {
+    intro:[B('lina', '« J’en ai rêvé toute la nuit, de ce blé ! Il nous faut un **pont** jusqu’à la plaine. Tu viens ? »', 'Au petit matin, Lina frappe à ta porte, les yeux qui brillent.')],
+    mid:[B('lina', '« Regarde ces **épis** ! Avec des graines pareilles, on pourrait semer toute la plaine… Du pain pour toute l’île, tous les jours ! »'),
+      B('paloma', '« Votre île me plaît. Je crois que je vais rester ! Une petite **maison** près du port, d’où je verrais mon bateau… »', 'Paloma sort la tête de sa tente, en riant.')],
+    outro:[B('carnet', 'Le soir, une barge approche de la plaine, avec des bottes de foin… et trois vaches qui regardent l’île d’un air très intéressé.'),
+      B('philippe', '« Bonsoir, bonsoir ! Pardon de débarquer comme ça, à l’improviste… **Philippe**, enchanté ! Enchanté ! »'),
+      B('annick', '« **Annick**, sa sœur. On a vu la plaine toute dorée depuis le large, et on s’est dit… Hein, Marguerite ? » La vache répond par un long « meuh ».')]
+  },
+  'La ferme': {
+    intro:[B('philippe', '« Bonjour, bonjour ! Bien dormi ? Nous, avec Marguerite qui ronflait toute la nuit… »'),
+      B('annick', '« Elle ne ronfle pas. Elle rumine. »'),
+      B('philippe', '« Il nous faudrait une **maison** au bord des champs, une **grange** pour l’hiver… et des **clôtures**, sinon les vaches iront brouter le potager de Tomas ! »')],
+    mid:[B('annick', '« Marguerite, Pâquerette et Biscotte te remercient. Enfin… je crois. »'),
+      B('philippe', '« Maintenant, du **foin** pour l’hiver ! Et un **chemin** jusqu’au village, pour porter le lait à Lina chaque matin. »')],
+    outro:[B('carnet', 'Le soir, toute l’île se retrouve à la crêperie. Philippe en mange quatre, s’excuse à chaque fois… et en reprend une cinquième.'),
+      B('annick', '« Ça fait des années que je ne l’avais pas vu rire comme ça. Merci. »')]
+  },
+  'La boussole de Tomas': {
+    intro:[B('tomas', '« Ma **boussole**… Je l’avais la nuit de la tempête. C’était celle de mon père. »', 'Tomas retourne ses casiers, vide ses poches, regarde même sous sa barque.'),
+      B('kofi', '« Ce matin, une **mouette** a filé avec un truc brillant dans le bec. Elle s’est posée sur un **toit**, quelque part dans le village. »')],
+    outro:[B('tomas', '« Elle était à mon père. Il disait qu’avec elle, on ne se perd jamais. »'),
+      B('carnet', 'Mais l’aiguille ne pointe pas vers le nord. Elle tremble, puis s’arrête, droit vers {le:pins}, là où la brume ne s’est jamais levée. Elias, qui passait, la regarde longtemps sans rien dire.'),
+      B('tomas', '« Tiens, ma vieille **besace** de marin. Pour te remercier. Elle a fait le tour des îles, elle aussi. »')]
+  },
+  'Les abeilles': {
+    intro:[B('carnet', 'Une petite barque chargée de caisses qui bourdonnent accoste au port.'),
+      B('ondine', '« Bonjour… **Ondine**, apicultrice. Pardon pour le bruit, elles sont un peu énervées par le voyage. »', 'Un voile de tulle sur son chapeau… et une piqûre sur le nez.'),
+      B('ondine', '« Mes abeilles adoreraient vivre ici. Il nous faudrait une **maison**, des **ruches** près des fleurs… et un **pré fleuri** ! »')],
+    mid:[B('carnet', 'Dans l’après-midi, un coup de vent renverse une ruche !'),
+      B('ondine', '« La reine s’est envolée, tout l’**essaim** l’a suivie ! Regarde bien les **arbres** tout près : on doit les voir tourner autour d’une branche. »')],
+    outro:[B('ondine', '« Le meilleur miel que j’aie jamais goûté. Ça doit être vos fleurs. »', 'Ondine goûte son premier miel, les yeux fermés.'),
+      B('lina', '« Du miel… dans mes gâteaux… »')]
+  },
+  'Le goûter': {
+    intro:[B('lina', '« Du lait, du miel, du blé… Tu sais ce que ça veut dire ? Des **gâteaux** ! »'),
+      B('philippe', '« Et le **lait**, je vous l’apporte chaque matin ! Un peu plus à chaque vache dans le pré. »'),
+      B('margaux', '« Et des **crêpes** ! Ma crêperie s’ennuie, toute seule… »')],
+    mid:[B('kofi', '« J’ai sculpté une **enseigne** pour la boulangerie de Lina. Un épi de blé et une abeille. »', 'Kofi te prend à part, un peu gêné.'),
+      B('kofi', '« Pose-la **cette nuit**, contre la boulangerie. Elle aura la surprise demain matin. Et… tu ne lui dis rien, hein ? »')],
+    outro:[B('lina', '« C’est… c’est toi, Kofi ? Elle est magnifique ! »'),
+      B('kofi', '« Il fallait bien que ta boulangerie ait une enseigne. Les amis, ça sert à ça. »', 'Kofi se gratte la nuque.')]
+  },
+  'Le belvédère': {
+    intro:[B('margaux', '« J’ai dessiné chaque maison, chaque chemin… Mais il me manque la grande **carte** de l’archipel. Et pour ça, il faut tout voir d’en haut. »'),
+      B('margaux', '« Un **belvédère**, au plus joli endroit de ton île… et un **chemin** pour y monter. Tu imagines la vue ? »')],
+    mid:[B('margaux', '« Il est magnifique ! Allez, **monte** avec moi. »')],
+    outro:[B('margaux', '« Là-bas, dans la brume… un filet de **fumée**. Quelqu’un fait du feu, sur l’île aux pins. »', 'Margaux dessine pendant des heures, la langue entre les dents. Puis elle plisse les yeux.'),
+      B('carnet', 'Le soir, Elias monte seul au belvédère. Il y reste jusqu’à la nuit, sans quitter la fumée des yeux.')]
+  },
+  'La factrice': {
+    intro:[B('carnet', 'Le voilier de Gaspard accoste avec un vieux vélo noir, une sacoche en cuir… et une petite dame aux cheveux blancs, droite comme un i.'),
+      B('germaine', '« **Germaine**, factrice. Cinquante ans de tournée sur le continent, et pas une lettre perdue. »'),
+      B('germaine', '« Vos lettres s’entassent sur le continent : il vous faut une **poste** ! Et mon vélo n’aime pas l’herbe : des **chemins** jusqu’à chaque porte, s’il vous plaît. »')],
+    mid:[B('germaine', '« Et voilà la première **tournée** ! Ces lettres attendaient depuis des mois. »')],
+    outro:[B('germaine', '« Tiens… Je connais cette écriture. Des lettres sans timbre ni adresse arrivaient à mon bureau, il y a longtemps. »', 'Elle chausse ses lunettes devant le petit papier de R., épinglé au mur du café.'),
+      B('carnet', 'Au fond de la terrasse, Elias pose sa tasse, un peu trop fort. Il regarde le papier longtemps… puis s’en va, sans un mot.')]
+  },
+  'La moisson': {
+    intro:[B('carnet', 'Le ciel pâlit sur la plaine… et le soleil se lève sur une mer de blé doré.'),
+      B('philippe', '« La plaine est toute dorée ! C’est le grand jour de la **moisson** ! »'),
+      B('annick', '« Il faut toutes les mains de l’île. Même Elias est descendu de sa forêt, c’est dire ! »')],
+    mid:[B('philippe', '« Tout ce grain… Il faut le rentrer dans la **grange** avant la pluie ! »')]
+  },
+  // ---------------- Saison 3 ----------------
+  'La place vide': {
+    intro:[B('carnet', 'Le jour se lève. Personne n’a vraiment dormi. Au phare, Job est toujours à sa fenêtre.'),
+      B('tomas', '« Il est parti vers la brume, j’en suis sûr. Je vais le chercher ! Aide-moi à préparer la **barque**, avec des **provisions**. »')],
+    mid:[B('tomas', '« J’ai ramé tout droit, je te jure ! Tout droit ! La brume me fait tourner en rond. »', 'Une heure plus tard, la barque ressort de la brume… pile à l’endroit d’où elle était partie.'),
+      B('paloma', '« Moi ? La chance des débutants ! J’ai fermé les yeux et j’ai foncé ! »', 'Tomas se tourne vers Paloma, qui est bien passée, elle. Paloma éclate de rire.'),
+      B('lina', '« En attendant… on pourrait prendre soin de chez lui. Ses **pins**, une **lumière** devant sa cabane. Pour quand il reviendra. »')],
+    outro:[B('lina', '« Un tous les matins. Comme ça, il saura qu’on l’attend. »', 'Lina pose un pain encore chaud sur la table d’Elias, à côté du petit pin taillé.'),
+      B('carnet', 'À la marée du soir, une **bouteille** s’échoue sur la plage…')]
+  },
+  'La plongeuse': {
+    intro:[B('carnet', 'Une tête jaillit de l’eau devant Tomas, lampe frontale allumée. Tomas manque de tomber à la renverse.'),
+      B('yuna', '« Salut ! C’est bien ici, l’**ancien port** englouti par la tempête ? Je m’appelle **Yuna**, je plonge. Gaspard m’a déposée au large, j’ai fini à la nage ! »'),
+      B('yuna', '« Il me faudrait un **ponton** pour poser mon matériel… et une petite **maison**, pas trop loin de l’eau. »')],
+    mid:[B('yuna', '« Parfait ! » Elle ajuste sa lampe… et plonge sans prévenir.'),
+      B('tomas', '« Elle n’a même pas fini sa phrase ! »')],
+    outro:[B('carnet', 'On accroche la **cloche** au bout du quai. Yuna donne un petit coup : le son s’en va loin, très loin, sur la mer.'),
+      B('job', '« Cette cloche sonnait les soirs de brume, pour que les bateaux retrouvent le port… » Il se tait longtemps. « Accrochez-la bien. Elle a assez dormi au fond. »')]
+  },
+  'Le poulailler': {
+    intro:[B('annick', '« Philippe a gagné un **pari** contre Gaspard. Et Gaspard a payé… en **poules**. »'),
+      B('annick', '« Il leur faut un **poulailler** sur la plaine, et vite ! Elles ont déjà picoré les bottes de Gaspard. »', 'Six poules très mécontentes sortent de la cale.')],
+    mid:[B('annick', '« La porte ! Qui a laissé la porte ouverte ?! »'),
+      B('philippe', '« Elles sont plus rapides qu’elles n’en ont l’air… »', 'Tout penaud, une poule sous chaque bras :')],
+    outro:[B('lina', '« Avec des **œufs**, mes crêpes vont être encore meilleures ! »', 'Lina fait la toute première omelette de l’île.'),
+      B('annick', '« Des aiguilles de pin… longues comme ma main. Il n’y a pas de pins comme ça chez nous. »', 'Annick retire quelque chose des cheveux de Paloma, qui rentre de balade.'),
+      B('paloma', '« Le vent ! Il apporte n’importe quoi, le vent ! » Et elle file.')]
+  },
+  'Le marché du port': {
+    intro:[B('yuna', '« Des sous de l’ancien **marché** ! Le samedi, tout le quai sentait le poisson grillé et les fraises… »', 'Yuna remonte de plongée, une poignée de pièces vertes dans la main.'),
+      B('lina', '« Un marché ! J’y vendrais mon **pain** ! »'),
+      B('annick', '« Et nous, nos **œufs** ! » Ondine, tout bas : « …et mon miel. »')],
+    mid:[B('gaspard', '« Tout est prêt ! Demain matin, on sonne la **cloche** et on ouvre. »')],
+    outro:[B('lina', '« Plus une miette de pain ! Et Paloma m’a acheté une tarte aux carottes. Elle qui déteste les carottes… »'),
+      B('lina', '« Elle doit l’offrir à quelqu’un. »', 'Lina hausse les épaules.'),
+      B('gaspard', '« On se croirait revenu trente ans en arrière… »')]
+  },
+  'La longère': {
+    intro:[B('carnet', 'Le voilier de Gaspard accoste avec une famille entière : deux parents, trois enfants, un chien et une montagne de valises.'),
+      B('philippe', '« Mes **cousins** ! Antoine, Clémence, et les petits : Léon, Jules et Rose. Je leur ai tellement parlé de la plaine qu’ils ont tout quitté pour venir ! »'),
+      B('philippe', '« À cinq, une petite maison ne suffira jamais… Il leur faut une **longère**, une grande maison de ferme avec un toit de chaume ! »')],
+    mid:[B('philippe', '« Chez nous, un toit sans **bouquet** ne protège pas la maison ! »', 'Philippe grimpe à l’échelle, un bouquet de fleurs des champs à la main.'),
+      B('jules', '« On joue à **cache-cache** ? Tu comptes ! »', 'Jules tire sur ta manche.')],
+    outro:[B('carnet', 'Toute l’île fête le toit. Les enfants courent partout, et Pistache, le chien, vole une crêpe à Tomas.'),
+      B('rose', '« Il y a une **lumière**, là-bas, dans le brouillard. Elle clignote. »', 'La nuit, à la fenêtre du grenier, Rose ne dort pas.'),
+      B('carnet', 'Le temps que sa maman arrive, la lumière a disparu.')]
+  },
+  'La brume qui tourne': {
+    intro:[B('tomas', '« Une lumière qui clignote… c’est lui ! J’y retourne ! »', 'Au petit-déjeuner, Rose raconte sa lumière. Tomas en lâche sa tartine.'),
+      B('kofi', '« Pour tourner en rond encore une fois ? Le feu fait reculer la brume. Des **balises** posées sur l’eau, l’une après l’autre… et on avance pas à pas, comme sur des cailloux. »')],
+    mid:[B('tomas', '« Ça marche… Ça marche ! »', 'La première balise s’allume, et la brume recule comme un rideau qu’on écarte.')],
+    outro:[B('carnet', 'La dernière balise s’allume. Devant vous, une longue côte de grands pins sombres… et des rochers partout.'),
+      B('yuna', '« Moi, je passe partout. Laisse-moi chercher le **passage**. »', 'Yuna enfile déjà sa combinaison.'),
+      B('tomas', '« C’est le sien. Il est là. »', 'Léon pointe la plage : un canoë rafistolé de partout.')]
+  },
+  'La boîte en fer': {
+    intro:[B('yuna', '« Il y a forcément un **passage** ! Je plonge, et toi, tu marques le chemin avec des **bouées**. Si on se trompe, on finit sur un rocher. »')],
+    mid:[B('carnet', 'À la cinquième bouée, Yuna ne remonte pas. Une seconde, deux, dix… Tomas commence à s’inquiéter.'),
+      B('yuna', '« Coincée entre deux rochers. Depuis longtemps… »', 'Puis elle jaillit de l’eau, une petite boîte en fer rouillée dans les bras.'),
+      B('carnet', 'Dedans, une vieille **photo** gondolée : deux enfants assis sur les marches d’un phare. Notre phare.')],
+    outro:[B('job', '« Je… je vais la garder, si vous voulez bien. »', 'Job regarde la photo longtemps, très longtemps.'),
+      B('carnet', 'Il la glisse contre son cœur et retourne à sa fenêtre. À la marée du soir, une **bouteille** s’échoue sur la plage.')]
+  },
+  'La traversée': {
+    intro:[B('carnet', 'Le chemin de bouées brille au soleil du matin. Tomas a préparé la barque avant même le lever du jour.'),
+      B('lina', '« Je viens aussi ! Il n’a pas mangé de bonnes choses depuis des semaines. »')],
+    mid:[B('lina', '« Regarde ! Il a laissé des **marques** sur les arbres. »', 'Sur l’île aux pins, une partie de la brume s’est levée.')]
+  },
+  'La forêt d’Elias': {
+    intro:[B('elias', '« Les **ronces** les étouffent, et le **bois mort** les rend malades. »', 'Beaucoup de pins ont les aiguilles rousses.'),
+      B('elias', '« Une seule règle ici : on ne coupe jamais un pin vivant. Jamais. »')],
+    mid:[B('carnet', 'Elias marche droit vers une pierre couverte de mousse, sans hésiter, et la soulève. Dessous, une **source** claire.'),
+      B('leon', '« Tu connais chaque arbre par cœur… On dirait que tu es déjà venu, avant ! »'),
+      B('elias', '« Une île, c’est une île. »', 'Elias hausse les épaules.')],
+    outro:[B('elias', '« Pas par là. Pas encore. »', 'Léon s’avance déjà sur un sentier qui file dans la brume. Elias le rattrape doucement par l’épaule.'),
+      B('elias', '« La forêt va guérir, grâce à vous. Je… je viendrai vous voir. Bientôt. Promis. »')]
+  },
+  'La fête des lumières': {
+    intro:[B('carnet', 'Une bouteille, mais pas de R. cette fois : une écorce de pin gravée au couteau. « Samedi soir. — E. »'),
+      B('lina', '« Il vient ! Elias vient ! Il faut une fête, une vraie, avec des **lumières** partout ! »', 'Lina en lâche sa farine.')],
+    mid:[B('lina', '« Le vent se lève… Pourvu que les **balises** tiennent ! »', 'Au loin, une toute petite lumière quitte l’île aux pins : le canoë d’Elias.')],
+    mid2:[B('carnet', 'Elias pose le pied sur le quai. Rose lui saute dans les bras avec un dessin : un pin, un phare, et un petit bonhomme entre les deux.'),
+      B('elias', '« Je… merci. »'),
+      B('lina', '« Tout le monde sur le quai ! Une **photo**, pour se souvenir de ce soir ! »')]
+  }
+};
+function shortFor(ch, part){ try { if (!ch || glob.story.v !== 2) return null; const s = SHORT[ch.title]; const a = s && s[part]; return a && a.length ? a : null; } catch(e){ return null; } }
+
+const bEsc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const bMark = t => t.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+/* l'heure du récit : les repères du texte long, répartis sur les bulles */
+function bulleTimes(times, nLong, nShort){
+  if (!times) return null; const out = {}; const L = Math.max(1, nLong);
+  for (const k of Object.keys(times).map(Number).sort((a, b) => a - b)) out[Math.min(nShort - 1, Math.floor(k * nShort / L))] = times[k];
+  return out;
+}
+function bulleFill(short, mode, ch){
+  for (const s of short){
+    const p = document.createElement('p'); p.dataset.who = s.w;
+    p.innerHTML = (s.p ? `<i>${bEsc(fmtTxt(s.p))}</i> ` : '') + bMark(bEsc(fmtTxt(s.t)));
+    storyBody.append(p);
+  }
+  if ((mode === 'intro' || mode === 'mid') && ch){
+    try {
+      const gs = ch.goals || [];
+      if (gs.length){
+        const m = document.createElement('div'); m.className = 'sb-mis';
+        const lab = document.createElement('span'); lab.className = 'lab'; lab.textContent = 'Ta mission'; m.append(lab);
+        for (const [label, f, need] of gs){
+          const n = needOf(need); let v = 0; try { v = Math.min(n, f()); } catch(e){}
+          const g = document.createElement('span'); g.className = 'g'; g.textContent = fmtTxt(label);
+          const em = document.createElement('em'); em.textContent = `${v} / ${n}`; g.append(em); m.append(g);
+        }
+        storyBody.append(m);
+      }
+    } catch(e){}
+  }
+  const rd = document.createElement('button'); rd.type = 'button'; rd.className = 'sb-read'; rd.textContent = '📖 Lire toute l’histoire';
+  rd.onclick = e => { e.stopPropagation(); storyLong = true; openStoryModal(storyArgs); };
+  storyBody.append(rd);
+}
+function bulleWho(){ if (storyBox.classList.contains('bulle')){ const t = storyWho.textContent.split(',')[0]; storyWho.textContent = t.toUpperCase(); } }
+let sbTip = null;
+function placeBulle(){
+  if (!storyBox.classList.contains('bulle') || storyBox.hidden){ if (sbTip) sbTip.hidden = true; return; }
+  const card = storyBox.querySelector('.story-card'), f = document.getElementById('scFace'), sc = document.getElementById('storyCard');
+  if (!sbTip){ sbTip = document.createElement('i'); sbTip.className = 'sb-tip'; storyBox.append(sbTip); }
+  const fr = f && sc && !sc.hidden && f.offsetParent ? f.getBoundingClientRect() : null;
+  const w = Math.min(440, innerWidth - 24); card.style.width = w + 'px';
+  const left = fr ? Math.round(Math.max(12, Math.min(innerWidth - w - 12, fr.left + fr.width/2 - 34))) : Math.round((innerWidth - w) / 2);
+  card.style.left = left + 'px';
+  sbTip.hidden = !fr;
+  if (fr && fr.top < innerHeight / 2){
+    const top = Math.round(fr.bottom + 12); card.style.top = top + 'px'; card.style.bottom = 'auto'; card.style.maxHeight = (innerHeight - top - 12) + 'px';
+    sbTip.style.top = (top - 7) + 'px';
+  } else if (fr){
+    const bot = Math.round(innerHeight - fr.top + 12); card.style.bottom = bot + 'px'; card.style.top = 'auto'; card.style.maxHeight = (innerHeight - bot - 12) + 'px';
+    sbTip.style.top = (innerHeight - bot - 7) + 'px';
+  } else { card.style.top = '84px'; card.style.bottom = 'auto'; card.style.maxHeight = (innerHeight - 96) + 'px'; }
+  if (fr) sbTip.style.left = Math.round(fr.left + fr.width/2 - 7) + 'px';
+}
+addEventListener('resize', () => placeBulle());
+/* ---------- la nuit qui passe entre deux chapitres ---------- */
+let nightOn = false;
+/* l'heure à laquelle commence le moment suivant (le matin d'après, ou l'intro) */
+function nightEnd(){
+  const c = glob.story.chapter, pc = CHAPTERS[c - 1]; let t;
+  if (pc && pc.dawn && !(glob.story.dawnSeen || {})[c - 1]) t = (storyTimes(pc, 'dawn') || {})[0]; else t = (storyTimes(CHAPTERS[c], 'intro') || {})[0];
+  return t != null ? t : 8;
+}
+function nightRun(then){
+  const end = nightEnd();
+  if (nightOn) return true;
+  if (window.__instant || matchMedia('(prefers-reduced-motion: reduce)').matches){ tday = end/24; tTarget = null; forceDraw = true; try { updateClock(); } catch(e){} toast('☀️ Le lendemain matin…'); return false; }
+  nightOn = true; tTarget = null;
+  const cap = document.createElement('div'); cap.className = 'night-cap'; cap.innerHTML = '<span>🌙 La nuit tombe sur l’île…</span>'; document.body.append(cap);
+  const sp = cap.firstChild, h0 = tday * 24 < 12 ? tday * 24 + 24 : tday * 24, h1 = 24 + end, t0 = performance.now(); let dur = 5200, morning = false;
+  cap.onclick = () => { dur = Math.min(dur, performance.now() - t0 + 500); };
+  const step = now => {
+    const k = Math.min(1, (now - t0) / dur), e = k < 0.5 ? 2*k*k : 1 - (-2*k + 2)**2 / 2, h = h0 + (h1 - h0) * e;
+    tday = (h % 24) / 24; forceDraw = true; try { updateClock(); } catch(err){}
+    if (!morning && h >= h1 - 2.5){ morning = true; sp.style.opacity = 0; setTimeout(() => { sp.textContent = '☀️ Le lendemain matin'; sp.style.opacity = 1; }, 450); }
+    if (k < 1) requestAnimationFrame(step);
+    else setTimeout(() => { cap.remove(); nightOn = false; tday = end/24; forceDraw = true; then(); }, 700);
+  };
+  requestAnimationFrame(step);
+  return true;
+}
+let storyArgs = null, storyLong = false;
+function openStoryModal(args){
+  let {mode, who, kicker, title, paras, rewards, go, alt, times, short, ch} = args;
+  const bulle = !!short && !storyLong; storyLong = false; storyArgs = args;
+  storyBox.classList.toggle('bulle', bulle);
+  if (bulle) times = bulleTimes(times, (paras || []).length, short.length);
   storyMode = mode;
   setSpeaker(who); storySpeaker = who;
   storyKicker.textContent = kicker; storyTitle.textContent = title;
   storyBody.innerHTML = '';
-  for (const t0 of paras){ const t = t0 && typeof t0 === 'object' && t0.t ? t0.t : t0; if (typeof t === 'string'){ const el = document.createElement('p'); el.textContent = fmtTxt(t); if (t0.who) el.dataset.who = t0.who; if (t0.fx) el.dataset.fx = t0.fx; if (/^« .* »$/.test(el.textContent) && mode !== 'intro') el.className = 'carnet-line'; storyBody.append(el); } else storyBody.append(t); }
+  if (bulle) bulleFill(short, mode, ch); else for (const t0 of paras){ const t = t0 && typeof t0 === 'object' && t0.t ? t0.t : t0; if (typeof t === 'string'){ const el = document.createElement('p'); el.textContent = fmtTxt(t); if (t0.who) el.dataset.who = t0.who; if (t0.fx) el.dataset.fx = t0.fx; if (/^« .* »$/.test(el.textContent) && mode !== 'intro') el.className = 'carnet-line'; storyBody.append(el); } else storyBody.append(t); }
   storyRewards.innerHTML = ''; storyRewards.hidden = !(rewards && rewards.length);
   if (rewards && rewards.length){ const lb = document.createElement('div'); lb.className = 'label rw-label'; lb.textContent = mode === 'intro' ? 'Pour cette mission' : 'Tu as gagné'; storyRewards.append(lb); }
   for (const id of rewards || []){
@@ -7126,7 +7510,9 @@ function openStoryModal({mode, who, kicker, title, paras, rewards, go, alt, time
     if (texts.length > 1){ storyPages = {kids, texts, k:0, go, rw:!storyRewards.hidden, times}; showStoryPage(); }
     else if (times && times[0] != null) timeTo(times[0]);
   }
+  if (bulle && !storyPages){ setSpeaker(short[0].w); bulleWho(); }
   storyBox.hidden = false; storyBox.querySelector('.story-card').scrollTop = 0;
+  if (bulle) requestAnimationFrame(placeBulle); else if (sbTip) sbTip.hidden = true;
 }
 /* un paragraphe à la fois, avec un bouton « Suivant » */
 let storyPages = null;
@@ -7137,8 +7523,9 @@ function showStoryPage(){
   if (sp.times && sp.times[sp.k] != null) timeTo(sp.times[sp.k]);
   if (sp.texts[sp.k].dataset.fx) storyFx(sp.texts[sp.k].dataset.fx);
   storyRewards.hidden = !(last && sp.rw);
-  storyGo.textContent = last ? sp.go : 'Suivant →';
-  storyBox.querySelector('.story-card').scrollTop = 0;
+  storyGo.textContent = last ? sp.go : (storyBox.classList.contains('bulle') ? 'Suite ›' : 'Suivant →');
+  bulleWho();
+  storyBox.querySelector('.story-card').scrollTop = 0; requestAnimationFrame(placeBulle);
 }
 function goalsList(ch){
   const ul = document.createElement('ul'); ul.className = 'story-goals';
@@ -7150,16 +7537,16 @@ function openChapter(kind, i){
   const si = seasonInfo(i);
   if (kind === 'intro'){
     // un nouveau chapitre commence de jour : s'il fait nuit, on passe au lendemain matin
-    if (isStory() && i > 0){ const hh = tday*24; if (hh >= 20 || hh < 5.9){ tday = 8/24; forceDraw = true; if (typeof updateClock === 'function') updateClock(); setTimeout(() => toast('☀️ Le lendemain matin…'), 400); } }
+    if (isStory() && i > 0){ const hh = tday*24; if ((hh >= 16.5 || hh < 5.9) && nightRun(() => openChapter(kind, i))) return; }
     glob.story.introSeen = Math.max(glob.story.introSeen ?? -1, i);
     let given = false; for (const id of ch.give || []) given = unlockItem(id) || given;
     saveGlob(); if (given){ buildTools(); renderRecent(); }
-    openStoryModal({mode:'intro', who:ch.who, kicker:`Saison ${si.s} · chapitre ${si.k} sur ${si.n}`, title:ch.title, paras:[...ch.intro], rewards:ch.give, go:'C’est parti !', times:storyTimes(ch, 'intro')});
+    openStoryModal({mode:'intro', who:ch.who, kicker:`Saison ${si.s} · chapitre ${si.k} sur ${si.n}`, title:ch.title, paras:[...ch.intro], rewards:ch.give, go:'C’est parti !', times:storyTimes(ch, 'intro'), short:shortFor(ch, 'intro'), ch});
     if (ch.onIntro && isStory()){ const ev = glob.story.events || (glob.story.events = {}); if (!ev['t:' + ch.title]){ ev['t:' + ch.title] = true; ev[i] = true; saveGlob(); ch.onIntro(); } }
   } else {
     const next = CHAPTERS[i + 1];
     openStoryModal({mode:'outro', who:ch.outroWho || ch.who, kicker:`Saison ${si.s} · chapitre ${si.k} terminé 💛`, title:ch.title, paras:ch.outro, rewards:ch.reward,
-      go: !next ? (glob.story.v === 2 ? 'À suivre…' : 'Merci !') : !chapterReady() ? 'À demain !' : next.season !== ch.season ? `Vers la saison ${next.season}` : 'Continuer', times:storyTimes(ch, 'outro')});
+      go: !next ? (glob.story.v === 2 ? 'À suivre…' : 'Merci !') : !chapterReady() ? 'À demain !' : next.season !== ch.season ? `Vers la saison ${next.season}` : 'Continuer', times:storyTimes(ch, 'outro'), short:shortFor(ch, 'outro'), ch});
     if (glob.story.v === 2 && (!next || next.season !== ch.season)) setTimeout(() => autoSnap(`Fin de la saison ${si.s}`), 60);
   }
 }
@@ -7459,10 +7846,11 @@ function scPopAt(pop){ const r = document.getElementById('storyCard').getBoundin
 document.addEventListener('pointerdown', e => { if (!e.target.closest || !e.target.closest('#storyCard')) scPopClose(); }, true);
 const scDone = document.getElementById('scDone');
 document.getElementById('scNext').onclick = () => {
+  { const hh = tday * 24; if (isStory() && glob.story.chapter > 0 && (hh >= 16.5 || hh < 5.9) && nightRun(() => document.getElementById('scNext').onclick())) return; }
   const p = glob.story.chapter - 1, pc = CHAPTERS[p];
   if (pc && pc.dawn && isStory() && !(glob.story.dawnSeen || {})[p]){
-    tday = 8/24; forceDraw = true; if (typeof updateClock === 'function') updateClock();
-    openStoryModal({mode:'dawn', who:pc.who, kicker:'☀️ Le lendemain matin', title:'Au réveil', paras:pc.dawn, go:'Continuer', times:storyTimes(pc, 'dawn')});
+    tday = nightEnd()/24; tTarget = null; forceDraw = true; if (typeof updateClock === 'function') updateClock();
+    openStoryModal({mode:'dawn', who:pc.who, kicker:'☀️ Le lendemain matin', title:'Au réveil', paras:pc.dawn, go:'Continuer', times:storyTimes(pc, 'dawn'), short:shortFor(pc, 'dawn'), ch:pc});
     return;
   }
   glob.story.nextAt = 0; saveGlob(); document.getElementById('scNext').hidden = true; if (storyBox.hidden) openChapter('intro', glob.story.chapter);
@@ -7511,7 +7899,7 @@ function checkStory(){
     openStoryModal({mode:'invite', who:'carnet', kicker:'L’histoire a changé', title:'La ville des îles', paras:['L’histoire de l’île a été réécrite : plus de mystère, une vraie ville à bâtir d’île en île, avec de nouveaux matériaux (briques, métal) et des objets à ramasser qui servent tous.', 'Pour la découvrir, il faut recommencer l’histoire (tes autres terrains ne changent pas).'], go:'Recommencer', alt:'Plus tard'});
     storyMode = 'restartVille'; return;
   }
-  syncUnlocks(); growSaplings(); growWheat(); growVeg(); nightFogs(); checkTier(); try { assignHomes(); } catch(e){} settleVillagers();
+  syncUnlocks(); growSaplings(); growWheat(); growVeg(); nightFogs(); checkTier(); try { assignHomes(); } catch(e){} settleVillagers(); try { villagerTrickle(); } catch(e){}
   // les voyageurs ont leurs maisons : leurs tentes disparaissent
   if (glob.story.ville && glob.story.tentsSet && !glob.story.tentsGone && glob.story.chapter > 4){
     const keep = new Set(villagers().filter(v => v.home == null && v.tent != null).map(v => v.tent)); if (glob.story.palomaTent != null) keep.add(glob.story.palomaTent);
@@ -7940,7 +8328,7 @@ const COACH = [
   {id:'done', when:() => glob.story.chapter === 0, wait:() => !document.getElementById('scDone').hidden, done:() => glob.story.chapter > 0 || (coach.shown && document.getElementById('scDone').hidden), el:() => document.getElementById('scDone'), t:'Mission accomplie ! Touche le point d’exclamation pour terminer le chapitre.'}
 ];
 const coach = {k:-1, t0:0, shown:false, r0:0, looked:false, extra:null, age(){ return performance.now() - this.t0; }};
-const coachBusy = () => !storyBox.hidden || !document.getElementById('carnet').hidden || !gearMenu.hidden || (document.getElementById('tuto') && !document.getElementById('tuto').hidden) || !document.getElementById('helpBox').hidden;
+const coachBusy = () => nightOn || !storyBox.hidden || !document.getElementById('carnet').hidden || !gearMenu.hidden || (document.getElementById('tuto') && !document.getElementById('tuto').hidden) || !document.getElementById('helpBox').hidden;
 function coachHide(){ coachEl.hidden = true; coachRing.hidden = true; }
 function coachStop(){ const u = coachUI(); u.coachK = COACH.length; saveGlob(); coach.extra = null; coachHide(); }
 coachEl.querySelector('.coach-x').onclick = () => { if (coach.extra){ coachUI()[coach.extra.key] = 1; saveGlob(); coach.extra = null; coachHide(); } else coachStop(); };
