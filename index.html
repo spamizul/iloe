@@ -3032,7 +3032,7 @@ function near8(i, fn){
 const landOK = c => c === 'ȷ' || c === 'g' || c === 'k' || c === 'z' || c === 's' || c === 'c' || c === '^' || c === '&' || c === '~';
 const grassOK = c => c === 'g' || c === 'k' || c === 'z';
 const SPECIES = {
-  hen:  {anchor:i => O[i] === 'Ă' && (!isStory() || glob.story.v !== 2 || !!glob.story.hensBack), want:n => Math.min(12, n*6), rad:20, ok:landOK, sp:7, rest:[0.4, 2]},
+  hen:  {anchor:i => (isStory() && glob.story.v === 2) ? (O[i] === 'Ă' && !!glob.story.hensBack) : (O[i] === 'Ă' || O[i] === 'o' || O[i] === 'V' || O[i] === 'y' || O[i] === 'm'), want:n => (isStory() && glob.story.v === 2) ? Math.min(12, n*6) : Math.min(10, n*2), rad:20, ok:landOK, sp:7, rest:[0.4, 2]},
   sheep:{anchor:i => O[i] === 'F', want:n => Math.min(8, Math.floor(n/2)), rad:26, ok:grassOK, sp:3, rest:[2, 6]},
   duck: {anchor:i => G[i] === 'w' && near8(i, j => G[j] === 'g' || G[j] === 'k' || G[j] === 'z'), want:n => Math.min(4, Math.ceil(n/6)), rad:30, ok:c => c === 'w', sp:4, rest:[1, 3]},
 };
@@ -7478,6 +7478,7 @@ function checkStory(){
   storyHints(ch);
   if (ch && (glob.story.introSeen ?? -1) < glob.story.chapter){ if (chapterReady() && !pausing()) openChapter('intro', glob.story.chapter); return; }
   try { balClean(); canoeTick(); } catch(e){}
+  try { const c3 = CHAPTERS[glob.story.chapter]; if (c3 && c3.title === 'Le poulailler' && phase2(c3) && !glob.story.hensBack){ const miss = spawned('ă', 6) - found('ă') - cnt('ă'); if (miss > 0){ const land = mainLand(), cand = []; for (let i = 0; i < N*N; i++) if (!O[i] && (land[i] || inIsle(i, 'champs')) && (G[i] === 'g' || G[i] === 's') && !fogAt(i % N, (i / N)|0)) cand.push(i); for (const i of shuffleArr(cand).slice(0, miss)) O[i] = 'ă'; save(); forceDraw = true; } } } catch(e){}
   if (ch && (glob.story.introSeen ?? -1) >= glob.story.chapter && glob.story.pendingOutro == null && maybeMid(ch)) return;
   if (ch && ch.goals.every(([, f, n]) => f() >= needOf(n)) && glob.story.readyToast !== glob.story.chapter){
     glob.story.readyToast = glob.story.chapter; saveGlob(); 
