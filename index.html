@@ -3910,8 +3910,8 @@ function feedTide(){
     saveGlob(); renderRes(true); }
   if (afterTea && resOn()){
     const r = resv(), pop = inhabitants();
-    if (cnt('2')) r.lait = Math.max(0, (r.lait || 0) - (1 + Math.floor(pop / 10)));      // le café au lait du village
-    if (cnt('l') && glob.story.honey){ const want = Math.ceil(cnt('l') / 4); glob.story.candles = (r.miel || 0) >= want; r.miel = Math.max(0, (r.miel || 0) - want); }   // les bougies d'Ondine
+    if (cnt('2')) r.lait = Math.max(0, (r.lait || 0) - Math.min(1 + Math.floor(pop / 10), Math.max(0, (r.lait || 0) - 2)));      // le café au lait du village
+    if (cnt('l') && glob.story.honey){ const want = Math.ceil(cnt('l') / 4); glob.story.candles = (r.miel || 0) >= want; r.miel = Math.max(0, (r.miel || 0) - Math.min(want, Math.max(0, (r.miel || 0) - 2))); }   // les bougies d'Ondine
     saveGlob(); renderRes();
   }
   if (!glob.story.ville || glob.story.chapter <= 5 || !cnt('1')) return;
@@ -4145,6 +4145,8 @@ function handTap(x, y, cx, cy){
   if (resOn() && glob.story.ville && O[i] === 'K' && glob.story.farm) acts.push('Entrer');
   if (resOn() && glob.story.ville && O[i] === 'ɧ') acts.push('Monter');
   if (resOn() && glob.story.ville && O[i] === 'Ă') acts.push('Ramasser les œufs');
+  if (resOn() && glob.story.ville && glob.story.farm && O[i] === 'v' && !acts.length) acts.push('Traire');
+  if (resOn() && glob.story.ville && glob.story.farm && O[i] === 'Ç' && !acts.length) acts.push('Traire les vaches');
   if (resOn() && glob.story.ville && O[i] === 'Ą' && !acts.length) acts.push('Choisir ce qu’il vend');
   if (resOn() && glob.story.ville && O[i] === 'Ċ' && (glob.story.balOff || []).includes(i) && !acts.length) acts.push('Rallumer');
   if (resOn() && glob.story.ville && O[i] === 'ā' && !acts.length) acts.push('Sonner');
@@ -4209,6 +4211,7 @@ function interact(x, y){
   if (resOn() && glob.story.ville && O[i] === 'K' && glob.story.farm){ openCreperie(); return; }
   if (resOn() && glob.story.ville && O[i] === 'ɧ'){ openPanorama(); return; }
   if (resOn() && glob.story.ville && O[i] === 'Ă'){ takeEggs(i); return; }
+  if (resOn() && glob.story.ville && glob.story.farm && (O[i] === 'v' || O[i] === 'Ç')){ milkAt(i); return; }
   if (resOn() && glob.story.ville && O[i] === 'Ą'){ openStall(i); return; }
   if (resOn() && glob.story.ville && O[i] === 'Ċ' && relight(i)) return;
   if (resOn() && glob.story.ville && O[i] === 'ā'){ toast('🔔 Ding… le son s’en va loin, très loin, sur la mer.', 2600); return; }
@@ -6036,6 +6039,16 @@ function autoSnap(title){
 /* les poules et leurs œufs */
 const EGG_MS = 45000;
 const eggReady = i => Date.now() - (((glob.story.eggAt || {})[i]) || 0) >= EGG_MS;
+const MILK_MS = 60000;
+const milkReady = i => Date.now() - (((glob.story.milkAt || {})[i]) || 0) >= MILK_MS;
+function milkAt(i){
+  if (!glob.story.farm){ hintT('🐄 Il faut d’abord une grange pour traire les vaches.'); return; }
+  const cows = O[i] === 'v' ? [i] : (() => { const a = []; for (let j = 0; j < N*N; j++) if (O[j] === 'v') a.push(j); return a; })();
+  if (!cows.length){ hintT('🐄 Pas de vache à traire ici…'); return; }
+  const ready = cows.filter(milkReady); if (!ready.length){ toast('🐄 Les vaches se reposent… reviens un peu plus tard.', 2200); return; }
+  const M = glob.story.milkAt || (glob.story.milkAt = {}); for (const j of ready) M[j] = Date.now();
+  resv().lait += ready.length; saveGlob(); renderRes(true); renderStoryCard(); toast(`🥛 ${ready.length > 1 ? ready.length + ' seaux de lait' : 'Un seau de lait'} · +${ready.length} 🥛`, 2400);
+}
 function takeEggs(i){
   if (!glob.story.hensBack){ hintT('🐔 Le poulailler est vide : les poules se sont sauvées !'); return; }
   if (!eggReady(i)){ toast('🐔 Les poules couvent… reviens un peu plus tard.', 2200); return; }
