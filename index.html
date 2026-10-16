@@ -179,6 +179,35 @@ button.fold{flex:none;width:32px;height:30px;border:1px solid var(--line);backgr
 .at-txt p{margin:0 0 6px;font-size:13.5px;line-height:1.45}
 .at-veil{position:fixed;inset:0;z-index:96;background:rgba(10,16,22,.55);display:grid;place-items:center}
 .at-veil-in{background:var(--surface);color:var(--ink);border-radius:12px;padding:16px 20px;display:flex;flex-direction:column;gap:4px;font-family:var(--f-body);max-width:80vw}
+
+/* ---------- l'aide pas à pas : une bulle qui montre le vrai bouton ---------- */
+.coach{position:fixed;z-index:41;width:max-content;max-width:min(290px,calc(100vw - 24px));background:var(--surface);color:var(--ink);border:2px solid var(--accent);border-radius:14px;padding:10px 34px 10px 13px;font-size:15px;line-height:1.4;box-shadow:0 8px 24px rgba(0,0,0,.28);animation:coachIn .25s ease-out}
+.coach[hidden]{display:none}
+.coach-tip{position:absolute;width:12px;height:12px;background:var(--surface);border:2px solid var(--accent);transform:rotate(45deg)}
+.coach.up .coach-tip{bottom:-8px;border-top:0;border-left:0}
+.coach.down .coach-tip{top:-8px;border-bottom:0;border-right:0}
+.coach.free .coach-tip{display:none}
+.coach-x{position:absolute;top:4px;right:4px;width:26px;height:26px;border:0;background:none;color:var(--muted);font-size:18px;line-height:1;cursor:pointer;border-radius:8px}
+.coach-ring{position:fixed;z-index:40;pointer-events:none;border:3px solid var(--accent);border-radius:14px;animation:coachPulse 1.3s ease-in-out infinite}
+.coach-ring.cell{border-radius:50%}
+.coach-ring[hidden]{display:none}
+@keyframes coachPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.14);opacity:.55}}
+@keyframes coachIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.coach-ring,.coach{animation:none}}
+/* ---------- l'aide-mémoire, dans les réglages ---------- */
+.help{position:fixed;inset:0;z-index:85;background:rgba(10,18,28,.55);display:flex;align-items:flex-end;justify-content:center}
+.help[hidden]{display:none}
+.help-card{background:var(--surface);color:var(--ink);width:min(520px,100%);max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+@media (min-width:700px){.help{align-items:center}.help-card{border-radius:18px}}
+.help-card h2{font-family:var(--f-display);font-size:21px;margin:0 0 4px}
+.help-card > p{margin:0 0 12px;color:var(--muted);font-size:14px}
+.help-row{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)}
+.help-ic{flex:none;width:40px;height:40px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.help-ic svg{width:22px;height:22px}
+.help-ic.acc{background:var(--accent);color:var(--on-amber)}
+.help-row b{display:block;font-size:15px;margin-bottom:2px}
+.help-row span{font-size:14px;line-height:1.45;color:var(--ink2,var(--ink))}
+.help-bar{display:flex;gap:8px;justify-content:space-between;margin-top:14px}
 /* ---------- le tuto : la traversée en barque jusqu'à l'île, dans le même cadre que la carte ---------- */
 .tuto{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font-family:var(--f-body)}
 .tuto[hidden]{display:none}
@@ -454,6 +483,21 @@ body.hand .tool[aria-pressed="true"],body.hand #recent .tb[aria-pressed="true"]{
 .letter-paper.lp-old .lp-txt{line-height:30px}
 .letter-paper.lp-bark{background:#7a5a3a;background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.08) 0 3px,transparent 3px 9px)}
 .cn-page .letter-paper{max-width:330px}
+html.oh #pipBtn{display:none!important}
+html:not(.desk) #pipBtn{display:none!important}
+html:not(.desk) .acts > .tb > span{display:none}
+html:not(.desk) .acts{flex:1;justify-content:space-around;gap:0}
+html:not(.desk) .acts .tb{width:42px;height:50px}
+html:not(.desk) #undoBtn{order:1}html:not(.desk) #eraseBtn{order:2}html:not(.desk) #rangeBtn{order:3}html:not(.desk) #handBtn{order:4}
+html:not(.desk) #objBtn{width:50px;padding:0;justify-content:center}
+html:not(.desk) #objBtn svg{width:24px;height:24px}
+#eraseBtn{position:relative;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+html:not(.desk) #eraseBtn.has-pip::after{content:'';position:absolute;right:5px;bottom:6px;border:4px solid transparent;border-right-color:currentColor;border-bottom-color:currentColor;opacity:.55}
+html:not(.desk) #eraseBtn.pip-on{background:var(--accent-soft);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.pmenu{position:fixed;z-index:60;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:5px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.pmenu button{display:flex;align-items:center;gap:8px;padding:9px 12px;border:0;border-radius:9px;background:var(--surface2);color:inherit;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.pmenu svg{width:18px;height:18px}
+html.oh .recent{min-width:42px}
 .dk-items,.dk-cats{display:none}
 html.desk .recent,html.desk #objBtn{display:none!important}
 html.desk .thumb-in{flex-wrap:wrap;max-width:none;align-items:center;justify-content:center}
@@ -657,6 +701,8 @@ html.oh-l .thumb-in{flex-direction:row-reverse}
         <div class="label">L'histoire</div>
         <button class="btn" id="storyBtn" type="button">📖 Commencer l'histoire</button>
         <button class="btn" id="chapterRestart" type="button" hidden>↺ Recommencer ce chapitre</button>
+        <div class="label">Aide</div>
+        <button class="btn" id="helpBtn" type="button">❓ Comment on joue</button>
         <div class="label">Mes terrains</div>
         <div class="tlist" id="tlist"></div>
         <div class="row">
@@ -780,12 +826,12 @@ html.oh-l .thumb-in{flex-direction:row-reverse}
       <button class="tb" id="pipBtn" type="button" aria-pressed="false" title="Pipette : reprendre un objet du terrain">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 3.5a2.1 2.1 0 0 1 3 3L18 9l-3-3 2.5-2.5z"/><path d="M15 6l3 3"/><path d="M16 8l-9 9-3 1 1-3 9-9"/></svg>
         <span>Pipette</span></button>
-      <button class="tb" id="eraseBtn" type="button" aria-pressed="false"><span id="eraseIcon"></span><span>Pioche</span></button>
+      <button class="tb" id="eraseBtn" type="button" aria-pressed="false"><b class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.531 12.469 6.619 20.38a1 1 0 1 1-3-3l7.912-7.912"/><path d="M15.686 4.314A12.5 12.5 0 0 0 5.461 2.958 1 1 0 0 0 5.58 4.71a22 22 0 0 1 6.318 3.393"/><path d="M17.7 3.7a1 1 0 0 0-1.4 0l-4.6 4.6a1 1 0 0 0 0 1.4l2.6 2.6a1 1 0 0 0 1.4 0l4.6-4.6a1 1 0 0 0 0-1.4z"/><path d="M19.686 8.314a12.501 12.501 0 0 1 1.356 10.225 1 1 0 0 1-1.751-.119 22 22 0 0 0-3.393-6.319"/></svg></b><span>Pioche</span></button>
       <button class="tb" id="handBtn" type="button" aria-pressed="false" title="Main : déplacer la vue, ramasser, allumer"><b class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V6a1.5 1.5 0 0 1 3 0v5M11 11V4.5a1.5 1.5 0 0 1 3 0V11M14 11V6a1.5 1.5 0 0 1 3 0v7c0 4-2.5 7-6 7-2.6 0-4.2-1.6-5.5-3.7L3.3 12.6a1.4 1.4 0 0 1 2.3-1.6L8 13.5"/></svg></b><span>Main</span></button>
-      <button class="tb" id="rangeBtn" type="button" aria-pressed="false" title="Ranger : touche un objet pour le mettre dans ton sac"><b class="glyph">🎒</b><span>Ranger</span></button>
+      <button class="tb" id="rangeBtn" type="button" aria-pressed="false" title="Ranger : touche un objet pour le mettre dans ton sac"><b class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M8 10h8"/><path d="M8 18h8"/><path d="M8 22v-6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg></b><span>Ranger</span></button>
       <button class="tb" id="undoBtn" type="button" disabled><b class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6L4 11l5 5"/><path d="M4 11h10a5 5 0 0 1 0 10h-2"/></svg></b><span>Annuler</span></button>
     </div>
-    <button class="objBtn" id="objBtn" type="button" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>Objets</button>
+    <button class="objBtn" id="objBtn" type="button" aria-expanded="false" aria-label="Objets" title="Objets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 7 8.7 2.7a2.4 2.4 0 0 0-3.4 0L2.7 5.3a2.4 2.4 0 0 0 0 3.4L7 13"/><path d="m8 6 2-2"/><path d="m18 16 2-2"/><path d="m17 11 4.3 4.3c.94.94.94 2.46 0 3.4l-2.6 2.6c-.94.94-2.46.94-3.4 0L11 17"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg></button>
   </div>
 </nav>
 <div class="toast" id="toast" role="status"></div>
@@ -3665,7 +3711,14 @@ function renderSearch(q){
   }
 }
 /* barre sous le pouce : les derniers outils utilisés */
+function fitRecent(){
+  const el = document.getElementById('recent'); if (!el) return; el.style.flex = ''; el.style.width = '';
+  if (isDesk()) return; const w = el.clientWidth, n = Math.max(1, Math.floor((w + 3) / 45));
+  el.style.flex = 'none'; el.style.width = (n * 45 - 3) + 'px';
+}
+addEventListener('resize', () => requestAnimationFrame(fitRecent));
 function renderRecent(){
+  requestAnimationFrame(fitRecent); try { syncPip(); } catch(e){}
   const el = document.getElementById('recent'); el.innerHTML = '';
   for (const id of glob.recent){
     const t = TOOLS.find(t => t.id === id);
@@ -3688,6 +3741,7 @@ function selectTool(id, fromBar){
   if (id !== 'x' && !(glob.story && glob.story.bag && glob.story.bag[id] && !unlocked(id))) prevTool = id;
   tool = id;
   if (pipMode){ pipMode = false; document.getElementById('pipBtn').setAttribute('aria-pressed', 'false'); }
+  try { syncPip(); if (id === 'x' && pipOk() && !(glob.ui && glob.ui.pipTip) && !(isStory() && glob.story.chapter === 0)){ glob.ui = glob.ui || {}; glob.ui.pipTip = 1; saveGlob(); setTimeout(() => toast('Astuce : appui long sur la pioche pour la pipette', 2600), 300); } } catch(e){}
   if (id !== 'x' && !fromBar && glob.recent[0] !== id){ glob.recent = [id, ...glob.recent.filter(r => r !== id)].slice(0, 8); saveGlob(); renderRecent(); }
   syncToolUI();
 }
@@ -3702,9 +3756,29 @@ function syncToolUI(){
 document.getElementById('eraseBtn').onclick = () => selectTool(tool === 'x' && !handMode && !pipMode ? prevTool : 'x', true);
 /* pipette : on touche un objet du terrain pour reprendre le même outil */
 const pipBtn = document.getElementById('pipBtn');
+const pipOk = () => !pipBtn.hidden && !isDesk();
+let pmenu = null;
+function closePMenu(){ if (pmenu){ pmenu.remove(); pmenu = null; } }
+function openPMenu(){
+  closePMenu(); const eb = document.getElementById('eraseBtn'), r = eb.getBoundingClientRect();
+  pmenu = document.createElement('div'); pmenu.className = 'pmenu';
+  const b = document.createElement('button'); b.type = 'button'; b.innerHTML = pipBtn.querySelector('svg').outerHTML + (pipMode ? 'Arrêter la pipette' : 'Pipette');
+  b.onclick = () => { closePMenu(); pipBtn.click(); }; pmenu.append(b); document.body.append(pmenu);
+  pmenu.style.left = Math.round(Math.max(8, Math.min(innerWidth - pmenu.offsetWidth - 8, r.left + r.width/2 - pmenu.offsetWidth/2))) + 'px';
+  pmenu.style.top = Math.round(r.top - pmenu.offsetHeight - 8) + 'px';
+  try { navigator.vibrate && navigator.vibrate(12); } catch(e){}
+}
+document.addEventListener('pointerdown', e => { if (pmenu && !pmenu.contains(e.target)) closePMenu(); }, true);
+{ const eb = document.getElementById('eraseBtn'); let lt = 0, longed = false;
+  eb.addEventListener('pointerdown', () => { longed = false; clearTimeout(lt); if (pipOk()) lt = setTimeout(() => { longed = true; openPMenu(); }, 450); });
+  for (const ev of ['pointerup','pointerleave','pointercancel']) eb.addEventListener(ev, () => clearTimeout(lt));
+  eb.addEventListener('contextmenu', e => e.preventDefault());
+  eb.addEventListener('click', e => { if (longed){ longed = false; e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+}
+function syncPip(){ const eb = document.getElementById('eraseBtn'); const ok = pipOk(); eb.classList.toggle('has-pip', ok); eb.classList.toggle('pip-on', ok && pipMode); eb.title = ok ? 'Pioche · appui long : pipette' : 'Pioche'; }
 pipBtn.onclick = () => {
   if (handMode) setHand(false);
-  pipMode = !pipMode; pipBtn.setAttribute('aria-pressed', pipMode); syncToolUI();
+  pipMode = !pipMode; pipBtn.setAttribute('aria-pressed', pipMode); syncToolUI(); syncPip();
   if (pipMode) toast('Touche un objet ou un sol du terrain');
 };
 function pickAt(x, y){
@@ -3712,9 +3786,11 @@ function pickAt(x, y){
   if (!id){ const below = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x])); if (below) id = O[below[0]*N + x]; }
   if (!id) id = G[i] === '=' || G[i] === '¤' ? 'X' : G[i];
   if (GROWN[id]) id = GROWN[id];
-  pipMode = false; pipBtn.setAttribute('aria-pressed', 'false');
+  if (id === 'ć') id = 'Ć';
+  pipMode = false; pipBtn.setAttribute('aria-pressed', 'false'); try { syncPip(); } catch(e){}
   const t = TOOLS.find(t => t.id === id);
   if (t && unlocked(id)){ selectTool(id); openTab(t.group); toast(`Outil choisi : ${t.name}`); }
+  else toast(t ? 'Cet objet n’est pas encore débloqué' : 'Ça, ça ne se construit pas', 2000);
 }
 
 /* ---------- sur ordinateur : la barre de construction (catégories en bas, objets au-dessus) ---------- */
@@ -3743,7 +3819,7 @@ function renderDesk(){
     items.addEventListener('wheel', e => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)){ items.scrollLeft += e.deltaY; e.preventDefault(); } }, {passive:false});
     items.addEventListener('scroll', dkHideTip);
   }
-  { const pb = document.getElementById('pipBtn'); if (pb) pb.hidden = isStory() && !on; }
+  { const pb = document.getElementById('pipBtn'); if (pb) pb.hidden = false; try { syncPip(); } catch(e){} }
   if (!on){ dkHideTip(); return; }
   if (document.body.classList.contains('sheet')) document.body.classList.remove('sheet');
   const avail = TOOLS.filter(t => t.kind !== 'erase' && unlocked(t.id));
@@ -4554,6 +4630,7 @@ document.getElementById('confirmNo').onclick = () => { confirmRow.hidden = true;
 /* ---------- agrandir ---------- */
 const growBtn = document.getElementById('growBtn');
 function updateGrowBtn(){
+  try { growBtn.hidden = isStory(); } catch(e){}
   if (N >= NMAX){ growBtn.textContent = `Taille maximale (${N}×${N})`; growBtn.disabled = true; }
   else { growBtn.textContent = `Agrandir : ${N}×${N} → ${N+8}×${N+8}`; growBtn.disabled = false; }
 }
@@ -4970,14 +5047,8 @@ const TUTO_DRAG = '<svg class="tuto-gest" viewBox="0 0 52 52" fill="none" stroke
 const TUTO_PINCH = '<svg class="tuto-gest" viewBox="0 0 52 52" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M14 14l24 24" stroke-dasharray="2 5" opacity=".5"/><g class="pinchA"><circle cx="19" cy="19" r="4" fill="currentColor" stroke="none"/></g><g class="pinchB"><circle cx="33" cy="33" r="4" fill="currentColor" stroke="none"/></g></svg>';
 var tutoReshow = null;
 const TUTO_PAGES = [
-  {t:'Ton île, du bout des doigts', p:() => 'Prends la main, en bas de l’écran : c’est elle qui te laisse te promener. Glisse alors un doigt pour déplacer la carte. ' + (ohSide() ? 'Les boutons + et − servent à zoomer.' : 'Pince avec deux doigts, ou fais rouler la molette, pour zoomer.'),
-   ill:() => [chipHTML(TUTO_HAND, 'Main'), chipHTML(TUTO_DRAG, 'Glisser'), ohSide() ? chipHTML('<b class="tuto-gest" style="font-size:22px;font-weight:700">+ −</b>', 'Zoomer') : chipHTML(TUTO_PINCH, 'Pincer'), tutoHandPick()]},
-  {t:'La main et la pioche', p:() => 'Avec la main, tu ramasses ce qui traîne, tu entres dans les boutiques et tu toques aux portes. ' + (ohSide() ? 'L’outil Ranger met un objet dans ton sac.' : 'Un appui long range un objet dans ton sac.') + ' La pioche casse les rochers et enlève ce qui gêne.',
-   ill:() => [chipHTML(TUTO_HAND, 'Main'), chipCv('x', 'Pioche')]},
-  {t:'Construire', p:'Le bouton Objets ouvre tout ce que tu sais construire. Chaque objet coûte un peu de bois ou de pierre : ta réserve s’affiche en haut de l’écran.',
-   ill:() => [chipHTML(TUTO_OBJ, 'Objets'), chipCv('Ĉ'), chipCv('h'), chipCv('4')]},
-  {t:'Les gens de l’île', p:() => (ohSide() ? 'Le visage en bas de l’écran, ' : 'Le visage en haut, ') + 'c’est la personne qui te parle : touche-le pour relire ce qu’elle attend. Quand son cercle est plein, touche-le pour avancer. L’ampoule donne un indice, et le carnet garde tout en mémoire.',
-   ill:() => [chipFace(), chipHTML(TUTO_BULB, 'Indice'), chipHTML(TUTO_BOOK, 'Carnet')]}
+  {t:'Cap sur ton île', p:() => (isDesk() ? 'Pour te promener, prends la main et fais glisser la carte. La molette de la souris sert à zoomer.' : 'Pour te promener, prends la main et glisse un doigt sur la carte. ' + (ohSide() ? 'Les boutons + et − servent à zoomer.' : 'Pince avec deux doigts pour zoomer.')) + ' Pour le reste, pas d’inquiétude : tu apprendras en chemin.',
+   ill:() => [chipHTML(TUTO_HAND, 'Main'), chipHTML(TUTO_DRAG, 'Glisser'), isDesk() ? chipHTML('<b class="tuto-gest" style="font-size:20px;font-weight:700">⇕</b>', 'Molette') : ohSide() ? chipHTML('<b class="tuto-gest" style="font-size:22px;font-weight:700">+ −</b>', 'Zoomer') : chipHTML(TUTO_PINCH, 'Pincer'), ...(isDesk() ? [] : [tutoHandPick()])]}
 ];
 function chipHTML(svg, label){ const d = document.createElement('span'); d.className = 'tuto-chip'; d.innerHTML = svg + (label ? `<span>${label}</span>` : ''); return d; }
 function chipCv(id, label){ const d = document.createElement('span'); d.className = 'tuto-chip'; const t = TOOLS.find(t => t.id === id); const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; if (t) drawIconTo(t, cv); d.append(cv); if (label){ const s = document.createElement('span'); s.textContent = label; d.append(s); } return d; }
@@ -4995,12 +5066,12 @@ function showTuto(done){
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let k = 0, bx = 8, t0 = performance.now(), W = 120, H = 56;
   const fit = () => { const r = cv.getBoundingClientRect(), sc = Math.max(2, Math.round(Math.min(r.width / 100, r.height / 70))); W = Math.max(80, Math.round(r.width / sc)); H = Math.max(56, Math.round(r.height / sc)); cv.width = W; cv.height = H; };
-  const isleX = () => W - 34, target = () => 6 + k * (isleX() - 20) / 3;   // la barque avance d'un bout de mer à chaque page
-  const show = () => { const pg = TUTO_PAGES[k]; h.textContent = pg.t; p.textContent = typeof pg.p === 'function' ? pg.p() : pg.p; tutoReshow = show; ill.innerHTML = ''; ill.append(...pg.ill()); next.textContent = k === TUTO_PAGES.length - 1 ? 'Accoster' : 'Suivant'; skip.hidden = k === TUTO_PAGES.length - 1; back.style.visibility = k ? 'visible' : 'hidden'; step.textContent = `${k + 1} sur ${TUTO_PAGES.length}`; if (still) bx = target(); };
+  const isleX = () => W - 34; let landing = false; const target = () => landing ? isleX() - 22 : 6 + (isleX() - 20) * Math.min(0.62, (performance.now() - t0) / 26000);   // la barque avance doucement pendant qu'on lit
+  const show = () => { const pg = TUTO_PAGES[k]; h.textContent = pg.t; p.textContent = typeof pg.p === 'function' ? pg.p() : pg.p; tutoReshow = show; ill.innerHTML = ''; ill.append(...pg.ill()); next.textContent = k === TUTO_PAGES.length - 1 ? 'Accoster' : 'Suivant'; skip.hidden = k === TUTO_PAGES.length - 1; back.style.visibility = k ? 'visible' : 'hidden'; step.textContent = TUTO_PAGES.length > 1 ? `${k + 1} sur ${TUTO_PAGES.length}` : 'La traversée'; if (still) bx = target(); };
   const px = (x, y, w, hh, col) => { c.fillStyle = col; c.fillRect(Math.round(x), Math.round(y), w, hh); };
   const frame = now => {
     const t = (now - t0) / 1000, hz = Math.round(H * 0.46), ix = isleX();
-    bx += (target() - bx) * (still ? 1 : 0.035);
+    bx += (target() - bx) * (still ? 1 : landing ? 0.06 : 0.035);
     // le ciel de nuit, ses étoiles et un croissant de lune
     px(0, 0, W, hz, '#1a2d44'); px(0, hz - 6, W, 6, '#22395a');
     for (let n = 0; n < 46; n++){ const x = (n * 97 + n * n * 13) % (W - 2) + 1, y = (n * 61 + n * n * 7) % (hz - 8) + 2; px(x, y, 1, 1, (n + Math.floor(t * 1.5)) % 7 ? 'rgba(238,243,245,.45)' : '#ffffff'); }
@@ -5028,10 +5099,10 @@ function showTuto(done){
     tutoRaf = requestAnimationFrame(frame);
   };
   const close = () => { cancelAnimationFrame(tutoRaf); el.hidden = true; glob.tutoSeen = 1; try { saveGlob(); } catch (e) {} if (done) done(); };
-  next.onclick = () => { if (k < TUTO_PAGES.length - 1){ k++; show(); } else close(); };
+  next.onclick = () => { if (k < TUTO_PAGES.length - 1){ k++; show(); } else if (still || landing) close(); else { landing = true; next.disabled = true; setTimeout(() => { next.disabled = false; close(); }, 1400); } };
   skip.onclick = close;
   back.onclick = () => { if (k > 0){ k--; show(); } };
-  el.hidden = false; fit(); bx = target(); show(); cancelAnimationFrame(tutoRaf); tutoRaf = requestAnimationFrame(frame);
+  landing = false; next.disabled = false; t0 = performance.now(); el.hidden = false; fit(); bx = target(); show(); cancelAnimationFrame(tutoRaf); tutoRaf = requestAnimationFrame(frame);
   onresize_tuto = () => { if (!el.hidden){ const f = bx - target(); fit(); bx = target() + f; } };
 }
 
@@ -7089,7 +7160,7 @@ function openChapter(kind, i){
     const next = CHAPTERS[i + 1];
     openStoryModal({mode:'outro', who:ch.outroWho || ch.who, kicker:`Saison ${si.s} · chapitre ${si.k} terminé 💛`, title:ch.title, paras:ch.outro, rewards:ch.reward,
       go: !next ? (glob.story.v === 2 ? 'À suivre…' : 'Merci !') : !chapterReady() ? 'À demain !' : next.season !== ch.season ? `Vers la saison ${next.season}` : 'Continuer', times:storyTimes(ch, 'outro')});
-    if (glob.story.v === 2) setTimeout(() => autoSnap(ch.title), 60);
+    if (glob.story.v === 2 && (!next || next.season !== ch.season)) setTimeout(() => autoSnap(`Fin de la saison ${si.s}`), 60);
   }
 }
 function bookPages(){
@@ -7432,7 +7503,7 @@ function checkStory(){
     const pf = (glob.story.fogs || []).find(f => f.key === 'pins'); if (pl && pf && !pf.thick){ pf.thick = 1; pf.rx = pl.rx + 5; pf.ry = pl.ry + 4.5; saveGlob(); forceDraw = true; } } catch(e){}
   try { palomaHomeCheck(); } catch(e){}
   try { if (glob.story.ville && glob.story.v === 2 && (glob.story.chapter > S3I('Ce que la mer rapporte') || (glob.story.bottle2 || 0) >= 3) && !(glob.story.rl || []).includes('chaussette')){ glob.story.rl = ['chaussette', ...(glob.story.rl || [])]; saveGlob(); } } catch(e){}
-  { const pb = document.getElementById('pipBtn'); if (pb) pb.hidden = isStory() && !isDesk(); }
+  { const pb = document.getElementById('pipBtn'); if (pb) pb.hidden = false; try { syncPip(); } catch(e){} }
   if (isStory() && glob.story.v === 2) try { checkReq(); } catch (e) {}
   if (!isStory()) { storyCard.hidden = true; return; }
   if (glob.story.v === 2 && !glob.story.ville && storyBox.hidden && !glob.story.villeAsked){
@@ -7608,7 +7679,6 @@ function cnHistoire(pg){
   if (ch.mid2 && (i < glob.story.chapter || phase3(ch))) for (const t of (typeof ch.mid2 === 'function' ? ch.mid2() : ch.mid2)) say(t);
   if (i < glob.story.chapter){ for (const t of ch.outro || []) say(t, 'cn-outro'); if (ch.dawn && (glob.story.dawnSeen || {})[i]) for (const t of ch.dawn) say(t, 'cn-outro'); }
   else pg.append(cnEl('p', 'cn-empty', '… la suite s’écrit en ce moment.'));
-  { const b = cnEl('button', 'cn-retuto', 'Revoir comment on joue'); b.type = 'button'; b.onclick = () => { document.getElementById('carnet').hidden = true; showTuto(); }; pg.append(b); }
 }
 function cnHabitants(pg){
   const met = peopleMet();
@@ -7800,7 +7870,7 @@ placeTimeControls();
 
 /* ---------- démarrage ---------- */
 const ecv = document.createElement('canvas'); ecv.width = 16; ecv.height = 20;
-document.getElementById('eraseIcon').replaceWith(ecv); drawIconTo(TOOLS.find(t => t.id === 'x'), ecv);
+void ecv;
 glob.recent = (glob.recent || []).filter(id => TOOLS.some(t => t.id === id));
 setEco(glob.eco);
 buildTools(); setSeason(season); syncWalkers(); renderTerrains();
@@ -7840,7 +7910,7 @@ function ohApply(bigger){
     if (storeMode) setHand(false);
   }
 }
-function setOneHand(h){ const was = ohSide(); glob.ui = glob.ui || {}; glob.ui.hand = h; saveGlob(); ohApply(!was && !!h); try { renderDesk(); } catch(e){} }
+function setOneHand(h){ const was = ohSide(); glob.ui = glob.ui || {}; glob.ui.hand = h; saveGlob(); ohApply(!was && !!h); try { renderDesk(); } catch(e){} requestAnimationFrame(fitRecent); }
 function tutoHandPick(){
   const d = document.createElement('div'); d.className = 'tuto-hand';
   d.innerHTML = '<span class="label">Tu joues d’une seule main ?</span><div class="seg theme-seg"><button type="button" data-h="">Non</button><button type="button" data-h="l">Main gauche</button><button type="button" data-h="r">Main droite</button></div>';
@@ -7848,6 +7918,135 @@ function tutoHandPick(){
   return d;
 }
 document.querySelectorAll('#handSeg button').forEach(b => b.onclick = () => setOneHand(b.dataset.h));
+/* ---------- l'aide pas à pas : au chapitre 1, une bulle montre le vrai bouton au bon moment ---------- */
+const coachEl = document.createElement('div'); coachEl.className = 'coach'; coachEl.hidden = true; coachEl.setAttribute('role', 'status');
+coachEl.innerHTML = '<i class="coach-tip"></i><span class="coach-t"></span><button type="button" class="coach-x" aria-label="Ne plus m’aider">×</button>';
+const coachRing = document.createElement('div'); coachRing.className = 'coach-ring'; coachRing.hidden = true;
+document.body.append(coachRing, coachEl);
+const coachUI = () => glob.ui || (glob.ui = {});
+const cabNeed = () => ((COST['Ĉ'] || {}).b || 3);
+const sheetOpen = () => document.body.classList.contains('sheet');
+const COACH = [
+  {id:'pick', when:() => O.includes('ř'), done:() => tool === 'x' && !handMode && !pipMode, el:() => document.getElementById('eraseBtn'), t:'Des rochers bloquent la plage. Prends la pioche, en bas de l’écran.'},
+  {id:'rock', when:() => O.includes('ř'), start:() => { coach.r0 = cnt('ř'); }, done:() => cnt('ř') < coach.r0, cell:'ř', t:'Touche un rocher pour le casser.'},
+  {id:'rocks', when:() => O.includes('ř'), done:() => !O.includes('ř') || coach.age() > 5000, t:'Bravo ! Casse tous les rochers pour dégager la plage.'},
+  {id:'hand', when:() => !cnt('Ĉ') && resv().b < cabNeed() && O.includes('ŵ'), done:() => handMode && !storeMode, el:() => document.getElementById('handBtn'), t:'Pour ta cabane, il faut du bois. Prends la main.'},
+  {id:'wood', when:() => !cnt('Ĉ') && resv().b < cabNeed() && O.includes('ŵ'), done:() => resv().b >= cabNeed() || !O.includes('ŵ'), cell:'ŵ', t:'Touche le bois flotté pour le ramasser.'},
+  {id:'obj', when:() => !cnt('Ĉ') && unlocked('Ĉ') && !isDesk(), done:() => sheetOpen() || tool === 'Ĉ', el:() => document.getElementById('objBtn'), t:'Tu as assez de bois ! Ouvre les Objets.'},
+  {id:'cab', when:() => !cnt('Ĉ') && unlocked('Ĉ'), start:() => { if (isDesk()) openTab('Habitations'); }, done:() => tool === 'Ĉ' && !handMode, sheet:true,
+   el:() => isDesk() ? document.querySelector('.dk-it[data-id="Ĉ"]') : (document.getElementById('toolnew-Ĉ') && document.getElementById('toolnew-Ĉ').offsetParent ? document.getElementById('toolnew-Ĉ') : document.getElementById('tool-Ĉ')), t:'Choisis la cabane.'},
+  {id:'place', when:() => !cnt('Ĉ'), done:() => cnt('Ĉ') > 0, t:() => tool === 'Ĉ' ? 'Touche la plage pour poser ta cabane.' : 'Reprends la cabane, puis touche la plage pour la poser.'},
+  {id:'face', when:() => glob.story.chapter === 0, start:() => { document.getElementById('scFace').addEventListener('click', () => { coach.clicked = true; }, {once:true}); }, done:() => coach.clicked || coach.age() > 12000, el:() => document.getElementById('scFace'), t:'Ici, c’est ta mission en cours. Touche-la pour revoir ce qu’il reste à faire.'},
+  {id:'done', when:() => glob.story.chapter === 0, wait:() => !document.getElementById('scDone').hidden, done:() => glob.story.chapter > 0 || (coach.shown && document.getElementById('scDone').hidden), el:() => document.getElementById('scDone'), t:'Mission accomplie ! Touche le point d’exclamation pour terminer le chapitre.'}
+];
+const coach = {k:-1, t0:0, shown:false, r0:0, looked:false, extra:null, age(){ return performance.now() - this.t0; }};
+const coachBusy = () => !storyBox.hidden || !document.getElementById('carnet').hidden || !gearMenu.hidden || (document.getElementById('tuto') && !document.getElementById('tuto').hidden) || !document.getElementById('helpBox').hidden;
+function coachHide(){ coachEl.hidden = true; coachRing.hidden = true; }
+function coachStop(){ const u = coachUI(); u.coachK = COACH.length; saveGlob(); coach.extra = null; coachHide(); }
+coachEl.querySelector('.coach-x').onclick = () => { if (coach.extra){ coachUI()[coach.extra.key] = 1; saveGlob(); coach.extra = null; coachHide(); } else coachStop(); };
+function cellRect(id){
+  const r = board.getBoundingClientRect(), sc = r.width / vw(); let best = null, bd = 1e9;
+  const mx = camX + vw()/2, my = camY + vh()/2;
+  for (let i = 0; i < N*N; i++) if (O[i] === id && !fogAt(i % N, (i / N)|0)){ const d = Math.hypot((i % N)*T + 8 - mx, ((i / N)|0)*T + 8 - my); if (d < bd){ bd = d; best = i; } }
+  if (best == null) return null;
+  const x = best % N, y = (best / N)|0, sx = r.left + (x*T - camX)*sc, sy = r.top + (y*T - camY)*sc, sz = T*sc;
+  if ((sx < r.left || sy < r.top || sx + sz > r.right || sy + sz > r.bottom) && !coach.looked){ coach.looked = true; lookAt(x, y); forceDraw = true; return null; }
+  return {left:sx - 4, top:sy - 4, width:sz + 8, height:sz + 8, right:sx + sz + 4, bottom:sy + sz + 4};
+}
+function coachShow(text, r, isCell){
+  const tEl = coachEl.querySelector('.coach-t'); if (tEl.textContent !== text) tEl.textContent = text;
+  coachEl.hidden = false; const w = coachEl.offsetWidth, h = coachEl.offsetHeight, th = document.querySelector('.thumb');
+  if (!r){
+    const top = th && th.offsetParent ? th.getBoundingClientRect().top : innerHeight - 90;
+    coachEl.className = 'coach free'; coachEl.style.left = Math.round((innerWidth - w)/2) + 'px'; coachEl.style.top = Math.round(top - h - 14) + 'px'; coachRing.hidden = true; return;
+  }
+  coachRing.hidden = false; coachRing.classList.toggle('cell', !!isCell);
+  Object.assign(coachRing.style, {left:Math.round(r.left - 3) + 'px', top:Math.round(r.top - 3) + 'px', width:Math.round(r.width + 6) + 'px', height:Math.round(r.height + 6) + 'px'});
+  const cx = r.left + r.width/2, up = r.top > innerHeight * 0.45, left = Math.round(Math.max(12, Math.min(innerWidth - w - 12, cx - w/2)));
+  coachEl.className = 'coach ' + (up ? 'up' : 'down'); coachEl.style.left = left + 'px';
+  coachEl.style.top = Math.round(up ? r.top - h - 16 : r.bottom + 16) + 'px';
+  coachEl.querySelector('.coach-tip').style.left = Math.round(Math.max(12, Math.min(w - 24, cx - left - 6))) + 'px';
+}
+let coachSig = '', coachProgT = performance.now();
+function coachTick(){
+  if (!isStory() || !glob.story || !glob.story.started){ coachHide(); return; }
+  const u = coachUI();
+  if (coachBusy()){ coachHide(); return; }
+  // la suite du chapitre 1
+  if (glob.story.chapter === 0 && (u.coachK || 0) < COACH.length && (glob.story.introSeen ?? -1) >= 0){
+    let k = u.coachK || 0;
+    while (k < COACH.length){
+      const st = COACH[k];
+      if (coach.k !== k){ coach.k = k; coach.t0 = performance.now(); coach.shown = false; coach.looked = false; coach.clicked = false; if (!st.when()){ k++; u.coachK = k; saveGlob(); continue; } if (st.start) st.start(); }
+      if (coach.shown && st.done()){ k++; u.coachK = k; saveGlob(); continue; }
+      break;
+    }
+    if (k >= COACH.length){ coachHide(); return; }
+    const st = COACH[k];
+    if (st.wait && !st.wait()){ coachHide(); coach.t0 = performance.now(); return; }
+    if (!st.sheet && sheetOpen() && st.id !== 'obj'){ coachHide(); return; }
+    if (st.sheet && !isDesk() && !sheetOpen()){ coachShow('Ouvre les Objets, puis choisis la cabane.', document.getElementById('objBtn').getBoundingClientRect()); coach.shown = true; return; }
+    const el = st.el && st.el(); let r = null;
+    if (el && el.offsetParent){ r = el.getBoundingClientRect(); if (st.sheet) el.scrollIntoView({block:'nearest'}); }
+    else if (st.cell) r = cellRect(st.cell);
+    if (st.cell && !r && coach.looked && coach.age() < 600) return;
+    coachShow(typeof st.t === 'function' ? st.t() : st.t, r, !!st.cell); coach.shown = true; return;
+  }
+  // plus tard, une seule fois chacune : l'ampoule, puis le carnet
+  if (glob.story.chapter < 1){ coachHide(); return; }
+  try { const ch = CHAPTERS[glob.story.chapter]; const sig = ch ? JSON.stringify(ch.goals.map(g => g[1]())) + glob.story.chapter : ''; if (sig !== coachSig){ coachSig = sig; coachProgT = performance.now(); } } catch(e){}
+  if (!coach.extra){
+    const hint = document.getElementById('scHint'), book = document.getElementById('scBook');
+    if (!u.coachBook && book && !book.hidden && book.offsetParent) coach.extra = {key:'coachBook', el:book, t:'Ton carnet garde tout : les gens que tu rencontres, leurs lettres et tes photos.', t0:performance.now()};
+    else if (!u.coachHint && hint && !hint.hidden && hint.offsetParent && performance.now() - coachProgT > 150000) coach.extra = {key:'coachHint', el:hint, t:'Tu ne sais plus quoi faire ? L’ampoule te souffle un indice.', t0:performance.now()};
+  }
+  if (coach.extra){
+    const x = coach.extra;
+    if (performance.now() - x.t0 > 9000 || x.clicked){ u[x.key] = 1; saveGlob(); coach.extra = null; coachHide(); return; }
+    if (!x.el.offsetParent){ coachHide(); return; }
+    if (!x.bound){ x.bound = true; x.el.addEventListener('click', () => { x.clicked = true; }, {once:true}); }
+    coachShow(x.t, x.el.getBoundingClientRect()); return;
+  }
+  coachHide();
+}
+setInterval(coachTick, 250);
+
+/* ---------- l'aide-mémoire : chaque bouton, avec sa vraie icône ---------- */
+const helpBox = document.createElement('div'); helpBox.className = 'help'; helpBox.id = 'helpBox'; helpBox.hidden = true; helpBox.setAttribute('role', 'dialog'); helpBox.setAttribute('aria-modal', 'true'); helpBox.setAttribute('aria-label', 'Comment on joue');
+document.body.append(helpBox);
+helpBox.addEventListener('click', e => { if (e.target === helpBox) helpBox.hidden = true; });
+function openHelp(){
+  const ic = sel => { const e = document.querySelector(sel); const sv = e && e.querySelector('svg'); return sv ? sv.outerHTML : ''; };
+  const desk = isDesk(), oh = !!ohSide();
+  const rows = [
+    ['<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20"/><path d="m15 19-3 3-3-3"/><path d="m19 9 3 3-3 3"/><path d="M2 12h20"/><path d="m5 9-3 3 3 3"/><path d="m9 5 3-3 3 3"/></svg>', 'Se promener', desk ? 'Prends la main et fais glisser la carte. La molette zoome.' : 'Prends la main et glisse un doigt. ' + (oh ? 'Les boutons + et − zooment.' : 'Pince avec deux doigts pour zoomer.')],
+    [ic('#handBtn'), 'La main', 'Ramasse ce qui traîne, entre dans les boutiques, toque aux portes. ' + (oh ? 'Le bouton sac range un objet dans ton sac.' : 'Un appui long sur un objet le range dans ton sac.')],
+    [ic('#eraseBtn'), 'La pioche', 'Casse les rochers, coupe les arbres, enlève ce qui gêne. ' + (desk ? 'Juste à côté, la pipette reprend un objet du terrain.' : 'Un appui long dessus ouvre la pipette, pour reprendre un objet du terrain.')],
+    [ic('#undoBtn'), 'Annuler', 'Défait ta dernière action.'],
+    ...(desk ? [] : [[ic('#objBtn'), 'Les objets', 'Tout ce que tu sais construire. Les derniers objets choisis restent à gauche de la barre.', 1]]),
+    [ic('#scFaceCv') || TUTO_BOOK, 'Le visage', 'La personne qui te confie une mission. Touche-le pour revoir ce qu’elle attend. Quand le « ! » apparaît, touche-le pour finir le chapitre.'],
+    [ic('#scHint'), 'L’ampoule', 'Un indice, quand tu ne sais plus quoi faire.'],
+    [ic('#scBook'), 'Le carnet', 'Les gens de l’île, leurs lettres et l’album de tes photos.'],
+    [ic('#photoBtn'), 'La photo', 'Garde un souvenir de ton île.'],
+    ['<b style="font-size:20px">🪵</b>', 'La réserve', 'En haut de l’écran : ton bois, tes pierres et le reste. Chaque objet coûte un peu de réserve.']
+  ];
+  helpBox.innerHTML = '<div class="help-card"><h2>Comment on joue</h2><p>Un petit aide-mémoire, à relire quand tu veux.</p></div>';
+  const card = helpBox.firstChild;
+  for (const [svg, t, d, acc] of rows){
+    const row = document.createElement('div'); row.className = 'help-row';
+    const i = document.createElement('span'); i.className = 'help-ic' + (acc ? ' acc' : ''); i.innerHTML = svg;
+    if (t === 'Le visage'){ i.innerHTML = ''; const c = document.createElement('canvas'); c.width = 16; c.height = 16; c.style.cssText = 'width:30px;height:30px;image-rendering:pixelated;border-radius:50%'; try { drawPortrait(c, PEOPLE.job); } catch(e){} i.append(c); }
+    const tx = document.createElement('div'); const bb = document.createElement('b'); bb.textContent = t; const sp = document.createElement('span'); sp.textContent = d; tx.append(bb, sp);
+    row.append(i, tx); card.append(row);
+  }
+  const bar = document.createElement('div'); bar.className = 'help-bar';
+  const re = document.createElement('button'); re.type = 'button'; re.className = 'tuto-back'; re.textContent = 'Revoir la traversée'; re.onclick = () => { helpBox.hidden = true; showTuto(); };
+  const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'tuto-next'; ok.textContent = 'Compris'; ok.onclick = () => { helpBox.hidden = true; };
+  bar.append(re, ok); card.append(bar);
+  helpBox.hidden = false; card.scrollTop = 0; try { ok.focus({preventScroll:true}); } catch(e){}
+}
+document.getElementById('helpBtn').onclick = () => { setMenu(false); openHelp(); };
+
 addEventListener('resize', () => { if (ohSide()) ohLayout(); });
 try { const thIn = document.querySelector('.thumb-in'); if (thIn && window.ResizeObserver) new ResizeObserver(() => { if (ohSide()) ohLayout(); }).observe(thIn); } catch(e){}
 for (const id of ['newsBtn', 'bagBtn', 'scFace']){ const e = document.getElementById(id); if (e) e.addEventListener('click', () => { if (ohSide()) ohLayout(); }, true); }
