@@ -195,13 +195,26 @@ button.fold{flex:none;width:32px;height:30px;border:1px solid var(--line);backgr
 #storyBox.bulle .story-rewards{justify-content:flex-start;gap:12px;padding:2px 0 0}
 #storyBox.bulle .row.center{justify-content:flex-end !important;align-items:center;margin-top:2px;align-self:stretch}
 #storyBox.bulle .row.center .btn{padding:8px 14px}
-#storyBox:not(.bulle) .sb-mis,#storyBox:not(.bulle) .sb-read,#storyBox:not(.bulle) .sb-tip{display:none}
+#storyBox:not(.bulle) .sb-mis,#storyBox:not(.bulle) .sb-read,#storyBox .sb-read[hidden],#storyBox:not(.bulle) .sb-tip{display:none}
 .sb-mis{margin-top:8px;padding-top:9px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
 .sb-mis .lab{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .sb-mis .g{display:flex;align-items:baseline;gap:8px;font-size:15px;font-weight:600;line-height:1.3}
 .sb-mis .g em{font-style:normal;margin-left:auto;color:var(--muted);font-weight:500;font-size:13px;white-space:nowrap}
 .sb-read{display:block;background:none;border:0;padding:4px 0 0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;text-align:left}
 .sb-tip{position:fixed;width:14px;height:14px;background:var(--surface);transform:rotate(45deg);border-radius:3px;z-index:31;pointer-events:none}
+/* plus compact : récompenses en petites étiquettes, bouton toujours visible */
+#storyBox.bulle .story-card{padding:10px 12px 0 60px;gap:6px}
+#storyBox.bulle #storyFace{left:10px;top:10px;width:40px;height:40px}
+#storyBox.bulle .story-body p{font-size:15px;line-height:1.4}
+#storyBox.bulle .sb-mis{margin-top:4px;padding-top:7px;gap:3px}
+#storyBox.bulle .sb-mis .g{font-size:14px}
+#storyBox.bulle .story-rewards{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+#storyBox.bulle .story-rewards[hidden]{display:none}
+#storyBox.bulle .rw-label{flex-basis:auto;text-align:left;font-size:11px;margin:0}
+#storyBox.bulle .rw{flex-direction:row;gap:5px;font-size:13px}
+#storyBox.bulle .rw canvas{width:18px;height:22px}
+#storyBox.bulle .row.center{position:sticky;bottom:0;background:var(--surface);padding:6px 0 10px;margin:0;gap:10px}
+#storyBox.bulle .sb-read{margin-right:auto;padding:0;font-size:12.5px}
 @keyframes sbIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 /* ---------- la nuit entre deux chapitres ---------- */
 .night-cap{position:fixed;inset:0;z-index:45;display:flex;align-items:flex-start;justify-content:center;padding-top:22vh;cursor:pointer}
@@ -7436,7 +7449,7 @@ function bulleFill(short, mode, ch){
   }
   const rd = document.createElement('button'); rd.type = 'button'; rd.className = 'sb-read'; rd.textContent = '📖 Lire toute l’histoire';
   rd.onclick = e => { e.stopPropagation(); storyLong = true; openStoryModal(storyArgs); };
-  storyBody.append(rd);
+  storyGo.parentNode.querySelectorAll('.sb-read').forEach(x => x.remove()); storyGo.parentNode.prepend(rd);
 }
 function bulleWho(){ if (storyBox.classList.contains('bulle')){ const t = storyWho.textContent.split(',')[0]; storyWho.textContent = t.toUpperCase(); } }
 let sbTip = null;
