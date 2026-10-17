@@ -850,6 +850,10 @@ html.oh body.sheet .oh-col{visibility:hidden}
 html.oh-l .thumb-in{flex-direction:row-reverse}
 .tuto-hand{display:flex;flex-direction:column;gap:6px;width:100%;margin-top:4px}
 .tuto-hand .label{font-size:12.5px;color:var(--muted)}
+.bag-list .mail .mail-ic{width:16px;text-align:center;font-size:13px;line-height:20px}
+#storyBox .cafe-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;max-height:38vh;overflow:auto}
+#storyBox .cafe-list button{display:flex;align-items:center;gap:6px;padding:5px 10px 5px 6px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:inherit;font:inherit;font-size:14px;cursor:pointer}
+#storyBox .cafe-list canvas{width:24px;height:24px;image-rendering:pixelated;border-radius:6px}
 </style>
 
 <div class="wrap" lang="fr">
@@ -4272,8 +4276,13 @@ function renderBag(){
     const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; drawDish(cv, k);
     const sp = document.createElement('span'); sp.textContent = `${DISHES[k]} ×${n}`;
     b.append(cv, sp); b.onclick = e => { e.stopPropagation(); hintT(k === 'k' ? '🎒 Des coquillages : Gaspard les échange contre ce qu’il a dans sa cale' : `🎒 ${DISHES[k]} : à offrir ou à garder pour une fête`); }; list.append(b); }
+  { const mb = (glob.story.mail || {}).bag || []; for (const m of mb){
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'dish mail';
+    const ic = document.createElement('span'); ic.className = 'mail-ic'; ic.textContent = '✉️';
+    const sp = document.createElement('span'); sp.textContent = `Pour ${mailName(m)}`;
+    b.append(ic, sp); b.onclick = e => { e.stopPropagation(); const hm = mailHome(m); bagPop.hidden = true; bagBtn.setAttribute('aria-expanded', 'false'); if (hm == null){ hintT(`✉️ ${mailName(m)} n’a plus de maison… garde la lettre, en attendant.`); return; } showAddr(mailName(m), hm); }; list.append(b); } }
   bagPop.append(list);
-  if (!ids.length && !dishKinds()){ const p = document.createElement('p'); p.style.marginTop = '8px'; p.textContent = 'Le reste de ton sac est vide. Un appui long avec la main ✋ sur un objet de ton île le range ici.'; bagPop.append(p); }
+  if (!ids.length && !dishKinds() && !((glob.story.mail || {}).bag || []).length){ const p = document.createElement('p'); p.style.marginTop = '8px'; p.textContent = 'Le reste de ton sac est vide. Un appui long avec la main ✋ sur un objet de ton île le range ici.'; bagPop.append(p); }
 }
 bagBtn.onclick = e => { e.stopPropagation(); { const r = bagBtn.getBoundingClientRect(); bagPop.style.top = Math.round(r.bottom + 8) + 'px'; } bagPop.hidden = !bagPop.hidden; bagBtn.setAttribute('aria-expanded', String(!bagPop.hidden)); renderBag(); };
 document.addEventListener('pointerdown', e => { if (!e.target.closest || !e.target.closest('#bagBtn, #bagPop')) bagPop.hidden = true; }, true);
@@ -4406,7 +4415,9 @@ function handTap(x, y, cx, cy){
   if (resOn() && glob.story.ville && O[i] === 'Ċ' && (glob.story.balOff || []).includes(i) && !acts.length) acts.push('Rallumer');
   if (resOn() && glob.story.ville && O[i] === 'ā' && !acts.length) acts.push('Sonner');
   if (O[i] === 'Ȝ') acts.push('Entrer');
+  if (resOn() && glob.story.ville && O[i] === '2' && !acts.length) acts.push('Entrer');
   if (resOn() && !acts.length){ const hk = homeKind(i); if (hk) acts.push(hk === 'own' ? 'Entrer' : hk === 'empty' ? 'Regarder' : 'Toquer'); }
+  if (!acts.length){ const bl = bldReact(i); if (bl) acts.push(bl); }
   const nm = nameOf(i);
   if (!acts.length){ if (nm) hintT('🏷️ ' + nm); return; }
   showBldPop(nm || '', acts[0], () => go(x, y), cx, cy);
@@ -4426,6 +4437,7 @@ document.addEventListener('pointerdown', e => { if (!e.target.closest || !e.targ
 function nameOf(i){
   const o = O[i], t = TOOLS.find(t => t.id === o);
   if (o === 'Ȝ') return 'Le voilier de Gaspard';
+  if (o === 'ô' && isStory() && typeof gBike === 'function' && gBike(i)) return 'Le vélo de Germaine';
   if (o === 'ɓ') return 'La barge de Philippe';
   if (o === 'ć'){ const a = longereAnchor(i); return a >= 0 ? nameOf(a) : 'Longère'; }
   if (o === 'Ć' && isStory() && glob.story && glob.story.v === 2) return glob.story.longere && glob.story.longere.i === i && glob.story.longere.s < 3 ? `Chantier de la longère · ${['les fondations', 'les murs', 'le toit'][glob.story.longere.s]} : ${resTxt(LONG_STEPS[glob.story.longere.s])}` : 'Longère de la famille de Philippe';
@@ -4442,7 +4454,7 @@ function nameOf(i){
   const own = {'1':'Lina', 'K':'Margaux', 'L':'Job', 'Ț':'Kofi', 'u':'Ondine', 'è':'Germaine'}[o];
   if (o === 'h' && inIsle(i, 'champs')) return 'Maison de Philippe et Annick';
   if (o === 'Ç' && inIsle(i, 'champs')) return 'Grange de Philippe et Annick';
-  return own ? `${t.name} de ${own}` : t.name;
+  return own ? `${t.name} ${/^[AEIOUÉÈ]/.test(own) ? 'd’' : 'de '}${own}` : t.name;
 }
 function interact(x, y){
   const i = y*N + x;
@@ -4466,7 +4478,7 @@ function interact(x, y){
   if (resOn() && glob.story.ville && O[i] === '1' && glob.story.chapter > 5){ openKitchen(); return; }
   if (resOn() && glob.story.ville && O[i] === 'K' && glob.story.farm){ openCreperie(); return; }
   if (resOn() && glob.story.ville && O[i] === 'ɧ'){ openPanorama(); return; }
-  if (resOn() && glob.story.ville && O[i] === '2' && (glob.story.rl || []).some(k => R_LETTERS[k])){ openCafeWall(); return; }
+  if (resOn() && glob.story.ville && O[i] === '2'){ openCafeScene(i); return; }
   if (resOn() && glob.story.ville && O[i] === 'Ă'){ takeEggs(i); return; }
   if (resOn() && glob.story.ville && glob.story.farm && (O[i] === 'v' || O[i] === 'Ç')){ milkAt(i); return; }
   if (resOn() && glob.story.ville && O[i] === 'Ą'){ openStall(i); return; }
@@ -4478,7 +4490,8 @@ function interact(x, y){
     const r = resv(); r.w += 3; glob.story.harvested = (glob.story.harvested || 0) + 3; saveGlob(); renderRes(true); groundDirty = true; queueSave();
     toast('🌾 Moisson · +3 🌾 · le blé repousse déjà', 2500); return;
   }
-  if (resOn() && glob.story.ville && (O[i] === 'h' || O[i] === 'Ĉ') && openHomeBubble(i)) return;
+  if (resOn() && glob.story.ville && (O[i] === 'h' || O[i] === 'Ĉ' || O[i] === 'L') && openHomeBubble(i)) return;
+  if (bldReact(i) && openBldBubble(i)) return;
   if (!handTarget(i)){ let j = i; if (!O[j]){ const below = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x])); if (below) j = below[0]*N + x; } const nm = O[j] && nameOf(j); if (nm) hintT('🏷️ ' + nm); return; }
   if (O[i] === 'Ȝ'){ openMerchant(); return; }
   if (O[i] === 'Ț'){ hintT('🔨 Kofi taille les pierres de tes maisons : chacune te coûte une pierre de moins.'); return; }
@@ -6006,7 +6019,7 @@ const CHAPTERS_V2 = [
      const L = [...vs, {name:'Job', job:'le gardien du phare', obj:'L'}];
      if (vs.length < 2){ if (cnt('1')) L.push({name:'Lina', job:'la boulangère', obj:'1'}); if (cnt('K')) L.push({name:'Margaux', job:'l’architecte', obj:'K'}); }
      glob.story.letters = L; glob.story.letterK = 0; saveGlob(); },
-   goals2:[['La tournée', () => glob.story.letterK || 0, () => (glob.story.letters || []).length || 1, 'Germaine compte sur toi pour la tournée…', 'Toque à la bonne porte avec la main ✋. Le carnet dit où habite chacun.']],
+   goals2:[['La tournée', () => glob.story.letterK || 0, () => (glob.story.letters || []).length || 1, 'Germaine compte sur toi pour la tournée…', 'Toque à la bonne porte avec la main ✋ : en touchant une maison, son nom s’affiche.']],
    get goals(){ return phase2(this) ? this.goals2 : this.goals1; },
    wants:i => phase2(CHAPTERS[glob.story.chapter]) && ['h', 'L', '1', 'K', 'Ĉ'].includes(O[i]),
    actLabel:() => 'Remettre la lettre',
@@ -6607,9 +6620,10 @@ function checkReq(){
 }
 function giveReq(){
   const c = curReq(); if (!c || !c.rq.give) return;
-  const r = resv(); if (Object.entries(c.rq.give).some(([k, n]) => (r[k] || 0) < n)){ hintT(`Il te faut ${giveTxt(c.rq.give)}`); return; }
-  for (const [k, n] of Object.entries(c.rq.give)) r[k] -= n;
-  finishReq(c);
+  const need = cafeCut(c.rq.give, c.v.name);
+  const r = resv(); if (Object.entries(need).some(([k, n]) => (r[k] || 0) < n)){ hintT(`Il te faut ${giveTxt(need)}`); return; }
+  for (const [k, n] of Object.entries(need)) r[k] -= n;
+  cafeUse(c.v.name); finishReq(c);
 }
 
 /* ---------- les quartiers et les nouvelles de l'île ---------- */
@@ -6728,12 +6742,11 @@ function fillNews(){
   const row = document.createElement('div'); row.className = 'np';
   const cv = document.createElement('canvas'); cv.width = 16; cv.height = 16; drawPortrait(cv, n.who ? PEOPLE[n.who] : residentLook(n.name));
   const tx = document.createElement('div'); const k = document.createElement('small'); k.textContent = n.who ? PEOPLE[n.who].name : n.name; tx.append(k, n.text);
-  if (n.wish){ const b = document.createElement('button'); b.type = 'button'; b.textContent = `Donner ${resTxt(n.wish.need)}`; const r = resv(); b.disabled = Object.entries(n.wish.need).some(([kk, v]) => (r[kk] || 0) < v); b.onclick = e => { e.stopPropagation(); giveWish(); newsPop.hidden = true; renderNews(); }; tx.append(document.createElement('br'), b); }
+  if (n.wish){ const hm = homeOf(n.wish.who); if (hm != null){ const b = document.createElement('button'); b.type = 'button'; b.textContent = '📍 Où ça ?'; b.onclick = e => { e.stopPropagation(); newsPop.hidden = true; showAddr(PEOPLE[n.wish.who].name, hm); }; tx.append(document.createElement('br'), b); } }
   if (n.req){
     if (n.prog){ const p = document.createElement('span'); p.className = 'np-prog'; p.textContent = n.prog; tx.append(p); }
     const bar = document.createElement('div'); bar.className = 'np-acts';
-    const show = document.createElement('button'); show.type = 'button'; show.textContent = 'Montrer'; show.onclick = e => { e.stopPropagation(); lookAt(n.req.home % N, (n.req.home / N)|0); forceDraw = true; newsPop.hidden = true; }; bar.append(show);
-    if (n.req.rq.give){ const g = document.createElement('button'); g.type = 'button'; g.textContent = `Donner ${giveTxt(n.req.rq.give)}`; const r = resv(); g.disabled = Object.entries(n.req.rq.give).some(([kk, v]) => (r[kk] || 0) < v); g.onclick = e => { e.stopPropagation(); giveReq(); newsPop.hidden = true; }; bar.append(g); }
+    const show = document.createElement('button'); show.type = 'button'; show.textContent = '📍 Où ça ?'; show.onclick = e => { e.stopPropagation(); newsPop.hidden = true; showAddr(n.req.v ? n.req.v.name : n.name, n.req.home); }; bar.append(show);
     tx.append(bar);
   }
   row.append(cv, tx); newsPop.append(row);
@@ -6749,8 +6762,9 @@ newsBtn.onclick = e => {
 document.addEventListener('pointerdown', e => { if (!e.target.closest || !e.target.closest('#newsBtn, #newsPop')) newsPop.hidden = true; }, true);
 function giveWish(){
   const w = WISHES.find(x => x.id === (glob.story.wish || {}).id); if (!w) return;
-  const r = resv(); if (Object.entries(w.need).some(([k, n]) => (r[k] || 0) < n)){ hintT(`Il te faut ${resTxt(w.need)}`); return; }
-  for (const [k, n] of Object.entries(w.need)) r[k] -= n;
+  const need = cafeCut(w.need, w.who);
+  const r = resv(); if (Object.entries(need).some(([k, n]) => (r[k] || 0) < n)){ hintT(`Il te faut ${resTxt(need)}`); return; }
+  for (const [k, n] of Object.entries(need)) r[k] -= n; cafeUse(w.who);
   for (const [k, n] of Object.entries(w.reward)) r[k] = (r[k] || 0) + n;
   (glob.story.wishDone || (glob.story.wishDone = [])).push(w.id); glob.story.wish = null;
   const f = glob.story.facts || (glob.story.facts = {}); (f[w.who] || (f[w.who] = [])).push(w.fact);
@@ -7603,6 +7617,7 @@ function restNow(){
   timeRun(21.5, '☕ Tu te reposes un peu…', '🌙 La nuit tombe sur l’île', () => { renderStoryCard(); });
 }
 const HOME_LINES = {
+  job:'Le phare de Job. Là-haut, il surveille la mer, jour et nuit.',
   tomas:'Chez Tomas. Ça sent le poisson grillé… et le ciré mouillé.',
   kofi:'Chez Kofi. Des copeaux de bois jusque sur le paillasson.',
   lina:'Chez Lina. Une bonne odeur de pain chaud s’échappe par la fenêtre.',
@@ -7614,7 +7629,281 @@ const HOME_LINES = {
   yuna:'Chez Yuna. Une combinaison de plongée sèche devant la porte.',
   voyageurs:'La maison des voyageurs. On y parle souvent du continent.'
 };
+
+/* où habite quelqu'un, et y aller : la vue se centre, la maison clignote */
+function homeOf(who){ if (who === 'job'){ const l = O.indexOf('L'); return l >= 0 ? l : null; } if (who === 'annick') who = 'philippe'; const H = glob.story.homes || {}; const k = Object.keys(H).find(k => H[k] === who && (O[+k] === 'h' || O[+k] === 'Ĉ')); return k != null ? +k : null; }
+function goToHome(i){
+  lookAt(i % N, (i / N)|0); forceDraw = true;
+  setTimeout(() => {
+    const r = board.getBoundingClientRect(), sc = r.width / vw(), x = i % N, y = (i / N)|0;
+    const ring = document.createElement('div'); ring.className = 'coach-ring cell';
+    Object.assign(ring.style, {left:Math.round(r.left + (x*T - camX)*sc - 6) + 'px', top:Math.round(r.top + (y*T - camY)*sc - 6) + 'px', width:Math.round(T*sc + 12) + 'px', height:Math.round(T*sc + 12) + 'px'});
+    document.body.append(ring); setTimeout(() => ring.remove(), 2600);
+  }, 120);
+  hintT('✋ Toque à la porte avec la main');
+}
+
+/* ---------- chaque bâtiment réagit quand on le touche (mode histoire) ---------- */
+let homeAlt = null;
+const bNight = () => { const h = tday * 24; return h >= 20 || h < 6; };
+const BLD = {
+  '1':{l:'Dire bonjour', day:[['lina', '« Il en reste une toute chaude, je te la garde ? »'], ['lina', '« Goûte-moi ça, c’est la fournée de ce matin ! »']], night:[['carnet', 'Le four ronronne déjà pour demain matin.']]},
+  'Ś':{l:'Dire bonjour', day:[['kofi', '« Touche pas, c’est encore collant ! Enfin… vas-y, touche. »']], night:[['carnet', 'Les outils de Kofi sont rangés bien droit. Ça sent la sciure.']]},
+  'Ț':{l:'Dire bonjour', day:[['kofi', '« Touche pas, c’est encore collant ! Enfin… vas-y, touche. »']], night:[['carnet', 'Les outils de Kofi sont rangés bien droit. Ça sent la sciure.']], plus:'Kofi taille les pierres de tes maisons : chacune te coûte **une pierre de moins**.'},
+  'u':{l:'Dire bonjour', day:[['ondine', '« Chut… elles travaillent. Écoute comme ça chante. »']], night:[['carnet', 'Les ruches sont silencieuses. Les abeilles dorment, serrées les unes contre les autres.']]},
+  'Ā':{l:'Dire bonjour', day:[['yuna', '« L’eau est bonne. Enfin, bonne pour un poisson. »']], night:[['carnet', 'La mer clapote sous le ponton. Une palme sèche sur la rambarde.']]},
+  'G':{l:'Dire bonjour', day:[['tomas', '« Belle marée ce matin. Les crabes sont de mauvais poil. »']], night:[['carnet', 'Le chalutier se balance doucement au bout de son amarre.']]},
+  'N':{l:'Regarder', day:[['tomas', '« Belle marée ce matin. Les crabes sont de mauvais poil. »']], night:[['carnet', 'Les casiers attendent la marée, sagement alignés.']]},
+  'v':{l:'Caresser', day:[['philippe', '« Marguerite te dit bonjour. Enfin, je crois. »']], night:[['carnet', 'Marguerite rumine tranquillement sous les étoiles.']]},
+  'ɓ':{l:'Dire bonjour', day:[['philippe', '« Marguerite te dit bonjour. Enfin, je crois. »']], night:[['carnet', 'La barge se balance doucement. Tout dort.']]},
+  'E':{l:'Regarder', day:[['carnet', 'Des dessins d’enfants aux fenêtres. Un dauphin, une maison… un dauphin dans une maison.']], night:[['carnet', 'Les chaises sont retournées sur les tables.']]},
+  'A':{l:'Regarder', day:[['carnet', 'Un panneau d’affichage plein de petites annonces.']], night:[['carnet', 'La mairie est fermée. Le drapeau flotte tout seul.']]},
+  'S':{l:'Regarder', day:[['carnet', 'Ça sent le café moulu et les pommes.']], night:[['carnet', 'Le rideau est baissé. Une pomme a roulé jusqu’à la porte.']]},
+  'a':{l:'Entrer', day:[['carnet', 'Il fait frais dedans. On entend la mer, tout bas.']], night:[['carnet', 'Une petite bougie brille encore derrière le vitrail.']]},
+  'm':{l:'Regarder', day:[['carnet', 'Ça tourne doucement, au rythme du vent. Ça sent la farine.']], night:[['carnet', 'Les ailes tournent lentement dans le noir.']]},
+  'e':{l:'Regarder', day:[['carnet', 'Ça tourne doucement, au rythme du vent.']], night:[['carnet', 'Les pales tournent lentement dans le noir.']]},
+  'à':{l:'Entrer', day:[['carnet', 'Quelqu’un a laissé un marque-page dans un livre sur les phares.']], night:[['carnet', 'Une seule lampe allumée, au fond, entre deux rayonnages.']]},
+  'i':{l:'Regarder', day:[['carnet', 'Le prochain train ? Il n’y a pas de rails… Ici, on attend surtout le bateau.']]},
+  'ë':{l:'Regarder', day:[['carnet', 'Des rires et des éclaboussures !']], night:[['carnet', 'L’eau est immobile. La lune s’y reflète.']]},
+  'û':{l:'Regarder', day:[['carnet', 'Des rires, des cris : « Passe ! Passe ! »']], night:[['carnet', 'Le terrain est vide, un ballon oublié dans l’herbe.']]},
+  'j':{l:'Regarder', day:[['carnet', 'Le manège tourne en musique. Les chevaux de bois montent, descendent…']], night:[['carnet', 'Le manège est bâché pour la nuit.']]},
+  '9':{l:'Regarder', day:[['carnet', 'Les cagettes débordent de légumes.']], night:[['carnet', 'Les étals sont bâchés pour la nuit.']]},
+  'O':{l:'Regarder', day:[['carnet', 'Quelqu’un a oublié une partition sur le banc.']], night:[['carnet', 'Le kiosque est vide. On entendrait presque encore la musique.']]},
+  'Q':{l:'Regarder', day:[['carnet', 'L’eau chante doucement. Quelques pièces brillent au fond.']]},
+  'C':{l:'Caresser', day:[['carnet', '« Miaou. »'], ['carnet', '« Mrrrou ? »'], ['carnet', 'Le chat s’étire, bâille… et se rendort.'], ['carnet', 'Le chat te regarde. Longtemps. Puis il s’en va, la queue bien droite.']]},
+  'ɱ':{l:'Faire un vœu', day:[['carnet', 'Tu fais un vœu… Un coquillage plonge au fond de l’eau.']]},
+  'Ý':{l:'Regarder', day:[['carnet', 'Il y a quelque chose de gravé, à moitié effacé par la mer…']]}
+};
+let bldLast = {};
+function bldShow(i, lines, go, act, alt, altAct){
+  homeAct = act || null; homeAlt = altAct || null;
+  openStoryModal({mode:'home', who:lines[0].w, kicker:'', title:nameOf(i) || '', paras:lines.map(l => l.t), go, alt, short:lines});
+  document.querySelectorAll('.sb-read').forEach(x => x.hidden = true); return true;
+}
+function bldPick(id, list){ if (list.length < 2) return list[0]; let k; do { k = (Math.random() * list.length)|0; } while (k === bldLast[id]); bldLast[id] = k; return list[k]; }
+function bldReact(i){
+  if (!resOn() || !glob.story.ville) return null;
+  const o = O[i];
+  if (o === 'è') return 'Entrer';
+  if (o === '2') return 'Entrer';
+  if (o === 'ô') return gBike(i) ? 'Regarder' : null;
+  return BLD[o] ? BLD[o].l : null;
+}
+function openBldBubble(i){
+  const o = O[i];
+  if (o === 'è') return openPoste(i);
+  if (o === '2') return openCafeScene(i);
+  if (o === 'ô') return gBike(i) && bldShow(i, [B('carnet', 'Le vélo de Germaine. Elle le bichonne comme un trésor.')], 'Fermer');
+  const d = BLD[o]; if (!d) return false;
+  const list = (bNight() && d.night) || d.day, [w, t] = bldPick(o + (bNight() ? 'n' : 'd'), list);
+  const lines = [B(PEOPLE[w] ? w : 'carnet', t)];
+  if (d.plus) lines.push(B('carnet', d.plus));
+  return bldShow(i, lines, 'Fermer');
+}
+/* le café : qui est attablé aujourd'hui */
+function folkHere(){
+  const a = Object.keys(PEOPLE).filter(k => k !== 'voyageurs' && k !== 'gaspard' && homeOf(k) != null).map(k => PEOPLE[k].name);
+  for (const v of villagers()) if (v.home != null) a.push(v.name);
+  return [...new Set(a)];
+}
+function openCafeScene(i){
+  const wall = (glob.story.rl || []).some(k => R_LETTERS[k]), st = cafeSt(), today = st.day === (glob.story.isleDays || 1), can = !today && cafeFolk().length > 0;
+  const fin = (lines) => { if (today && st.who) lines.push(B('carnet', `Aujourd’hui, tu as déjà offert un café à **${st.who}**.`)); return can && !bNight() ? bldShow(i, lines, '☕ Offrir un café', () => cafeOffer(i), wall ? 'Lire le mur' : 'Fermer', wall ? openCafeWall : null) : bldShow(i, lines, wall ? 'Lire le mur' : 'Fermer', wall ? openCafeWall : null, wall ? 'Fermer' : null); };
+  if (bNight()) return fin([B('carnet', 'Le café est fermé. Les chaises dorment sur les tables.')]);
+  const f = folkHere();
+  if (f.length < 2) return fin([B('carnet', 'Le café est calme. Une tasse fume, toute seule, sur le comptoir.')]);
+  const a = f[(Math.random() * f.length)|0]; let b; do { b = f[(Math.random() * f.length)|0]; } while (b === a);
+  const sc = [`**${a}** et **${b}** refont le monde autour d’un café.`, `**${a}** raconte une histoire à **${b}**, qui rit aux éclats.`, `**${a}** et **${b}** partagent une crêpe en terrasse.`, `**${a}** et **${b}** regardent passer les bateaux, une tasse à la main.`];
+  return fin([B('carnet', bldPick('café', sc))]);
+}
+/* ---------- la poste : le courrier à distribuer, les demandes du jour ---------- */
+const LETTERS_P = [
+  ['une carte postale du continent', '« Une carte de ma cousine du continent ! Elle a vu une baleine, tu te rends compte ? »'],
+  ['un petit colis qui sent le chocolat', '« Ça sent le chocolat… Je t’en garde un carré, promis. »'],
+  ['une lettre d’un vieil ami', '« Mon vieil ami Paul ! Il veut venir voir l’île cet été. »'],
+  ['une enveloppe qui fait « chhh »', '« Des graines de tournesol ! On en sèmera partout. »'],
+  ['une facture', '« Une facture pour… trois parapluies retournés par le vent ? Ah oui. Bon. »'],
+  ['un dessin d’enfant', '« Un dessin de ma nièce ! C’est moi, là, avec le chapeau. Enfin, je crois. »'],
+  ['le journal du continent', '« Les nouvelles du continent… Il pleut là-bas aussi. Ça me rassure. »'],
+  ['une recette griffonnée', '« La recette de la tarte de ma grand-mère ! Enfin ! »'],
+  ['une enveloppe pleine de sable', '« Du sable d’une autre plage, envoyé par une amie. On fait des échanges. »'],
+  ['un magazine de mots croisés', '« Mes mots croisés ! Ma soirée est sauvée. »'],
+  ['une lettre qui sent la lavande', '« Ça sent la lavande. C’est ma sœur, elle en met partout. »'],
+  ['un paquet tout mou', '« Des chaussettes tricotées ! Pile pour l’hiver. »'],
+  ['une photo de famille', '« Toute la famille ! Je vais l’accrocher au-dessus de la cheminée. »'],
+  ['le bulletin de la météo marine', '« Grand beau toute la semaine ! Enfin, s’ils ne se trompent pas. »'],
+  ['une carte d’anniversaire', '« Une carte d’anniversaire ! …C’est dans six mois. Il est en avance, lui. »'],
+  ['une lettre écrite tout petit', '« C’est écrit tout petit… Il me faudrait une loupe. Ou de meilleurs yeux. »'],
+  ['une petite boîte qui roule', '« Un coquillage d’une mer lointaine. Il rejoindra ma collection ! »'],
+  ['un catalogue de graines', '« Un catalogue de graines. Je vais tout corner, comme d’habitude. »'],
+  ['une lettre de remerciement', '« On me remercie pour un service rendu il y a dix ans. Je ne m’en souvenais même plus ! »'],
+  ['un livre emballé', '« Le livre que j’attendais depuis des semaines ! Que personne ne me dérange ce soir. »'],
+  ['une boîte de puzzle', '« Un puzzle de mille pièces. Tout bleu. C’est la mer, ou le ciel ? »'],
+  ['une lettre très en retard', '« Elle a été postée il y a trois ans ! La poste du continent, ah là là… »']
+];
+const LETTERS_W = {
+  tomas:['un petit paquet lourd', '« Un nouvel hameçon, commandé il y a des mois ! Les crabes n’ont qu’à bien se tenir. »'],
+  lina:['un sac de farine', '« De la farine d’un moulin du continent ! On va comparer avec la nôtre. »'],
+  kofi:['un catalogue d’outils', '« Un catalogue d’outils… Je fais semblant de ne rien vouloir, mais je veux tout. »'],
+  job:['une lettre d’un autre phare', '« Un vieux gardien de phare, de l’autre côté de la mer. On s’écrit depuis des années ! »'],
+  ondine:['une petite boîte qui sent le miel', '« De la cire d’abeille, envoyée par une amie apicultrice. Elle sent le miel de lavande. »'],
+  yuna:['un paquet tout en longueur', '« Un nouveau masque de plongée ! L’ancien était plus rayé qu’un vieux disque. »'],
+  margaux:['un rouleau de papier', '« Du papier calque ! Je vais pouvoir tout redessiner. Encore. »'],
+  philippe:['un gros almanach', '« Un almanach agricole ! Annick va dire que j’en ai déjà dix. »'],
+  paloma:['une carte roulée', '« Une carte marine de la côte. Je l’accroche tout de suite. »']
+};
+const mailSt = () => glob.story.mail || (glob.story.mail = {day:null, bag:[], log:[]});
+function mailHome(m){ if (m.to){ return homeOf(m.to); } const v = villagers().find(v => v.name === m.v); return v && v.home != null && O[v.home] === 'h' ? v.home : null; }
+function mailName(m){ return m.to ? PEOPLE[m.to].name : m.v; }
+function mailOn(){ const k = S3I('La factrice'); return resOn() && glob.story.ville && k >= 0 && glob.story.chapter > k && cnt('è') > 0; }
+function mailPeople(){
+  const st = mailSt(), out = [];
+  for (const k of ['tomas', 'lina', 'kofi', 'job', 'margaux', 'paloma', 'philippe', 'ondine', 'yuna', 'elias']) if (PEOPLE[k] && homeOf(k) != null && !st.bag.some(m => m.to === k)) out.push({to:k});
+  for (const v of villagers()) if (v.home != null && O[v.home] === 'h' && !st.bag.some(m => m.v === v.name)) out.push({v:v.name});
+  return out;
+}
+function mailReady(){ const st = mailSt(); return mailOn() && st.day !== (glob.story.isleDays || 1) && st.bag.length < 3 && mailPeople().length > 0; }
+function mailTake(){
+  const st = mailSt(), pool = mailPeople(), n = Math.min(Math.random() < 0.5 ? 1 : 2, 3 - st.bag.length, pool.length);
+  for (let k = 0; k < n; k++){
+    const p = pool.splice((Math.random() * pool.length)|0, 1)[0];
+    const sp = p.to && LETTERS_W[p.to] && Math.random() < 0.4, used = st.bag.map(m => m.k);
+    let li = -1; if (!sp){ do { li = (Math.random() * LETTERS_P.length)|0; } while (used.includes(li) && used.length < LETTERS_P.length); }
+    st.bag.push(Object.assign({k:li}, p));
+  }
+  st.day = glob.story.isleDays || 1; saveGlob(); renderBag();
+  hintT(`✉️ ${n > 1 ? n + ' lettres' : 'Une lettre'} dans ton sac 🎒 : pour ${st.bag.slice(-n).map(mailName).join(' et ')}. Ouvre le sac pour voir où aller.`);
+}
+function mailLetter(m){ return m.k < 0 && m.to && LETTERS_W[m.to] ? LETTERS_W[m.to] : LETTERS_P[Math.max(0, m.k)]; }
+function mailAt(i){ return mailSt().bag.findIndex(m => mailHome(m) === i); }
+function mailGive(k){
+  const st = mailSt(), m = st.bag[k]; if (!m) return;
+  const [what, said] = mailLetter(m), i = mailHome(m);
+  st.bag.splice(k, 1); st.log.push({n:mailName(m), t:what}); if (st.log.length > 60) st.log.shift();
+  const rw = [{b:2}, {p:2}, {b:1, p:1}][(Math.random() * 3)|0], r = resv();
+  for (const [kk, v] of Object.entries(rw)) r[kk] = (r[kk] || 0) + v;
+  saveGlob(); renderRes(true); renderBag(); queueSave();
+  const lines = m.to ? [B(m.to === 'annick' ? 'philippe' : m.to, said)] : [B('carnet', `**${m.v}** ouvre l’enveloppe. ${said}`)];
+  lines.push(B('carnet', `Merci pour le courrier ! · ${resTxt(rw)}`));
+  bldShow(i, lines, 'Fermer');
+}
+function openPoste(i){
+  const st = mailSt(), lefts = st.bag.length;
+  if (bNight()) return bldShow(i, [B('carnet', 'La poste est fermée. Le vélo de Germaine dort contre le mur.')], '📬 Les demandes du jour', () => openDemandes(i), 'Fermer');
+  if (mailReady()){
+    const n = Math.min(2, 3 - lefts, mailPeople().length);
+    return bldShow(i, [B('germaine', '« Rien pour toi aujourd’hui… ah si, attends ! »'), B('germaine', `« J’ai du courrier à porter. Mes mollets te remercient ! »`)], `✉️ Prendre le courrier`, mailTake, '📬 Les demandes du jour', () => openDemandes(i));
+  }
+  const lines = [B('germaine', mailOn() ? '« Tout est parti pour aujourd’hui ! Reviens demain, j’en aurai d’autres. »' : '« Bonjour ! Le tri, le tri, toujours le tri… »')];
+  if (lefts) lines.push(B('carnet', `Il te reste **${lefts} lettre${lefts > 1 ? 's' : ''}** à porter, dans ton sac 🎒.`));
+  return bldShow(i, lines, '📬 Les demandes du jour', () => openDemandes(i), 'Fermer');
+}
+function openDemandes(i){
+  const lines = [], go = [];
+  const w = glob.story.wish && WISHES.find(x => x.id === glob.story.wish.id);
+  if (w){ const hm = homeOf(w.who); lines.push(B(w.who, w.text)); if (hm != null) lines.push(B('carnet', `📍 Chez ${PEOPLE[w.who].name} : ${addrOf(hm)}.`)); }
+  const c = curReq(); if (c){ lines.push(B('carnet', `**${c.v.name}** aimerait quelque chose : « ${c.rq.t} »`), B('carnet', `📍 Chez ${c.v.name} : ${addrOf(c.home)}.`)); }
+  if (!lines.length) return bldShow(i, [B('germaine', '« Personne n’a rien demandé aujourd’hui. Profite ! »')], 'Fermer');
+  lines.unshift(B('germaine', '« Voilà ce qu’on m’a demandé de faire passer : »'));
+  return bldShow(i, lines, 'Merci Germaine !');
+}
+
+/* ---------- une adresse plutôt qu'un clignotement ---------- */
+const LANDMARK = {'1':['la ', 'boulangerie'], '2':['le ', 'café'], 'è':['la ', 'poste'], 'm':['le ', 'moulin'], 'e':['l’', 'éolienne'], 'u':['les ', 'ruches'], 'Ś':['la ', 'scierie'], 'Ț':['l’', 'atelier de Kofi'], 'a':['la ', 'chapelle'], 'D':['le ', 'calvaire'], 'W':['le ', 'puits'], 'Q':['la ', 'fontaine'], 'ɱ':['la ', 'fontaine aux coquillages'], 'O':['le ', 'kiosque'], '9':['le ', 'marché'], 'Ą':['les ', 'étals'], 'ā':['la ', 'cloche du port'], 'L':['le ', 'phare'], 'Ç':['la ', 'grange'], 'Ă':['le ', 'poulailler'], 'ɧ':['le ', 'belvédère'], 'Ā':['le ', 'ponton de plongée'], 'V':['le ', 'potager'], 'y':['la ', 'serre'], 'Ƀ':['le ', 'four à briques'], 'Ƒ':['la ', 'forge'], 'Ć':['la ', 'longère'], '4':['le ', 'feu de camp'], 'K':['la ', 'crêperie'], 'ɟ':['la ', 'grande table'], 'C':['le ', 'chat'], 'E':['l’', 'école'], 'A':['la ', 'mairie'], 'S':['l’', 'épicerie']};
+const ISLE_NM = {champs:'sur l’île de la ferme', pins:'sur l’île aux pins', ilot:'sur l’îlot', carriere:'sur l’île de la carrière'};
+const deLM = ([a, n]) => (a === 'le ' ? 'du ' : a === 'les ' ? 'des ' : 'de ' + a) + n;
+function addrOf(i){
+  if (O[i] === 'L') return 'tout en haut du phare';
+  const x = i % N, y = (i / N)|0, kind = O[i] === 'Ĉ' ? 'la cabane' : 'la maison';
+  let best = null, bd = 50;
+  for (let yy = Math.max(0, y - 7); yy <= Math.min(N - 1, y + 7); yy++) for (let xx = Math.max(0, x - 7); xx <= Math.min(N - 1, x + 7); xx++){
+    const j = yy*N + xx, o = O[j]; if (j === i || !LANDMARK[o]) continue;
+    const d = Math.hypot(xx - x, yy - y); if (d < bd){ bd = d; best = o; } }
+  let near = null;
+  if (best){ const bj = (() => { for (let yy = Math.max(0, y - 7); yy <= Math.min(N - 1, y + 7); yy++) for (let xx = Math.max(0, x - 7); xx <= Math.min(N - 1, x + 7); xx++){ const j = yy*N + xx; if (j !== i && O[j] === best && Math.hypot(xx - x, yy - y) === bd) return j; } return -1; })();
+    const dx = x - bj % N, dy = y - ((bj / N)|0), lm = LANDMARK[best], de = deLM(lm);
+    const rel = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'à droite ' : 'à gauche ') + de : dy < 0 ? 'au-dessus ' + de : 'en dessous ' + de;
+    near = (bd <= 1.5 ? 'juste ' : bd > 4 ? 'pas loin ' + de + ', un peu ' : '') + (bd > 4 ? rel.split(' ')[0] + (rel.startsWith('au-') ? '' : ' ' + rel.split(' ')[1]) : rel); }
+  const isle = Object.keys(glob.story.isles || {}).find(k => { try { return inIsle(i, k); } catch(e){ return false; } });
+  let where;
+  if (isle) where = ISLE_NM[isle] || 'sur une autre île';
+  else {
+    const land = mainLand(); let x0 = N, x1 = 0, y0 = N, y1 = 0;
+    for (let j = 0; j < N*N; j++) if (land[j]){ const a = j % N, b = (j / N)|0; if (a < x0) x0 = a; if (a > x1) x1 = a; if (b < y0) y0 = b; if (b > y1) y1 = b; }
+    const nx = (x - (x0 + x1)/2) / Math.max(1, (x1 - x0)/2), ny = (y - (y0 + y1)/2) / Math.max(1, (y1 - y0)/2);
+    const ns = ny < -0.3 ? 'nord' : ny > 0.3 ? 'sud' : '', ew = nx > 0.3 ? 'est' : nx < -0.3 ? 'ouest' : '';
+    where = ns && ew ? `au ${ns}-${ew} de l’île` : ns ? `au ${ns} de l’île` : ew ? (ew === 'est' ? 'à l’est de l’île' : 'à l’ouest de l’île') : 'au cœur de l’île';
+  }
+  const shore = !near && [[1,0],[-1,0],[0,1],[0,-1],[2,0],[-2,0],[0,2],[0,-2]].some(([a, b]) => G[(y + b)*N + x + a] === 'w');
+  if (near) return isle ? `${kind} ${where}, ${near}` : `${kind} ${near}`;
+  return `${kind} ${where}${shore ? ', au bord de l’eau' : ''}`;
+}
+function showAddr(name, i){
+  homeAct = null; homeAlt = () => { const x = i % N, y = (i / N)|0, a = Math.random() * 6.28; lookAt(x + Math.round(Math.cos(a) * 3), y + Math.round(Math.sin(a) * 3)); forceDraw = true; hintT('🧭 C’est par ici, quelque part…'); };
+  openStoryModal({mode:'home', who:'carnet', kicker:'', title:'L’adresse', paras:[''], go:'Merci !', alt:'🧭 Je suis perdu·e', short:[B('carnet', `Chez **${name}** : ${addrOf(i)}.`)]});
+  document.querySelectorAll('.sb-read').forEach(x => x.hidden = true);
+}
+
+/* ---------- offrir un café : un par jour d'île, et un petit geste en retour ---------- */
+const CAFE_THX = {
+  tomas:'« Un café ? Tu tombes bien, la marée m’a lessivé. Merci ! »',
+  lina:'« Tu sais que je suis debout depuis 4 h ? Tu m’as sauvé la vie. »',
+  kofi:'« Noir, sans sucre. Comme le bois de chêne. »',
+  job:'« Avec plaisir ! Je le bois là-haut, il sera froid, mais c’est l’intention qui compte. »',
+  ondine:'« Avec une cuillère de miel, s’il te plaît. Le mien, bien sûr. »',
+  yuna:'« Ça réchauffe, après une plongée. Merci, vraiment. »',
+  margaux:'« Merci ! Un café, et je redessine tout le port. »',
+  philippe:'« Un café ? Annick va être jalouse. Merci ! »',
+  annick:'« Merci ! Ça fait du bien, une pause entre deux traites. »',
+  paloma:'« Merci ! Je le bois en regardant les bateaux, c’est le meilleur moment. »',
+  elias:'« … Merci. »',
+  germaine:'« Enfin une pause ! Mes mollets te disent merci. »'
+};
+const CAFE_THX_V = ['« Oh, merci ! Je cherchais justement une excuse pour faire une pause. »', '« Pour moi ? C’est gentil ! »', '« Un café offert, ça vous fait une journée. Merci ! »', '« Merci ! Assieds-toi deux minutes, on n’est pas pressés. »', '« Ah, ça sent bon ! Merci beaucoup. »'];
+const cafeSt = () => glob.story.cafe || (glob.story.cafe = {day:null, who:null, cut:[]});
+function cafeCut(need, id){
+  const st = glob.story.cafe; if (!need || !st || !(st.cut || []).includes(id)) return need;
+  const o = Object.assign({}, need), ks = Object.keys(o); if (!ks.length) return need;
+  const k = ks.reduce((a, b) => o[b] > o[a] ? b : a); if (o[k] > 1) o[k]--; else if (ks.length > 1) delete o[k];
+  return o;
+}
+function cafeUse(id){ const st = glob.story.cafe; if (st && st.cut){ const j = st.cut.indexOf(id); if (j >= 0) st.cut.splice(j, 1); } }
+function cafeFolk(){
+  const a = [];
+  for (const k of Object.keys(PEOPLE)) if (k !== 'voyageurs' && k !== 'gaspard' && homeOf(k) != null) a.push({k, name:PEOPLE[k].name});
+  for (const v of villagers()) if (v.home != null && O[v.home] === 'h' && !a.some(x => x.name === v.name)) a.push({v:v.name, name:v.name});
+  return a;
+}
+function cafeOffer(i){
+  const list = cafeFolk();
+  bldShow(i, [B('carnet', 'Un café pour qui ?')], 'Plus tard');
+  const box = document.createElement('div'); box.className = 'cafe-list';
+  for (const p of list){
+    const b = document.createElement('button'); b.type = 'button';
+    const cv = document.createElement('canvas'); cv.width = 16; cv.height = 16; try { drawPortrait(cv, p.k ? PEOPLE[p.k] : residentLook(p.name)); } catch(e){}
+    const sp = document.createElement('span'); sp.textContent = p.name; b.append(cv, sp);
+    b.onclick = e => { e.stopPropagation(); cafeGive(i, p); };
+    box.append(b);
+  }
+  storyBody.append(box); requestAnimationFrame(() => { try { placeBulle(); } catch(e){} });
+}
+function cafeGive(i, p){
+  const st = cafeSt(), id = p.k || p.v;
+  st.day = glob.story.isleDays || 1; st.who = p.name; if (!st.cut.includes(id)) st.cut.push(id); saveGlob(); queueSave();
+  const said = p.k ? (CAFE_THX[p.k] || CAFE_THX_V[0]) : bldPick('cafev', CAFE_THX_V);
+  const lines = p.k ? [B(p.k, said)] : [B('carnet', `**${p.name}** : ${said}`)];
+  lines.push(B('carnet', `**${p.name}** s’en souviendra.`));
+  bldShow(i, lines, 'Fermer');
+}
+
+/* le vélo de Germaine (celui qu'elle a posé en arrivant) */
+function gBike(i){
+  const st = glob.story; if (!st || !st.germaine) return false;
+  if ((st.gBike == null || O[st.gBike] !== 'ô') && !(st.unlocked2 || []).includes('ô')){ const k = O.indexOf('ô'); st.gBike = k >= 0 ? k : null; }
+  return st.gBike === i && O[i] === 'ô';
+}
 function homeKind(i){
+  if (glob.story && glob.story.ville && glob.story.v === 2 && O[i] === 'L') return 'char';
   if (!glob.story || !glob.story.ville || glob.story.v !== 2 || (O[i] !== 'h' && O[i] !== 'Ĉ')) return null;
   const key = (glob.story.homes || {})[i];
   if (key === 'toi' || key === 'toi_c') return 'own';
@@ -7625,8 +7914,9 @@ function homeKind(i){
 }
 function openHomeBubble(i){
   if (!glob.story || !glob.story.ville || glob.story.v !== 2) return false;
-  const H = glob.story.homes || {}, key = H[i], hh = tday * 24;
-  const show = (lines, go, act, alt) => { homeAct = act || null; openStoryModal({mode:'home', who:lines[0].w, kicker:'', title:'Une maison', paras:lines.map(l => l.t), go, alt, short:lines}); document.querySelectorAll('.sb-read').forEach(x => x.hidden = true); return true; };
+  const H = glob.story.homes || {}, key = O[i] === 'L' ? 'job' : H[i], hh = tday * 24;
+  { const mk = typeof mailAt === 'function' ? mailAt(i) : -1; if (mk >= 0){ const m = mailSt().bag[mk]; return bldShow(i, [B('carnet', `Une lettre pour **${mailName(m)}** : ${mailLetter(m)[0]}.`)], '✉️ Donner la lettre', () => mailGive(mk), 'Plus tard'); } }
+  const show = (lines, go, act, alt) => { homeAct = act || null; homeAlt = null; openStoryModal({mode:'home', who:lines[0].w, kicker:'', title:'Une maison', paras:lines.map(l => l.t), go, alt, short:lines}); document.querySelectorAll('.sb-read').forEach(x => x.hidden = true); return true; };
   if (key === 'toi' || key === 'toi_c'){
     const night = hh >= 18 || hh < 6;
     return show([B('carnet', night ? 'Ta maison est toute calme. Il se fait tard…' : 'Ta maison est toute calme. Une petite pause ?')],
@@ -7636,17 +7926,22 @@ function openHomeBubble(i){
   if (v && O[i] === 'h'){
     const fem = typeof V_FEM !== 'undefined' && V_FEM.has(v.name);
     const lines = [B('carnet', `Ici vit **${v.name}**, ${v.job}. ${fem ? 'Elle' : 'Il'} ${v.trait}.`)];
-    const c = curReq(); if (c && c.v === v) lines.push(B('carnet', `${v.name} aimerait quelque chose : « ${c.rq.t} »`));
+    const c = curReq();
+    if (c && c.v === v){
+      lines.push(B('carnet', `${v.name} aimerait quelque chose : « ${c.rq.t} »`));
+      if (c.rq.give) return show(lines, `Donner ${giveTxt(cafeCut(c.rq.give, c.v.name))}`, () => { giveReq(); try { renderNews(); } catch(e){} }, 'Plus tard');
+      lines.push(B('carnet', `Pour l’instant : **${reqProg(c.rq, c.home)} / ${c.rq.n || 1}**`));
+    }
     return show(lines, 'Fermer');
   }
   if (key && HOME_LINES[key]){
     const who = PEOPLE[key] ? key : 'carnet';
-    const lines = [B(who, HOME_LINES[key])];
+    const lines = key === 'job' ? [B('carnet', HOME_LINES[key]), B('job', '« Attention à la troisième marche, elle… ah. Trop tard. »')] : [B(who, HOME_LINES[key])];
     const w = glob.story.wish && WISHES.find(x => x.id === glob.story.wish.id);
-    if (w && w.who === key) lines.push(B(key, w.text));
+    if (w && (w.who === key || (key === 'philippe' && w.who === 'annick') || (key === 'job' && w.who === 'job'))){ lines.push(B(key, w.text)); return show(lines, `Donner ${resTxt(cafeCut(w.need, w.who))}`, () => { giveWish(); try { renderNews(); } catch(e){} }, 'Plus tard'); }
     return show(lines, 'Fermer');
   }
-  if (O[i] === 'h' && typeof houseEmpty === 'function' && houseEmpty(i)) return show([B('carnet', 'Personne n’habite ici… pour l’instant. Quelqu’un viendra bientôt du continent.')], 'Fermer');
+  if (O[i] === 'h' && typeof houseEmpty === 'function' && houseEmpty(i)) return show([B('carnet', glob.story.chapter > 4 ? 'Personne n’habite ici… pour l’instant. Quelqu’un viendra bientôt du continent.' : 'Personne n’habite ici… pour l’instant.')], 'Fermer');
   return false;
 }
 function shortFor(ch, part){ try { if (!ch || glob.story.v !== 2) return null; const s = SHORT[ch.title]; const a = s && s[part]; return a && a.length ? a : null; } catch(e){ return null; } }
@@ -8082,7 +8377,7 @@ function renderStoryCard(){
   say.hidden = true;
   { const wb = document.getElementById('scWishDot'), w = WISHES.find(x => x.id === (glob.story.wish || {}).id);
     wb.hidden = true || !w || pausing() || glob.story.pendingOutro != null; if (wb.hidden) document.getElementById('scWish').hidden = true;
-    if (w){ document.getElementById('scWishTxt').textContent = `${PEOPLE[w.who].name} : ${w.text}`; const r = resv(), ok = !Object.entries(w.need).some(([k, n]) => (r[k] || 0) < n); const bt = document.getElementById('scWishBtn'); bt.textContent = `Donner ${resTxt(w.need)}`; bt.disabled = !ok; } }
+    if (w){ document.getElementById('scWishTxt').textContent = `${PEOPLE[w.who].name} : ${w.text}`; const r = resv(), nd = cafeCut(w.need, w.who), ok = !Object.entries(nd).some(([k, n]) => (r[k] || 0) < n); const bt = document.getElementById('scWishBtn'); bt.textContent = `Donner ${resTxt(nd)}`; bt.disabled = !ok; } }
   scGoals.innerHTML = '';
   const scNext = document.getElementById('scNext'); scNext.hidden = true; scDone.hidden = true;
   storyCard.classList.remove('ready'); face.style.setProperty('--p', '0%');
@@ -8529,14 +8824,16 @@ function cnPlans(pg){
 function cnSouvenirs(pg){
   const list = souvenirs();
   pg.append(cnEl('h2', '', 'L’album de l’archipel'));
-  if (!list.length){ pg.append(cnEl('p', 'cn-empty', 'À chaque fin de chapitre, une photo de ton archipel se colle ici. Tu peux aussi en prendre avec l’appareil 📷.')); return; }
+  const lg = ((glob.story.mail || {}).log || []);
+  const mailBox = () => { if (!lg.length) return; pg.append(cnEl('h3', '', `Le courrier porté · ${lg.length}`)); const ul = cnEl('ul', 'cn-trouv'); for (const l of lg.slice().reverse()) ul.append(cnEl('li', '', `✉️ ${l.t[0].toUpperCase() + l.t.slice(1)}, pour ${l.n}`)); pg.append(ul); };
+  if (!list.length){ pg.append(cnEl('p', 'cn-empty', 'À chaque fin de saison, une photo de ton archipel se colle ici. Tu peux aussi en prendre avec l’appareil 📷.')); mailBox(); return; }
   const g = cnEl('div', 'cn-photos');
   list.slice().reverse().forEach((s, k) => {
     const f = cnEl('figure', 'cn-photo'); f.style.setProperty('--r', (k % 2 ? 2.2 : -2.4) + 'deg'); f.style.margin = '0';
     const im = document.createElement('img'); im.src = s.d; im.alt = 'Photo de ton île, ' + s.t;
     f.append(im, cnEl('figcaption', '', s.t + (s.c ? ' · ' + s.c : ''))); f.onclick = () => f.classList.toggle('big'); g.append(f);
   });
-  pg.append(g);
+  pg.append(g); mailBox();
 }
 function cnTrouvailles(pg){
   pg.append(cnEl('h2', '', 'Mes trouvailles'));
@@ -8563,8 +8860,8 @@ function drawArchiMap(cv){
 }
 function openPanorama(){
   const cv = document.createElement('canvas'); cv.width = 320; cv.height = 320; cv.className = 'archi-map'; drawArchiMap(cv);
-  glob.story.carte = 1; saveGlob(); renderStoryCard();
-  openStoryModal({mode:'trade', who:'margaux', kicker:'Du haut du belvédère', title:'La carte de l’archipel', paras:['Tout l’archipel s’étale sous vos pieds. Margaux dessine à toute vitesse, la langue entre les dents.', cv], go:'Redescendre'});
+  const first = !glob.story.carte; glob.story.carte = 1; saveGlob(); renderStoryCard();
+  openStoryModal({mode:'trade', who:first ? 'margaux' : 'carnet', kicker:'Du haut du belvédère', title:'La carte de l’archipel', paras:[first ? 'Tout l’archipel s’étale sous vos pieds. Margaux dessine à toute vitesse, la langue entre les dents.' : 'Tout l’archipel s’étale sous tes pieds.', cv], go:'Redescendre'});
 }
 function cnChiffres(pg){
   const days = Math.max(1, glob.story.isleDays || 1);
@@ -8582,7 +8879,7 @@ function cnChiffres(pg){
   if (glob.story.chapter >= 3){ pg.append(cnEl('h3', '', 'Les repas')); pg.append(cnEl('p', '', (glob.story.fedV ? '🥕 Les habitants ont des légumes à manger.' : '🥕 Les habitants manquent de légumes…') + (cnt('1') ? (glob.story.fed ? ' 🥖 La boulangerie a son blé.' : ' 🥖 La boulangerie manque de blé…') : ''))); }
 }
 storyGo.onclick = () => {
-  if (storyMode === 'home'){ storyBox.hidden = true; storyMode = null; const a = homeAct; homeAct = null; if (a) a(); return; }
+  if (storyMode === 'home'){ storyBox.hidden = true; storyMode = null; const a = homeAct; homeAct = null; homeAlt = null; if (a) a(); return; }
   if (storyPages && storyPages.k < storyPages.texts.length - 1){ storyPages.k++; showStoryPage(); return; }
   if (storyMode === 'outro'){
     const done = glob.story.pendingOutro ?? glob.story.chapter;
@@ -8617,7 +8914,7 @@ storyGo.onclick = () => {
   updateStats();
 };
 storyAlt.onclick = () => {
-  if (storyMode === 'home'){ storyBox.hidden = true; storyMode = null; homeAct = null; return; }
+  if (storyMode === 'home'){ storyBox.hidden = true; storyMode = null; homeAct = null; const a = homeAlt; homeAlt = null; if (a) a(); return; }
   if (storyMode === 'invite'){ glob.story.asked = true; saveGlob(); toast('L’histoire t’attend dans la ⚙'); }
   storyBox.hidden = true;
 };
@@ -8805,7 +9102,7 @@ function coachTick(){
   try { const ch = CHAPTERS[glob.story.chapter]; const sig = ch ? JSON.stringify(ch.goals.map(g => g[1]())) + glob.story.chapter : ''; if (sig !== coachSig){ coachSig = sig; coachProgT = performance.now(); } } catch(e){}
   if (!coach.extra){
     const hint = document.getElementById('scHint'), book = document.getElementById('scBook');
-    if (!u.coachBook && book && !book.hidden && book.offsetParent) coach.extra = {key:'coachBook', el:book, t:'Ton carnet garde tout : les gens que tu rencontres, leurs lettres et tes photos.', t0:performance.now()};
+    if (!u.coachBook && book && !book.hidden && book.offsetParent) coach.extra = {key:'coachBook', el:book, t:'Ton carnet garde tout : l’histoire, les gens que tu rencontres et tes photos.', t0:performance.now()};
     else if (!u.coachHint && hint && !hint.hidden && hint.offsetParent && performance.now() - coachProgT > 150000) coach.extra = {key:'coachHint', el:hint, t:'Tu ne sais plus quoi faire ? L’ampoule te souffle un indice.', t0:performance.now()};
   }
   if (coach.extra){
@@ -8834,7 +9131,10 @@ function openHelp(){
     ...(desk ? [] : [[ic('#objBtn'), 'Les objets', 'Tout ce que tu sais construire. Les derniers objets choisis restent à gauche de la barre.', 1]]),
     [ic('#scFaceCv') || TUTO_BOOK, 'Le visage', 'La personne qui te confie une mission. Touche-le pour revoir ce qu’elle attend. Quand le « ! » apparaît, touche-le pour finir le chapitre.'],
     [ic('#scHint'), 'L’ampoule', 'Un indice, quand tu ne sais plus quoi faire.'],
-    [ic('#scBook'), 'Le carnet', 'Les gens de l’île, leurs lettres et l’album de tes photos.'],
+    [ic('#scBook'), 'Le carnet', 'L’histoire chapitre par chapitre, les gens de l’île et l’album de tes photos.'],
+    ['<b style="font-size:20px">🏡</b>', 'Les maisons', 'Avec la main, toque chez les habitants pour savoir qui vit là. Chez toi : dors jusqu’au matin, ou repose-toi jusqu’à la nuit.'],
+    ['<b style="font-size:20px">🕙</b>', 'L’horloge', 'Touche l’heure, en haut de l’écran, pour changer la saison, l’heure et la météo.'],
+    ['<b style="font-size:20px">☕</b>', 'Le mur du café', 'Les lettres trouvées dans les bouteilles y sont épinglées : touche le café avec la main pour les relire.'],
     [ic('#photoBtn'), 'La photo', 'Garde un souvenir de ton île.'],
     ['<b style="font-size:20px">🪵</b>', 'La réserve', 'En haut de l’écran : ton bois, tes pierres et le reste. Chaque objet coûte un peu de réserve.']
   ];
