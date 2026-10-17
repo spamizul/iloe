@@ -854,6 +854,8 @@ html.oh-l .thumb-in{flex-direction:row-reverse}
 #storyBox .cafe-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;max-height:38vh;overflow:auto}
 #storyBox .cafe-list button{display:flex;align-items:center;gap:6px;padding:5px 10px 5px 6px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);color:inherit;font:inherit;font-size:14px;cursor:pointer}
 #storyBox .cafe-list canvas{width:24px;height:24px;image-rendering:pixelated;border-radius:6px}
+#resHud .tier-chip{margin-left:4px;padding-left:8px;border-left:1px solid var(--line2)}
+#resHud.free{pointer-events:auto;cursor:pointer;z-index:40}
 </style>
 
 <div class="wrap" lang="fr">
@@ -3645,6 +3647,7 @@ function frame(ts){
   if (tTarget != null){ const d = ((tTarget - tday) % 1 + 1) % 1; if (d < 0.004 || reduce){ tday = tTarget; tTarget = null; } else tday = (tday + Math.min(d, dt*0.3)) % 1; forceDraw = true; if (typeof updateClock === 'function') updateClock(); }
   else if (autoTime && !reduce) { const t0 = tday; tday = (tday + dt/720) % 1; if (t0 < 0.22 && tday >= 0.22) nextWeather(); if (t0 < 0.3 && tday >= 0.3 && isStory()) try { marketMorning(); } catch(e){} }
   if (tday < tPrevDay - 0.5 && isStory() && glob.story && glob.story.ville){ glob.story.isleDays = (glob.story.isleDays || 1) + 1; saveGlob(); }
+  if (!isStory()) freeTick(dt);
   if (avatarOn()){ if (!player) player = playerSpawn(); updatePlayer(dt); }
   if (!reduce){ updateWalkers(dt); updateCars(dt); updateBoats(dt); updateFerry(dt); updateTrains(dt); updateAnimals(dt); updateFireworks(dt); if (!eco) updateParticles(dt); }
   if (stormT > 0) stormT = stormHold ? Math.max(stormT, 6) : Math.max(0, stormT - dt);
@@ -3860,7 +3863,7 @@ function buildTools(){
       const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; if (isNew) setTimeout(() => drawIconTo(t, cv)); else iconCanvases[t.id] = cv;
       const sp = document.createElement('span'); sp.textContent = t.name;
       b.append(cv, sp);
-      if (resOn() && costOf(t.id)){ const c = document.createElement('i'); c.className = 'cost'; c.textContent = costTxt(costOf(t.id)); b.append(c); }
+      if (ecoOn() && costOf(t.id)){ const c = document.createElement('i'); c.className = 'cost'; c.textContent = costTxt(costOf(t.id)); b.append(c); }
       b.onclick = () => selectTool(t.id);
       grid.append(b);
     }
@@ -3883,7 +3886,7 @@ function renderSearch(q){
     const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; drawIconTo(t, cv);
     const sp = document.createElement('span'); sp.textContent = t.name;
     b.append(cv, sp); b.onclick = () => selectTool(t.id); res.append(b);
-    if (resOn() && costOf(t.id)){ const c = document.createElement('i'); c.className = 'cost'; c.textContent = costTxt(costOf(t.id)); b.append(c); }
+    if (ecoOn() && costOf(t.id)){ const c = document.createElement('i'); c.className = 'cost'; c.textContent = costTxt(costOf(t.id)); b.append(c); }
   }
 }
 /* barre sous le pouce : les derniers outils utilisés */
@@ -3903,7 +3906,7 @@ function renderRecent(){
     b.title = t.name; b.setAttribute('aria-label', t.name); b.setAttribute('aria-pressed', tool === id);
     const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; drawIconTo(t, cv);
     b.append(cv);
-    if (resOn() && costOf(id)){ const c = document.createElement('span'); c.className = 'tb-cost'; c.textContent = costTxt(costOf(id)).replace(/ /g, ''); b.append(c); }
+    if (ecoOn() && costOf(id)){ const c = document.createElement('span'); c.className = 'tb-cost'; c.textContent = costTxt(costOf(id)).replace(/ /g, ''); b.append(c); }
     b.onclick = () => selectTool(id, true);
     el.append(b);
   }
@@ -3977,7 +3980,7 @@ const dkTip = document.createElement('div'); dkTip.className = 'dk-tip'; dkTip.h
 const dkCan = c => { if (!c) return true; const r = resv(); return Object.entries(c).every(([k, n]) => (r[k] || 0) >= n); };
 function dkShowTip(b, t){
   dkTip.textContent = ''; const nm = document.createElement('span'); nm.textContent = t.name; dkTip.append(nm);
-  const c = resOn() ? costOf(t.id) : null;
+  const c = ecoOn() ? costOf(t.id) : null;
   if (c){ const ct = document.createElement('span'); ct.className = 'c' + (dkCan(c) ? '' : ' no'); ct.textContent = costTxt(c); dkTip.append(ct); }
   dkTip.hidden = false;
   const r = b.getBoundingClientRect(), w = dkTip.offsetWidth, h = dkTip.offsetHeight;
@@ -4015,7 +4018,7 @@ function renderDesk(){
   for (const t of avail.filter(t => t.group === dkGroup).sort((a, b) => (ord.indexOf(a.id) + 1 || 99) - (ord.indexOf(b.id) + 1 || 99))){
     const b = document.createElement('button'); b.type = 'button'; b.className = 'dk-it' + (fresh.includes(t.id) ? ' fresh' : ''); b.dataset.id = t.id; b.setAttribute('aria-label', t.name);
     const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; drawIconTo(t, cv); b.append(cv);
-    if (resOn() && !dkCan(costOf(t.id))) b.classList.add('cant');
+    if (ecoOn() && !dkCan(costOf(t.id))) b.classList.add('cant');
     b.setAttribute('aria-pressed', !busy && t.id === tool);
     b.onclick = () => { selectTool(t.id, true); renderDesk(); dkShowTip(b, t); };
     b.onmouseenter = () => dkShowTip(b, t); b.onmouseleave = dkHideTip;
@@ -4025,18 +4028,18 @@ function renderDesk(){
 function dkSync(){
   if (!isDesk()) return;
   const busy = (typeof handMode !== 'undefined' && handMode) || pipMode;
-  document.querySelectorAll('.dk-it').forEach(b => { b.setAttribute('aria-pressed', !busy && b.dataset.id === tool); if (resOn()) b.classList.toggle('cant', !dkCan(costOf(b.dataset.id))); });
+  document.querySelectorAll('.dk-it').forEach(b => { b.setAttribute('aria-pressed', !busy && b.dataset.id === tool); if (ecoOn()) b.classList.toggle('cant', !dkCan(costOf(b.dataset.id))); });
 }
 mqDesk.addEventListener('change', () => { renderDesk(); try { if (ohSide()) ohLayout(); } catch(e){} });
 
 /* ---------- annuler ---------- */
 let history = [];
 const undoBtn = document.getElementById('undoBtn');
-function snapshot(){ history.push({g:G.join(''), o:O.map(c => c || '.').join(''), r:glob.story.res ? {...glob.story.res} : null, b:glob.story.bag ? {...glob.story.bag} : null}); if (history.length > 60) history.shift(); undoBtn.disabled = false; }
+function snapshot(){ history.push({g:G.join(''), o:O.map(c => c || '.').join(''), r:isStory() ? (glob.story.res ? {...glob.story.res} : null) : {...freeSt().res}, fr:!isStory(), b:glob.story.bag ? {...glob.story.bag} : null}); if (history.length > 60) history.shift(); undoBtn.disabled = false; }
 undoBtn.onclick = () => {
   const s = history.pop(); if (!s) return;
   G = s.g.split(''); O = s.o.split('').map(c => c === '.' ? null : c);
-  if (s.r){ glob.story.res = s.r; saveGlob(); renderRes(); }
+  if (s.r){ if (s.fr) freeSt().res = s.r; else glob.story.res = s.r; saveGlob(); renderRes(); }
   if (s.b){ glob.story.bag = s.b; saveGlob(); if (typeof renderBag === 'function') renderBag(); }
   undoBtn.disabled = !history.length;
   syncWalkers(); updateStats(); queueSave();
@@ -4070,7 +4073,7 @@ const COST = {'Ā':{b:3}, 'ā':{p:2}, 'Ą':{b:2}, 'Ċ':{b:2}, 'Ă':{b:3, p:2}, '
   '1':{p:2, a:3}, m:{b:3, a:2}, '9':{b:3}, '2':{b:2, a:2}, Q:{p:6}, A:{a:4, p:6}, E:{p:2, a:4}, I:{a:6, m:2}, i:{a:4, m:3}, O:{b:3, m:1}, L:{p:8, b:1}, 'ê':{p:6}, e:{p:2, m:2}};
 const TREES = new Set(['t', 'P', 'À']);
 /* le prix du moment : les 3 vaches de Philippe sont offertes */
-const costOf = id => id === 'v' && cnt('v') < 3 ? null : id === 'h' && resOn() && cnt('Ț') ? {b:1, p:2} : COST[id];
+const costOf = id => resOn() && id === 'v' && cnt('v') < 3 ? null : id === 'h' && resOn() && cnt('Ț') ? {b:1, p:2} : (!isStory() ? freeCost(id) : COST[id]);
 const SAPLING = {t:'ţ', P:'ş', 'À':'ą'}, GROWN = {'ţ':'t', 'ş':'P', 'ą':'À'};
 const SAP_MS = 3*60000;
 function growSaplings(){
@@ -4087,21 +4090,102 @@ function growSaplings(){
   if (grew){ save(); toast(grew > 1 ? `🌳 ${grew} pousses sont devenues des arbres` : '🌳 Une pousse est devenue un arbre'); }
 }
 function resOn(){ return glob.story.v === 2 && isStory(); }
-function resv(){ const r = glob.story.res || (glob.story.res = {b:0, p:0}); if (r.t > 0){ r.p = (r.p || 0) + r.t * 3; r.t = 0; } r.b = r.b || 0; r.p = r.p || 0; r.a = r.a || 0; r.m = r.m || 0; r.t = r.t || 0; r.k = r.k || 0; r.w = r.w || 0; r.v = r.v || 0; r.pie = r.pie || 0; r.lait = r.lait || 0; r.miel = r.miel || 0; r.gateau = r.gateau || 0; r.crepe = r.crepe || 0; r.oeuf = r.oeuf || 0; return r; }
+
+/* ---------- le mode libre : ta ville à toi ---------- */
+function freeSt(){ return glob.free || (glob.free = {res:{b:15, p:15, a:0, m:0}, crate:null, t:0, tier:0, hello:false, lastDay:null}); }
+function ecoOn(){ return resOn() || !isStory(); }
+const FREE_BASE = new Set(['h']), NO_FREE = new Set(['ʃ', 'ǰ', 'ï', 'ɥ']);
+const FREE_DEF = {Services:{b:2, p:5}, Commerces:{b:2, p:3}, Loisirs:{b:3, p:1}, Campagne:{b:3, p:1}, 'Eau et port':{b:3}, Port:{b:3}, Mobilier:{b:1}, Habitations:{b:2, p:2}};
+const FREE_GROUND = {R:{p:1}};
+function freeCost(id){
+  if (id === 'k') return undefined; if (id === 'v') return {b:3};
+  const c = COST[id] || freeDefCost(id); if (!c) return undefined;
+  const o = {}; for (const [k, n] of Object.entries(c)){ const kk = 'bpam'.includes(k) && k.length === 1 ? k : k === 't' ? 'p' : 'b'; o[kk] = (o[kk] || 0) + n; } return o;
+}
+function freeDefCost(id){ const t = TOOLS.find(t => t.id === id); if (!t) return undefined; if (t.kind !== 'obj') return FREE_GROUND[id]; if (t.group === 'Nature') return id === 'r' || id === 'M' ? {p:2} : undefined; return FREE_DEF[t.group]; }
+const FREE_TIERS = [[0, 'Hameau', []], [12, 'Village', ['S', 'E', 'è', 'Q', 'ç', 'î', 'ô']], [30, 'Bourg', ['A', 'à', 'ü', 'i', 'I', 'â', 'ê', 'û']], [60, 'Petite ville', ['ù', 'é', 'œ', 'ë', 'T']], [120, 'Ville', []]];
+function freeTierNow(){ const n = crowdCount(); let k = 0; FREE_TIERS.forEach((t, i) => { if (n >= t[0]) k = i; }); return k; }
+function freeTierHas(id){ const k = Math.max(freeSt().tier || 0, isStory() ? 0 : freeTierNow()); return FREE_TIERS.slice(0, k + 1).some(t => t[2].includes(id)); }
+function freeUnlocked(id){
+  const t = TOOLS.find(t => t.id === id); if (!t || t.kind !== 'obj') return true;
+  return FREE_BASE.has(id) || (t.group === 'Nature' && !t.story) || ((glob.story.unlocked2 || []).includes(id) && !NO_FREE.has(id)) || freeTierHas(id);
+}
+const toolNm = id => { const t = TOOLS.find(t => t.id === id); return t ? t.name.toLowerCase() : id; };
+function freeBubble(lines, go, act, alt, altAct){
+  homeAct = act || null; homeAlt = altAct || null;
+  openStoryModal({mode:'home', who:lines[0].w, kicker:'', title:'', paras:lines.map(l => l.t), go, alt, short:lines});
+  document.querySelectorAll('.sb-read').forEach(x => x.hidden = true);
+}
+/* la caisse du continent : une part de ce que tu gagnes dans l'histoire */
+function freeCrate(add){ const st = freeSt(), c = st.crate || (st.crate = {}); for (const [k, n] of Object.entries(add)) c[k] = (c[k] || 0) + n; saveGlob(); }
+const crateOf = done => { const se = (CHAPTERS[done] || {}).season || 1; return se >= 3 ? {b:6, p:6, a:2, m:1} : se === 2 ? {b:5, p:5, a:1} : {b:4, p:4}; };
+function chapterCrate(done){ freeCatchUp(); }
+function freeCatchUp(){
+  if (!glob.story || glob.story.v !== 2) return; const st = freeSt(), upto = Math.min(CHAPTERS.length, glob.story.chapter || 0);
+  const add = {}; for (let d = st.crUpTo || 0; d < upto; d++) for (const [k, n] of Object.entries(crateOf(d))) add[k] = (add[k] || 0) + n;
+  if (upto > (st.crUpTo || 0)){ st.crUpTo = upto; freeCrate(add); }
+}
+function freeOpen(){
+  if (isStory()) return;
+  const st = freeSt(); freeCatchUp();
+  if (glob.story && glob.story.isleDays){ const d = glob.story.isleDays; if (st.lastDay == null) st.lastDay = d; else if (d > st.lastDay){ const k = Math.min(10, d - st.lastDay); freeCrate({b:2*k, p:2*k}); st.lastDay = d; } }
+  if (st.tier == null || st.tier < freeTierNow()) st.tier = freeTierNow();
+  try { const rd = reqDef(); if (rd && !reqOk(rd)) newRequest(); } catch(e){}
+  saveGlob(); renderRes(); try { buildTools(); renderRecent(); } catch(e){}
+  setTimeout(() => {
+    if (!storyBox.hidden || isStory()) return;
+    if (!st.hello){
+      st.hello = true; saveGlob();
+      return freeBubble([B('carnet', 'Ici, c’est **ton île à toi**. Construire coûte des matériaux 🪵 🪨.'), B('carnet', 'Ils arrivent par la **caisse du continent**, grâce à ce que tu gagnes dans l’histoire. Et ta ville en produit un peu toute seule, pendant que tu joues.'), B('carnet', 'Plus ta ville grandit, plus tu débloques de bâtiments. Touche ta réserve, en haut, pour voir où tu en es.')], 'C’est parti', () => freeOpen());
+    }
+    const c = st.crate; if (c && Object.values(c).some(n => n > 0)){
+      freeBubble([B('gaspard', '« Une caisse du continent pour ton île ! Une petite part de tout ce que tu as gagné là-bas. »')], `📦 Ouvrir · ${resTxt(c)}`, () => { const r = resv(); for (const [k, n] of Object.entries(c)) r[k] = (r[k] || 0) + n; st.crate = null; saveGlob(); renderRes(true); toast(`📦 ${resTxt(c)} dans ta réserve`, 2600); try { buildTools(); } catch(e){} }, 'Plus tard');
+    }
+  }, 600);
+}
+/* la ville produit un peu, pendant que tu joues */
+const FREE_PROD = {'Ś':'b', 'Ț':'p', 'Ƀ':'a', 'Ƒ':'m'};
+let freeAcc = 0, freeChk = 0;
+function freeTick(dt){
+  const st = freeSt(); freeAcc += dt; freeChk += dt;
+  if (freeChk > 2){ freeChk = 0; const k = freeTierNow(); if (k > (st.tier || 0) && storyBox.hidden){ st.tier = k; saveGlob(); try { buildTools(); renderRecent(); } catch(e){} const nw = FREE_TIERS.slice(1, k + 1).flatMap(t => t[2]); const last = FREE_TIERS[k]; if (storyBox.hidden) freeBubble([B('carnet', `Ton île devient **${last[1].toLowerCase() === 'village' ? 'un village' : last[1].toLowerCase() === 'bourg' ? 'un bourg' : last[1].toLowerCase() === 'petite ville' ? 'une petite ville' : 'une ville'}** !`), ...(last[2].length ? [B('carnet', 'Nouveaux bâtiments : ' + last[2].map(toolNm).join(', ') + '.')] : [])], 'Super !'); renderRes(true); } }
+  if (freeAcc < 120) return; freeAcc = 0;
+  const big = Math.floor(crowdCount() / 20), add = {b:1 + big, p:1 + big};
+  for (const [o, k] of Object.entries(FREE_PROD)){ const n = Math.min(4, cnt(o)); if (n) add[k] = (add[k] || 0) + n; }
+  const r = resv(); for (const [k, n] of Object.entries(add)) r[k] = (r[k] || 0) + n;
+  st.t = (st.t || 0) + 1; saveGlob(); renderRes(true); toast(`🏘️ Ta ville a produit · ${resTxt(add)}`, 2400);
+}
+function freeHud(el){
+  const r = resv(), st = freeSt(), k = Math.max(st.tier || 0, freeTierNow());
+  el.innerHTML = `<span>🪵 <b>${r.b}</b></span><span>🪨 <b>${r.p}</b></span>` + (r.a || cnt('Ƀ') ? `<span>🧱 <b>${r.a}</b></span>` : '') + (r.m || cnt('Ƒ') ? `<span>⚙️ <b>${r.m}</b></span>` : '') + `<span class="tier-chip">🏘️ <b>${FREE_TIERS[k][1]}</b></span>`;
+  el.onclick = () => {
+    const n = crowdCount(), nx = FREE_TIERS[k + 1];
+    const lines = [B('carnet', `**${FREE_TIERS[k][1]}** · ${n} habitant${n > 1 ? 's' : ''}.`)];
+    if (nx) lines.push(B('carnet', `Prochain palier : **${nx[1]}**, à ${nx[0]} habitants.` + (nx[2].length ? ` Tu pourras construire : ${nx[2].map(toolNm).join(', ')}.` : '')));
+    lines.push(B('carnet', 'Ta ville produit un peu de bois et de pierre toutes les 2 minutes de jeu, plus quand elle grandit, et encore plus avec une scierie, un atelier du tailleur, un four à briques ou une forge.'));
+    if (st.crate && Object.values(st.crate).some(v => v > 0)) lines.push(B('carnet', `Une caisse du continent t’attend : ${resTxt(st.crate)}.`));
+    freeBubble(lines, st.crate && Object.values(st.crate).some(v => v > 0) ? '📦 Ouvrir la caisse' : 'Fermer', st.crate && Object.values(st.crate).some(v => v > 0) ? () => freeOpen() : null);
+  };
+}
+
+function resv(){ const r = isStory() ? (glob.story.res || (glob.story.res = {b:0, p:0})) : freeSt().res; if (r.t > 0){ r.p = (r.p || 0) + r.t * 3; r.t = 0; } r.b = r.b || 0; r.p = r.p || 0; r.a = r.a || 0; r.m = r.m || 0; r.t = r.t || 0; r.k = r.k || 0; r.w = r.w || 0; r.v = r.v || 0; r.pie = r.pie || 0; r.lait = r.lait || 0; r.miel = r.miel || 0; r.gateau = r.gateau || 0; r.crepe = r.crepe || 0; r.oeuf = r.oeuf || 0; return r; }
 function costTxt(c){ return [c.p ? c.p + '🪨' : '', c.b ? c.b + '🪵' : '', c.a ? c.a + '🧱' : '', c.m ? c.m + '⚙️' : '', c.t ? c.t + '⬜' : '', c.w ? c.w + '🌾' : ''].filter(Boolean).join(' '); }
 function renderRes(bump){
   const el = document.getElementById('resHud'); if (!el) return;
-  el.hidden = !resOn(); if (el.hidden) return;
+  el.hidden = !ecoOn(); if (el.hidden) return;
+  el.classList.toggle('free', !isStory());
+  if (!isStory()){ freeHud(el); if (bump){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); } try { dkSync(); } catch(e){} return; }
+  el.onclick = null;
   const r = resv(); el.innerHTML = `<span>🪵 <b>${r.b}</b></span><span>🪨 <b>${r.p}</b></span>` + (r.a || cnt('Ƀ') ? `<span>🧱 <b>${r.a}</b></span>` : '') + (r.m || cnt('Ƒ') ? `<span>⚙️ <b>${r.m}</b></span>` : '') + (r.w || (glob.story.introSeen ?? -1) >= 5 ? `<span>🌾 <b>${r.w}</b></span>` : '') + (r.v || (glob.story.introSeen ?? -1) >= 2 ? `<span>🥕 <b>${r.v}</b></span>` : '') + (r.lait || glob.story.farm ? `<span>🥛 <b>${r.lait}</b></span>` : '') + (r.miel || glob.story.honey ? `<span>🍯 <b>${r.miel}</b></span>` : '') + (r.oeuf || glob.story.hensBack ? `<span>🥚 <b>${r.oeuf}</b></span>` : '');
   if (bump){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
   try { dkSync(); } catch(e){}
 }
 function pay(id){
-  if (!resOn()) return true;
+  if (!ecoOn()) return true;
   const c = costOf(id); if (!c) return true;
   const r = resv(), mb = (c.b || 0) - r.b, mp = (c.p || 0) - r.p, ma = (c.a || 0) - r.a, mm = (c.m || 0) - r.m, mt = (c.t || 0) - r.t, mw = (c.w || 0) - r.w;
   if (mb > 0 || mp > 0 || ma > 0 || mm > 0 || mt > 0 || mw > 0){
-    const how = mw > 0 ? ' : récolte du blé doré à la main ✋' : mt > 0 ? '' : ma > 0 ? ' : ramasse de l’argile, ton four la cuit en briques' : mm > 0 ? ' : ramasse du minerai, ta forge en fait du métal' : mp > 0 ? ' : casse des rochers à la pioche ⛏️' : ' : coupe des arbres à la pioche ⛏️';
+    const how = !isStory() ? ' : la caisse du continent et ta ville t’en apporteront' : mw > 0 ? ' : récolte du blé doré à la main ✋' : mt > 0 ? '' : ma > 0 ? ' : ramasse de l’argile, ton four la cuit en briques' : mm > 0 ? ' : ramasse du minerai, ta forge en fait du métal' : mp > 0 ? ' : casse des rochers à la pioche ⛏️' : ' : coupe des arbres à la pioche ⛏️';
     hintT('Il te manque ' + [mp > 0 ? mp + ' 🪨' : '', mb > 0 ? mb + ' 🪵' : '', ma > 0 ? ma + ' 🧱' : '', mm > 0 ? mm + ' ⚙️' : '', mt > 0 ? mt + ' ⬜' : '', mw > 0 ? mw + ' 🌾' : ''].filter(Boolean).join(' et ') + how);
     return false;
   }
@@ -4109,17 +4193,18 @@ function pay(id){
   return true;
 }
 let ovenUntil = 0; const OVEN_MS = 2600;
-function gain(b, p, msg, a = 0, m = 0, t = 0){ if (!resOn()) return; const r = resv(); r.b += b; r.p += p; r.a += a; r.m += m; r.t += t; saveGlob(); renderRes(true); if (msg) toast(msg); }
+function gain(b, p, msg, a = 0, m = 0, t = 0){ if (!ecoOn()) return; const r = resv(); r.b += b; r.p += p; r.a += a; r.m += m; r.t += t; saveGlob(); renderRes(true); if (msg) toast(msg); }
 /* la pioche récolte (arbre, rocher) ou rend la moitié des matériaux */
 function harvest(o){
-  if (!resOn() || !o) return;
+  if (!ecoOn() || !o) return;
+  if (!isStory()){ const c = costOf(o); if (c && (c.b || c.p || c.a || c.m)) gain(c.b || 0, c.p || 0, `♻️ Récupéré : ${costTxt(c)}`, c.a || 0, c.m || 0); return; }
   if (TREES.has(o)){ const n = cnt('Ś') ? 2 : 1; return gain(n, 0, `🪵 Arbre coupé · +${n} bois` + (n > 1 ? ' (merci la scierie !)' : '')); }
   if (GROWN[o]) return hintT('🌱 Trop petite pour donner du bois');
   if (o === 'r' || o === 'ř') return gain(0, 3, '⛏️ Rocher cassé · +3 pierres');
   if (o === 'Č') return gain(2, 0, '🪵 Bois mort · +2 bois');
   const c = o === 'v' ? null : COST[o]; if (c && (c.b || c.p || c.a || c.m || c.t || c.w)) gain(c.b || 0, c.p || 0, `♻️ Récupéré : ${costTxt(c)}`, c.a || 0, c.m || 0, c.t || 0);
 }
-function refundG(g){ if (!resOn()) return; const c = COST[g === '¤' || g === '=' ? 'X' : g]; if (c && (c.b || c.p || c.a || c.m || c.t)) gain(c.b || 0, c.p || 0, null, c.a || 0, c.m || 0, c.t || 0); }
+function refundG(g){ if (!ecoOn()) return; const c = costOf(g === '¤' || g === '=' ? 'X' : g); if (c && (c.b || c.p || c.a || c.m || c.t)) gain(c.b || 0, c.p || 0, null, c.a || 0, c.m || 0, c.t || 0); }
 /* à chaque marée, la mer rapporte du bois flotté et quelques rochers sur la côte */
 function tide(){
   if (!resOn()) return;
@@ -4603,7 +4688,7 @@ function startStroke(ev, erase){ const c = cellOf(ev); if (!c) return; if (pipMo
 function revertStroke(){
   const s = history.pop(); if (!s) return;
   G = s.g.split(''); O = s.o.split('').map(c => c === '.' ? null : c);
-  if (s.r){ glob.story.res = s.r; saveGlob(); renderRes(); }
+  if (s.r){ if (s.fr) freeSt().res = s.r; else glob.story.res = s.r; saveGlob(); renderRes(); }
   if (s.b){ glob.story.bag = s.b; saveGlob(); if (typeof renderBag === 'function') renderBag(); }
   undoBtn.disabled = !history.length;
   syncWalkers(); updateStats(); queueSave();
@@ -4979,6 +5064,7 @@ const GIFT_TXT = {u:'Des ruches', e:'Une éolienne', O:'Un kiosque à musique', 
 function today(){ const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 const V2_BASE = new Set(['g','s','w','t','f','x']); // pas de sapin : ils naissent des pommes de pin
 function unlocked(id){
+  if (!isStory()) return freeUnlocked(id);
   if (glob.story.v === 2 && isStory()) return id !== 'î' && (V2_BASE.has(id) || (glob.story.unlocked2 || []).includes(id));
   if (GIFTS.includes(id) && !glob.gifts.includes(id)) return false;
   if (STORY_LOCK.includes(id)){
@@ -5073,10 +5159,12 @@ const REQS = [
 const reqCard = document.getElementById('reqCard'), reqText = document.getElementById('reqText'), reqSkip = document.getElementById('reqSkip');
 let reqThanks = false, reqTimer = null;
 const reqDef = () => glob.req && REQS.find(r => r.id === glob.req.id);
+const REQ_NEED = {banc:['b','Q'], lampe:['l'], potager:['V'], parasol:['U'], hortensias:['H','K'], chat:['C','A'], chalutier:['G'], vache:['v','o'], ecole:['E'], place:['Q'], casiers:['N'], moutons:['F'], bouee:['J'], menhir:['M'], phare:['L'], marche:['9'], hopital:['é'], bus:['ç'], feu:['â'], foot:['û'], piscine:['ë'], ferme:['Ç'], velos:['ô','E']};
+const reqOk = r => (REQ_NEED[r.id] || []).every(id => unlocked(id));
 function newRequest(){
   clearTimeout(reqTimer);
   const cur = glob.req && glob.req.id;
-  const pool = REQS.filter(r => r.id !== cur && (!r.avail || r.avail()) && !r.done(r.base ? r.base() : null));
+  const pool = REQS.filter(r => r.id !== cur && (!r.avail || r.avail()) && reqOk(r) && !r.done(r.base ? r.base() : null));
   const r = pool[(Math.random()*pool.length)|0] || REQS[1];
   glob.req = {id:r.id, name:NAMES[(Math.random()*NAMES.length)|0], base:r.base ? r.base() : null, terrain:terrains.cur};
   reqThanks = false; saveGlob(); renderReq();
@@ -5134,6 +5222,7 @@ function afterTerrainChange(){
   walkers = []; cars = []; boats = []; animals = []; gulls = []; trains = []; history = []; undoBtn.disabled = true;
   setSeason(season); syncWalkers(); renderReq(); updateStats(); updateGrowBtn(); renderTerrains();
   try { buildTools(); renderRecent(); } catch(e){}
+  try { renderRes(); renderBag(); renderNews(); freeOpen(); } catch(e){}
 }
 function switchTerrain(id){
   if (id === terrains.cur) return;
@@ -5189,13 +5278,38 @@ document.getElementById('newSample').onclick = () => newTerrain('sample');
 /* ---------- sauvegarde de secours ---------- */
 document.getElementById('exportBtn').onclick = async () => {
   save();
-  const data = {app:'iloe', version:2, date:new Date().toISOString(), glob:{gifts:glob.gifts, hearts:glob.hearts, story:glob.story},
+  const data = {app:'iloe', version:3, date:new Date().toISOString(), glob:JSON.parse(JSON.stringify(glob)), cur:terrains.list.findIndex(t => t.id === terrains.cur),
     terrains: terrains.list.map(t => ({name:t.name, story:!!t.story, data: t.id === terrains.cur ? terrainData() : readJSON(tKey(t.id))})).filter(t => t.data)};
   const blob = new Blob([JSON.stringify(data)], {type:'application/json'});
   const res = await offerFile(blob, `iloe-sauvegarde-${today()}.json`, false);
   if (res === 'saved' || res === 'shared') toast('Copie de sauvegarde prête');
   if (res === 'failed') toast("La copie n'a pas pu être créée");
 };
+
+/* tout remettre comme dans le fichier : l'histoire, ses terrains, le mode libre */
+function restoreSave(d, ok){
+  try {
+    for (const t of terrains.list){ try { localStorage.removeItem(tKey(t.id)); } catch(e){} }
+    const list = []; let storyId = null, cur = null;
+    ok.forEach((t, n) => {
+      const id = newId() + n, name = String(t.name || 'Terrain').slice(0, 30);
+      list.push(t.story ? {id, name, story:true} : {id, name}); writeJSON(tKey(id), t.data);
+      if (t.story && !storyId) storyId = id;
+      if (n === d.cur) cur = id;
+    });
+    const g = d.glob || {};
+    const keep = {ui:glob.ui};
+    for (const k of Object.keys(glob)) delete glob[k];
+    Object.assign(glob, {gifts:[], lastGift:null, hearts:0, recent:['h','t','c','f','R','w'], req:null}, g);
+    if (!g.ui && keep.ui) glob.ui = keep.ui;
+    if (glob.story){ if (storyId) glob.story.terrain = storyId; else { glob.story.started = false; glob.story.terrain = null; } }
+    terrains = {cur:cur || storyId || list[0].id, list};
+    writeJSON(IDX, terrains); saveGlob();
+    toast('Sauvegarde restaurée', 1500);
+    setTimeout(() => location.reload(), 600);
+  } catch(e){ toast("La sauvegarde n'a pas pu être restaurée"); }
+}
+setTimeout(() => { try { if (!isStory()){ renderRes(); freeOpen(); } } catch(e){} }, 1500);
 const importFile = document.getElementById('importFile');
 document.getElementById('importBtn').onclick = () => importFile.click();
 importFile.onchange = async () => {
@@ -5204,6 +5318,14 @@ importFile.onchange = async () => {
   let d = null;
   try { d = JSON.parse(await f.text()); } catch(e){}
   if (!d || d.app !== 'iloe' || !Array.isArray(d.terrains)){ toast("Ce fichier n'est pas une sauvegarde d'iloe"); return; }
+  const ok = d.terrains.filter(t => t && t.data && typeof t.data.g === 'string' && typeof t.data.o === 'string');
+  if (!ok.length){ toast('Aucun terrain trouvé dans ce fichier'); return; }
+  setMenu(false);
+  homeAct = () => restoreSave(d, ok); homeAlt = null;
+  const nf = ok.filter(t => !t.story).length, dt = d.date ? new Date(d.date).toLocaleDateString('fr-FR', {day:'numeric', month:'long'}) : '';
+  openStoryModal({mode:'home', who:'carnet', kicker:'', title:'', paras:[''], go:'Remplacer', alt:'Annuler', short:[B('carnet', `Restaurer cette sauvegarde${dt ? ' du **' + dt + '**' : ''} ? Elle **remplace toute ta partie actuelle** : ton histoire${nf ? ` et tes ${nf > 1 ? nf + ' terrains libres' : 'terrains libres'}` : ''}.`)]});
+  document.querySelectorAll('.sb-read').forEach(x => x.hidden = true);
+  return;
   save();
   let first = null, n = 0;
   for (const t of d.terrains){
@@ -8883,7 +9005,7 @@ storyGo.onclick = () => {
   if (storyPages && storyPages.k < storyPages.texts.length - 1){ storyPages.k++; showStoryPage(); return; }
   if (storyMode === 'outro'){
     const done = glob.story.pendingOutro ?? glob.story.chapter;
-    glob.story.chapter = done + 1; glob.story.pendingOutro = null; saveGlob();
+    glob.story.chapter = done + 1; glob.story.pendingOutro = null; try { if (glob.story.v === 2) chapterCrate(done); } catch(e){} saveGlob();
     storyBox.hidden = true;
     storyHold = Date.now() + 2700;
     const grew = glob.story.v === 2 ? runAfter(done) : applyGrowth(done);
