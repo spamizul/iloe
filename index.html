@@ -238,6 +238,9 @@ button.fold{flex:none;width:32px;height:30px;border:1px solid var(--line);backgr
 #storyBox.panneau .trade-btn .get{font-weight:600}
 #storyBox.panneau .trade-btn .give{margin-left:auto;font-size:14px;white-space:nowrap;background:var(--accent);color:var(--on-amber);border-radius:999px;padding:4px 10px;font-weight:700}
 #storyBox.panneau .trade-btn:disabled{opacity:.45}
+#storyBox.panneau .trade-btn{flex-wrap:wrap}
+#storyBox.panneau .story-body > p:first-child{padding-right:30px}
+#storyBox.panneau .trade-btn:disabled[data-why]:not([data-why=""])::after{content:attr(data-why);flex-basis:100%;font-size:12.5px;font-weight:600;color:#e5736b;margin-top:-2px}
 #storyBox.panneau .trade-btn:disabled .give{background:var(--line2);color:var(--ink)}
 #storyBox.panneau .archi-map{width:100%;max-width:340px;margin:6px auto 0 -56px;display:block}
 .pn-x{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;border:0;background:var(--surface2);color:var(--ink);font-size:18px;line-height:1;cursor:pointer}
@@ -4224,6 +4227,7 @@ const DISHES = {pie:'Tarte aux légumes', gateau:'Gâteau au miel', crepe:'Crêp
 /* les plats préparés vont dans le sac : une seule place par sorte */
 const dishKinds = () => { const r = glob.story.res || {}; return Object.keys(DISHES).filter(k => (r[k] || 0) > 0).length; };
 const bagCount = () => Object.values(bag()).reduce((a, n) => a + n, 0) + dishKinds();
+const whyMiss = need => { const r = resv(), m = {}; for (const [k, n] of Object.entries(need)) if ((r[k] || 0) < n) m[k] = n - (r[k] || 0); return Object.keys(m).length ? 'Il manque ' + resTxt(m) : ''; };
 const dishRoom = k => ((glob.story.res || {})[k] || 0) > 0 || bagCount() < bagCap();
 function drawDish(cv, k){
   const c = cv.getContext('2d'); c.clearRect(0, 0, cv.width, cv.height); const R = (x, y, w, h, col) => { c.fillStyle = col; c.fillRect(x, y, w, h); };
@@ -4300,7 +4304,7 @@ function openTrade(){
   const btns = [];
   const can = d => { const r = resv(); if (d.get.bag && bagCount() >= bagCap()) return false; return !Object.entries(d.pay).some(([k, n]) => (r[k] || 0) < n); };
   const label = d => d.ask ? `Demande du continent : ${resTxt(d.pay)} → ${resTxt(d.get)}` : d.order ? `Commande du continent : ${resTxt(d.pay)} → ${(TOOLS.find(t => t.id === d.get.bag) || {}).name} 🎒` : d.get.bag ? `${resTxt(d.pay)} → ${(TOOLS.find(t => t.id === d.get.bag) || {}).name} 🎒` : d.get.cap ? `${resTxt(d.pay)} → un grand sac à dos (12 places) 🎒` : `${resTxt(d.pay)} → ${resTxt(d.get)}`;
-  const refresh = () => { const r = resv(); have.textContent = `Dans ta poche : ${r.k} 🐚` + (glob.story.chapter >= 3 ? ` · ${r.v} 🥕` : '') + (r.pie ? ` · ${r.pie} 🥧` : ''); for (const [b, d] of btns) b.disabled = !can(d); };
+  const refresh = () => { const r = resv(); have.textContent = `Dans ta poche : ${r.k} 🐚` + (glob.story.chapter >= 3 ? ` · ${r.v} 🥕` : '') + (r.pie ? ` · ${r.pie} 🥧` : ''); for (const [b, d] of btns){ b.disabled = !can(d); b.dataset.why = d.get.bag && bagCount() >= bagCap() ? '🎒 Sac plein' : whyMiss(d.pay); } };
   for (const d of deals){
     if (d.if && !d.if()) continue;
     const b = document.createElement('button'); b.type = 'button'; b.className = 'btn trade-btn'; b.textContent = label(d);
@@ -4402,6 +4406,7 @@ function handTap(x, y, cx, cy){
   if (resOn() && glob.story.ville && O[i] === 'Ċ' && (glob.story.balOff || []).includes(i) && !acts.length) acts.push('Rallumer');
   if (resOn() && glob.story.ville && O[i] === 'ā' && !acts.length) acts.push('Sonner');
   if (O[i] === 'Ȝ') acts.push('Entrer');
+  if (resOn() && !acts.length){ const hk = homeKind(i); if (hk) acts.push(hk === 'own' ? 'Entrer' : hk === 'empty' ? 'Regarder' : 'Toquer'); }
   const nm = nameOf(i);
   if (!acts.length){ if (nm) hintT('🏷️ ' + nm); return; }
   showBldPop(nm || '', acts[0], () => go(x, y), cx, cy);
@@ -6757,7 +6762,7 @@ function openCreperie(){
   const have = document.createElement('p'); have.className = 'trade-have';
   const d = {need:{w:1, lait:1}, get:{crepe:1}};
   const b = document.createElement('button'); b.type = 'button'; b.className = 'btn trade-btn'; b.textContent = `Une crêpe : ${resTxt(d.need)} → ${resTxt(d.get)}`;
-  const refresh = () => { const r = resv(); have.textContent = `Dans ta réserve : ${r.w} 🌾 · ${r.lait} 🥛 · dans ton sac : ${r.crepe} crêpe${r.crepe > 1 ? 's' : ''}` + (dishRoom('crepe') ? '' : ' (ton sac est plein)'); b.disabled = !dishRoom('crepe') || Object.entries(d.need).some(([k, n]) => (r[k] || 0) < n); };
+  const refresh = () => { const r = resv(); have.textContent = `Dans ta réserve : ${r.w} 🌾 · ${r.lait} 🥛 · dans ton sac : ${r.crepe} crêpe${r.crepe > 1 ? 's' : ''}` + (dishRoom('crepe') ? '' : ' (ton sac est plein)'); b.disabled = !dishRoom('crepe') || Object.entries(d.need).some(([k, n]) => (r[k] || 0) < n); b.dataset.why = !dishRoom('crepe') ? '🎒 Sac plein : libère une place pour les crêpes' : whyMiss(d.need); };
   b.onclick = () => { const r = resv(); if (b.disabled) return; for (const [k, n] of Object.entries(d.need)) r[k] -= n; r.crepe++; saveGlob(); renderRes(true); renderBag(); refresh(); renderStoryCard(); toast('🥞 Une crêpe toute chaude\u00a0!', 1500); };
   box.append(have, b); refresh();
   openStoryModal({mode:'trade', who:'margaux', kicker:'La crêperie', title:'Chez Margaux', paras:['« Du blé et du lait, et je te fais sauter une crêpe\u00a0! »', box], go:'Merci Margaux\u00a0!'});
@@ -6767,7 +6772,7 @@ function openKitchen(){
   const have = document.createElement('p'); have.className = 'trade-have';
   const recipes = [{need:{w:2, v:3}, get:{pie:1}, label:'Tarte aux légumes'}, ...(glob.story.honey ? [{need:{w:2, lait:1, miel:1}, get:{gateau:1}, label:'Gâteau au miel'}] : [])];
   const btns = [];
-  const refresh = () => { const r = resv(); have.textContent = `Dans ta réserve : ${r.w} 🌾 · ${r.v} 🥕` + (glob.story.farm ? ` · ${r.lait} 🥛` : '') + (glob.story.honey ? ` · ${r.miel} 🍯` : ''); for (const [b, d] of btns) b.disabled = !dishRoom(Object.keys(d.get)[0]) || Object.entries(d.need).some(([k, n]) => (r[k] || 0) < n); };
+  const refresh = () => { const r = resv(); have.textContent = `Dans ta réserve : ${r.w} 🌾 · ${r.v} 🥕` + (glob.story.farm ? ` · ${r.lait} 🥛` : '') + (glob.story.honey ? ` · ${r.miel} 🍯` : ''); for (const [b, d] of btns){ b.disabled = !dishRoom(Object.keys(d.get)[0]) || Object.entries(d.need).some(([k, n]) => (r[k] || 0) < n); b.dataset.why = !dishRoom(Object.keys(d.get)[0]) ? '🎒 Sac plein : libère une place pour un nouveau plat' : whyMiss(d.need); } };
   for (const d of recipes){
     const b = document.createElement('button'); b.type = 'button'; b.className = 'btn trade-btn'; b.textContent = `${d.label} : ${resTxt(d.need)} → ${resTxt(d.get)}`;
     b.onclick = () => { const r = resv(); if (!dishRoom(Object.keys(d.get)[0])){ hintT('🎒 Ton sac est plein'); return; } if (Object.entries(d.need).some(([k, n]) => (r[k] || 0) < n)) return; for (const [k, n] of Object.entries(d.need)) r[k] -= n; for (const [k, n] of Object.entries(d.get)) r[k] = (r[k] || 0) + n; saveGlob(); renderRes(true); renderBag(); toast('🥧 Une tarte toute chaude !', 2500); refresh(); };
@@ -7609,6 +7614,15 @@ const HOME_LINES = {
   yuna:'Chez Yuna. Une combinaison de plongée sèche devant la porte.',
   voyageurs:'La maison des voyageurs. On y parle souvent du continent.'
 };
+function homeKind(i){
+  if (!glob.story || !glob.story.ville || glob.story.v !== 2 || (O[i] !== 'h' && O[i] !== 'Ĉ')) return null;
+  const key = (glob.story.homes || {})[i];
+  if (key === 'toi' || key === 'toi_c') return 'own';
+  if (O[i] === 'h' && villagers().some(v => v.home === i)) return 'vil';
+  if (key && HOME_LINES[key]) return 'char';
+  if (O[i] === 'h' && typeof houseEmpty === 'function' && houseEmpty(i)) return 'empty';
+  return null;
+}
 function openHomeBubble(i){
   if (!glob.story || !glob.story.ville || glob.story.v !== 2) return false;
   const H = glob.story.homes || {}, key = H[i], hh = tday * 24;
