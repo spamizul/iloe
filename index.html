@@ -4035,12 +4035,12 @@ mqDesk.addEventListener('change', () => { renderDesk(); try { if (ohSide()) ohLa
 /* ---------- annuler ---------- */
 let history = [];
 const undoBtn = document.getElementById('undoBtn');
-function snapshot(){ history.push({g:G.join(''), o:O.map(c => c || '.').join(''), r:isStory() ? (glob.story.res ? {...glob.story.res} : null) : {...freeSt().res}, fr:!isStory(), b:glob.story.bag ? {...glob.story.bag} : null}); if (history.length > 60) history.shift(); undoBtn.disabled = false; }
+function snapshot(){ history.push({g:G.join(''), o:O.map(c => c || '.').join(''), r:isStory() ? (glob.story.res ? {...glob.story.res} : null) : {...freeSt().res}, fr:!isStory(), b:{...bag()}}); if (history.length > 60) history.shift(); undoBtn.disabled = false; }
 undoBtn.onclick = () => {
   const s = history.pop(); if (!s) return;
   G = s.g.split(''); O = s.o.split('').map(c => c === '.' ? null : c);
   if (s.r){ if (s.fr) freeSt().res = s.r; else glob.story.res = s.r; saveGlob(); renderRes(); }
-  if (s.b){ glob.story.bag = s.b; saveGlob(); if (typeof renderBag === 'function') renderBag(); }
+  if (s.b){ if (s.fr) (glob.bagsT || (glob.bagsT = {}))[terrains.cur] = s.b; else glob.story.bag = s.b; saveGlob(); if (typeof renderBag === 'function') renderBag(); }
   undoBtn.disabled = !history.length;
   syncWalkers(); updateStats(); queueSave();
 };
@@ -4090,6 +4090,16 @@ function growSaplings(){
   if (grew){ save(); toast(grew > 1 ? `🌳 ${grew} pousses sont devenues des arbres` : '🌳 Une pousse est devenue un arbre'); }
 }
 function resOn(){ return glob.story.v === 2 && isStory(); }
+
+/* les cœurs : chaque île libre a les siens */
+function heartsMig(){
+  if (glob.heartsT) return;
+  let sh = 0; if (glob.story && glob.story.v === 2) for (let i = 0; i < Math.min(CHAPTERS.length, glob.story.chapter || 0); i++) sh += !CHAPTERS[i + 1] || CHAPTERS[i + 1].season !== CHAPTERS[i].season ? 3 : 1;
+  const free = terrains.list.filter(t => !t.story), tg = free.find(t => glob.req && t.id === glob.req.terrain) || free[0];
+  glob.heartsT = {}; if (tg) glob.heartsT[tg.id] = Math.max(0, (glob.hearts || 0) - sh); saveGlob();
+}
+function heartsN(id){ heartsMig(); return glob.heartsT[id || terrains.cur] || 0; }
+function heartsAdd(n, id){ heartsMig(); const k = id || terrains.cur; glob.heartsT[k] = (glob.heartsT[k] || 0) + n; glob.hearts = (glob.hearts || 0) + n; }
 
 /* ---------- le mode libre : ta ville à toi ---------- */
 function freeSt(){ return glob.free || (glob.free = {res:{b:15, p:15, a:0, m:0}, crate:null, t:0, tier:0, hello:false, lastDay:null}); }
@@ -4310,11 +4320,11 @@ const GASPARD_RARE = [['ê', 9], ['J', 5], ['Û', 11], ['d', 12], ['j', 12], ['�
 const ORDERS = [['O', 30], ['e', 35], ['ë', 40]];
 const NO_BAG = new Set(['L', 'ř', 'Ó', 'ŵ', 'ï', 'ɓ', 'Ȝ', 'Ć', 'ć', 'Ď', 'č']);
 let bagTool = null;
-const bag = () => glob.story.bag || (glob.story.bag = {});
-const bagCap = () => glob.story.bagCap || 8;
+const bag = () => isStory() ? (glob.story.bag || (glob.story.bag = {})) : ((glob.bagsT || (glob.bagsT = {}))[terrains.cur] || (glob.bagsT[terrains.cur] = {}));
+const bagCap = () => isStory() ? (glob.story.bagCap || 8) : 10;
 const DISHES = {pie:'Tarte aux légumes', gateau:'Gâteau au miel', crepe:'Crêpe', k:'Coquillages'};
 /* les plats préparés vont dans le sac : une seule place par sorte */
-const dishKinds = () => { const r = glob.story.res || {}; return Object.keys(DISHES).filter(k => (r[k] || 0) > 0).length; };
+const dishKinds = () => { if (!isStory()) return 0; const r = glob.story.res || {}; return Object.keys(DISHES).filter(k => (r[k] || 0) > 0).length; };
 const bagCount = () => Object.values(bag()).reduce((a, n) => a + n, 0) + dishKinds();
 const whyMiss = need => { const r = resv(), m = {}; for (const [k, n] of Object.entries(need)) if ((r[k] || 0) < n) m[k] = n - (r[k] || 0); return Object.keys(m).length ? 'Il manque ' + resTxt(m) : ''; };
 const dishRoom = k => ((glob.story.res || {})[k] || 0) > 0 || bagCount() < bagCap();
@@ -4330,8 +4340,8 @@ function bagAdd(id){ if (bagCount() >= bagCap()) return false; const b = bag(); 
 function bagStore(x, y){
   let i = y*N + x;
   if (!O[i]){ const below = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x])); if (below){ i = below[0]*N + x; y = below[0]; } }
-  if (!resOn() || !O[i] || NO_BAG.has(O[i]) || COLLECT[O[i]] || GROWN[O[i]] || brokenAt(i) || fogAt(x, y) || isleBlocked(i)) return false;
-  if (villagers().some(v => v.home === i || v.tent === i)){ hintT('🏡 Quelqu’un habite ici'); return true; }
+  if (!ecoOn() || !O[i] || NO_BAG.has(O[i]) || COLLECT[O[i]] || GROWN[O[i]] || (resOn() && brokenAt(i)) || fogAt(x, y) || isleBlocked(i)) return false;
+  if (resOn() && villagers().some(v => v.home === i || v.tent === i)){ hintT('🏡 Quelqu’un habite ici'); return true; }
   if (bagCount() >= bagCap()){ hintT(`🎒 Ton sac est plein (${bagCount()}/${bagCap()})`); return true; }
   const id = O[i]; O[i] = null; bagAdd(id); save(); syncWalkers(); forceDraw = true; groundDirty = true;
   toast(`🎒 ${(TOOLS.find(t => t.id === id) || {}).name} rangé dans ton sac`, 2000); return true;
@@ -4339,7 +4349,7 @@ function bagStore(x, y){
 function bagUse(id){ const b = bag(); if (!b[id]) return; b[id]--; if (!b[id]) delete b[id]; saveGlob(); if (!b[id] && bagTool === id){ bagTool = null; selectTool(prevTool && prevTool !== id ? prevTool : 'h', true); } renderBag(); }
 const bagBtn = document.getElementById('bagBtn'), bagPop = document.getElementById('bagPop');
 function renderBag(){
-  const on = isStory() && glob.story.v === 2;
+  const on = (isStory() && glob.story.v === 2) || !isStory();
   bagBtn.hidden = !on; if (!on){ bagPop.hidden = true; return; }
   const bn = document.getElementById('bagN'); bn.textContent = bagCount(); bn.hidden = !bagCount();
   bagBtn.setAttribute('aria-pressed', String(!!bagTool));
@@ -4361,13 +4371,13 @@ function renderBag(){
     const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; drawDish(cv, k);
     const sp = document.createElement('span'); sp.textContent = `${DISHES[k]} ×${n}`;
     b.append(cv, sp); b.onclick = e => { e.stopPropagation(); hintT(k === 'k' ? '🎒 Des coquillages : Gaspard les échange contre ce qu’il a dans sa cale' : `🎒 ${DISHES[k]} : à offrir ou à garder pour une fête`); }; list.append(b); }
-  { const mb = (glob.story.mail || {}).bag || []; for (const m of mb){
+  { const mb = isStory() ? ((glob.story.mail || {}).bag || []) : []; for (const m of mb){
     const b = document.createElement('button'); b.type = 'button'; b.className = 'dish mail';
     const ic = document.createElement('span'); ic.className = 'mail-ic'; ic.textContent = '✉️';
     const sp = document.createElement('span'); sp.textContent = `Pour ${mailName(m)}`;
     b.append(ic, sp); b.onclick = e => { e.stopPropagation(); const hm = mailHome(m); bagPop.hidden = true; bagBtn.setAttribute('aria-expanded', 'false'); if (hm == null){ hintT(`✉️ ${mailName(m)} n’a plus de maison… garde la lettre, en attendant.`); return; } showAddr(mailName(m), hm); }; list.append(b); } }
   bagPop.append(list);
-  if (!ids.length && !dishKinds() && !((glob.story.mail || {}).bag || []).length){ const p = document.createElement('p'); p.style.marginTop = '8px'; p.textContent = 'Le reste de ton sac est vide. Un appui long avec la main ✋ sur un objet de ton île le range ici.'; bagPop.append(p); }
+  if (!ids.length && !dishKinds() && !(isStory() && ((glob.story.mail || {}).bag || []).length)){ const p = document.createElement('p'); p.style.marginTop = '8px'; p.textContent = 'Le reste de ton sac est vide. Un appui long avec la main ✋ sur un objet de ton île le range ici.'; bagPop.append(p); }
 }
 bagBtn.onclick = e => { e.stopPropagation(); { const r = bagBtn.getBoundingClientRect(); bagPop.style.top = Math.round(r.bottom + 8) + 'px'; } bagPop.hidden = !bagPop.hidden; bagBtn.setAttribute('aria-expanded', String(!bagPop.hidden)); renderBag(); };
 document.addEventListener('pointerdown', e => { if (!e.target.closest || !e.target.closest('#bagBtn, #bagPop')) bagPop.hidden = true; }, true);
@@ -4689,7 +4699,7 @@ function revertStroke(){
   const s = history.pop(); if (!s) return;
   G = s.g.split(''); O = s.o.split('').map(c => c === '.' ? null : c);
   if (s.r){ if (s.fr) freeSt().res = s.r; else glob.story.res = s.r; saveGlob(); renderRes(); }
-  if (s.b){ glob.story.bag = s.b; saveGlob(); if (typeof renderBag === 'function') renderBag(); }
+  if (s.b){ if (s.fr) (glob.bagsT || (glob.bagsT = {}))[terrains.cur] = s.b; else glob.story.bag = s.b; saveGlob(); if (typeof renderBag === 'function') renderBag(); }
   undoBtn.disabled = !history.length;
   syncWalkers(); updateStats(); queueSave();
 }
@@ -4974,7 +4984,7 @@ function photoInfo(){
   const sea = {printemps:'de printemps', ete:'d’été', automne:'d’automne', hiver:'d’hiver'}[season] || '';
   const date = new Date().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'});
   const an = animals.length + animals.reduce((s, a) => s + (a.babies ? a.babies.length : 0), 0) + gulls.length + walkers.filter(w => w.dog).length + cnt('v') + cnt('C');
-  const hab = residents(), h = glob.hearts || 0;
+  const hab = residents(), h = heartsN();
   const ih = inhabitants();
   const stats = [`${ih} habitant${ih > 1 ? 's' : ''}`, `${an} animau${an > 1 ? 'x' : ''}`.replace('animaux', an > 1 ? 'animaux' : 'animal')];
   if (h) stats.push(`${h} idée${h > 1 ? 's' : ''} réalisée${h > 1 ? 's' : ''}`);
@@ -5183,7 +5193,7 @@ function residentLook(name){
     hat:(h >>> 13) % 6 === 0 ? 'beret' : undefined, glasses:(h >>> 16) % 6 === 0, beard:!long && (h >>> 19) % 4 === 0 ? '#5a3c22' : undefined};
 }
 function renderHearts(){
-  const h = glob.hearts || 0, el = document.getElementById('heartsPill');
+  const h = heartsN(), el = document.getElementById('heartsPill');
   el.hidden = !h || (glob.story.v === 2 && isStory());
   el.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.3-9.2C1.4 8.3 3.6 5 7 5c2 0 3.6 1.2 5 3 1.4-1.8 3-3 5-3 3.4 0 5.6 3.3 4.3 6.8C19.5 16.4 12 21 12 21z"/></svg>';
   el.append(String(h)); el.title = `${h} idée${h > 1 ? 's' : ''} réalisée${h > 1 ? 's' : ''}`; el.setAttribute('aria-label', el.title);
@@ -5200,7 +5210,7 @@ function renderReq(){
   reqCard.classList.toggle('min', min); setFold(reqFold, min);
   reqText.append(b, reqThanks ? ' te dit merci ! Un cœur pour toi.' : min ? ' a une idée pour l’île' : ` aimerait ${r.txt}.`);
   reqSkip.hidden = reqThanks || min;
-  const h = glob.hearts;
+  const h = heartsN();
   document.getElementById('hearts').textContent = h ? `💛 ${h} idée${h > 1 ? 's' : ''} réalisée${h > 1 ? 's' : ''}` : '';
 }
 function checkRequest(){
@@ -5208,7 +5218,7 @@ function checkRequest(){
   if (!r || reqThanks || isStory()) return;
   if (glob.req.terrain !== terrains.cur){ glob.req.terrain = terrains.cur; glob.req.base = r.base ? r.base() : null; saveGlob(); return; }
   if (r.done(glob.req.base)){
-    reqThanks = true; glob.hearts = (glob.hearts || 0) + 1; saveGlob(); renderReq();
+    reqThanks = true; heartsAdd(1); saveGlob(); renderReq();
     toast('Idée réalisée ! 💛');
     reqTimer = setTimeout(newRequest, 6000);
   }
@@ -5279,7 +5289,7 @@ document.getElementById('newSample').onclick = () => newTerrain('sample');
 document.getElementById('exportBtn').onclick = async () => {
   save();
   const data = {app:'iloe', version:3, date:new Date().toISOString(), glob:JSON.parse(JSON.stringify(glob)), cur:terrains.list.findIndex(t => t.id === terrains.cur),
-    terrains: terrains.list.map(t => ({name:t.name, story:!!t.story, data: t.id === terrains.cur ? terrainData() : readJSON(tKey(t.id))})).filter(t => t.data)};
+    terrains: terrains.list.map(t => ({id:t.id, name:t.name, story:!!t.story, data: t.id === terrains.cur ? terrainData() : readJSON(tKey(t.id))})).filter(t => t.data)};
   const blob = new Blob([JSON.stringify(data)], {type:'application/json'});
   const res = await offerFile(blob, `iloe-sauvegarde-${today()}.json`, false);
   if (res === 'saved' || res === 'shared') toast('Copie de sauvegarde prête');
@@ -5297,7 +5307,9 @@ function restoreSave(d, ok){
       if (t.story && !storyId) storyId = id;
       if (n === d.cur) cur = id;
     });
-    const g = d.glob || {};
+    const g = d.glob || {}, idm = {}; ok.forEach((t, n) => { if (t.id) idm[t.id] = list[n].id; });
+    for (const key of ['heartsT', 'bagsT']) if (g[key]){ const o = {}; for (const [k, v] of Object.entries(g[key])) if (idm[k]) o[idm[k]] = v; g[key] = o; }
+    if (g.req && idm[g.req.terrain]) g.req.terrain = idm[g.req.terrain];
     const keep = {ui:glob.ui};
     for (const k of Object.keys(glob)) delete glob[k];
     Object.assign(glob, {gifts:[], lastGift:null, hearts:0, recent:['h','t','c','f','R','w'], req:null}, g);
@@ -8324,7 +8336,7 @@ function completeChapter(){
   if (ch.onDone && isStory()) ch.onDone();
   glob.story.today = {d:today(), n:chaptersToday() + 1};
   for (const id of ch.reward) unlockItem(id);
-  glob.hearts = (glob.hearts || 0) + (!CHAPTERS[i + 1] || CHAPTERS[i + 1].season !== ch.season ? 3 : 1);
+  heartsAdd(!CHAPTERS[i + 1] || CHAPTERS[i + 1].season !== ch.season ? 3 : 1, glob.story.terrain);
   saveGlob(); buildTools(); renderRecent(); renderReq();
   openChapter('outro', i);
 }
