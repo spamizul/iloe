@@ -4473,6 +4473,7 @@ function interact(x, y){
     const r = resv(); r.w += 3; glob.story.harvested = (glob.story.harvested || 0) + 3; saveGlob(); renderRes(true); groundDirty = true; queueSave();
     toast('🌾 Moisson · +3 🌾 · le blé repousse déjà', 2500); return;
   }
+  if (resOn() && glob.story.ville && (O[i] === 'h' || O[i] === 'Ĉ') && openHomeBubble(i)) return;
   if (!handTarget(i)){ let j = i; if (!O[j]){ const below = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x])); if (below) j = below[0]*N + x; } const nm = O[j] && nameOf(j); if (nm) hintT('🏷️ ' + nm); return; }
   if (O[i] === 'Ȝ'){ openMerchant(); return; }
   if (O[i] === 'Ț'){ hintT('🔨 Kofi taille les pierres de tes maisons : chacune te coûte une pierre de moins.'); return; }
@@ -4557,7 +4558,7 @@ function place(x, y, forceErase){
     if (O[i]){ busyToast(); return; }
     if (t.id === 'Ć' && !longereSpot(i)){ hintT('🏡 La longère a besoin de 3 cases libres côte à côte, sur la terre ferme.'); return; }
     if (t.id === 'Ċ' && resOn() && glob.story.ville && !baliseOk(i)){ hintT('🌫️ Trop de brume ici : pose la balise au bord de la brume, ou dans la lumière d’une autre balise.'); return; }
-    if (t.id === 'ʃ'){ const hh = tday*24; if (hh >= 5 && hh < 21){ hintT('🤫 Pas maintenant, Lina te verrait\u00a0! Attends la nuit.'); return; } if (!near8(i, j => O[j] === '1')){ hintT('🪧 L’enseigne va tout contre la boulangerie de Lina.'); return; } }
+    if (t.id === 'ʃ'){ const hh = tday*24; if (hh >= 5 && hh < 21){ hintT('🤫 Pas maintenant, Lina te verrait\u00a0! Attends la nuit (touche ta maison pour te reposer).'); return; } if (!near8(i, j => O[j] === '1')){ hintT('🪧 L’enseigne va tout contre la boulangerie de Lina.'); return; } }
     if (bagTool === t.id ? !(bag()[t.id] > 0) : !pay(t.id)) return;
     O[i] = t.id === 'ǰ' && bagTool === 'ǰ' ? 'ş' : resOn() && SAPLING[t.id] ? SAPLING[t.id] : t.id;
     if (t.id === 'Ć'){ O[i + 1] = O[i + 2] = 'ć'; if (resOn() && glob.story.ville && s3Ch() === 'La longère' && !(glob.story.longere && O[glob.story.longere.i] === 'Ć')){ glob.story.longere = {i, s:0}; saveGlob(); } }
@@ -5974,7 +5975,7 @@ const CHAPTERS_V2 = [
      ['Des crêpes', () => resv().crepe, 3, 'La crêperie de Margaux s’ennuie…', 'Touche la crêperie avec la main ✋ : une crêpe demande 1 🌾 et 1 🥛.']],
    mid:[{who:'kofi', t:"Kofi te prend à part, un peu gêné. « Lina n’a pas d’enseigne, à sa boulangerie. Je lui en ai sculpté une. Avec un épi de blé et une abeille. »"}, {who:'kofi', t:"Il glisse l’enseigne dans ton sac. « Pose-la cette nuit, contre la boulangerie. Comme ça, elle aura la surprise demain matin. Et… tu ne lui dis rien, hein ? »"}],
    onMid:() => { const r = resv(); r.gateau = Math.max(0, (r.gateau || 0) - 2); r.crepe = Math.max(0, (r.crepe || 0) - 3); const b = bag(); b['ʃ'] = (b['ʃ'] || 0) + 1; saveGlob(); renderRes(); renderBag(); },
-   goals2:[['L’enseigne pour Lina', () => O.some((o, i) => o === 'ʃ' && near8(i, j => O[j] === '1')) ? 1 : 0, 1, 'Kofi a glissé l’enseigne dans ton sac…', 'Ouvre ton sac 🎒 et pose l’enseigne tout contre la boulangerie, la nuit.']],
+   goals2:[['L’enseigne pour Lina', () => O.some((o, i) => o === 'ʃ' && near8(i, j => O[j] === '1')) ? 1 : 0, 1, 'Kofi a glissé l’enseigne dans ton sac…', 'La nuit venue, ouvre ton sac 🎒 et pose l’enseigne tout contre la boulangerie. Pour faire venir la nuit : touche ta maison ☕.']],
    get goals(){ return phase2(this) ? this.goals2 : this.goals1; },
    after:() => arriveVillagers(2),
    outro:[{who:'toi', t:"Le lendemain matin, une jolie enseigne se balance au-dessus de la boulangerie : un épi de blé et une abeille, sculptés avec soin."}, "« C’est… c’est toi, Kofi ? Elle est magnifique ! »", {who:'kofi', t:"Kofi se gratte la nuque. « Il fallait bien que ta boulangerie ait une enseigne. Les amis, ça sert à ça. »"}, {who:'toi', t:"Lina lui offre le premier gâteau au miel de la fournée. Et une odeur de goûter flotte sur tout le village."}],
@@ -6082,14 +6083,16 @@ const CHAPTERS_V2 = [
      ['Un chemin jusqu’au marché', () => linkedFrom(i => O[i] === 'Ą', i => O[i] === 'h') ? 1 : 0, 1, '« Il faut que tout le monde puisse venir ! »', 'Trace un chemin du village jusqu’aux étals.'],
      ['Garnis les étals', () => Object.entries(glob.story.stalls || {}).filter(([k, p]) => O[+k] === 'Ą' && MARKET[p]).length, 4, '« Chaque étal vend une chose : à toi de choisir ! »', 'Touche un étal avec la main ✋ et choisis ce qu’il vend : œufs, pain, lait, miel, légumes…']],
    mid:['« Tout est prêt ! Demain matin, on sonne la cloche et on ouvre. »'],
-   goals2:[['Le premier marché', () => glob.story.marketOn ? 1 : 0, 1, '« Demain matin, on ouvre ! »', 'Touche la cloche du port avec la main ✋ pour ouvrir le marché. Pas de cloche ? Touche un étal.']],
+   onMid:() => { glob.story.mkDay = glob.story.isleDays || 1; saveGlob(); },
+   goals2:[['Le premier marché', () => glob.story.marketOn ? 1 : 0, 1, () => glob.story.mkDay != null && (glob.story.isleDays || 1) <= glob.story.mkDay ? '« Demain matin, on ouvre ! »' : 'Le jour se lève sur le port…', () => glob.story.mkDay != null && (glob.story.isleDays || 1) <= glob.story.mkDay ? 'Va dormir 🌙 : touche ta maison avec la main. Au matin, sonne la cloche du port ✋.' : 'Touche la cloche du port avec la main ✋ pour ouvrir le marché. Pas de cloche ? Touche un étal.']],
    get goals(){ return phase2(this) ? this.goals2 : this.goals1; },
    wants:i => O[i] === 'Ą' || (phase2(CHAPTERS[glob.story.chapter]) && !glob.story.marketOn && O[i] === 'ā'),
    actLabel:i => O[i] === 'ā' ? 'Sonner la cloche' : phase2(CHAPTERS[glob.story.chapter]) && !glob.story.marketOn && !cnt('ā') ? 'Ouvrir le marché' : 'Choisir ce qu’il vend',
    tap:i => {
      if (O[i] === 'Ą' && !(phase2(CHAPTERS[glob.story.chapter]) && !cnt('ā'))){ openStall(i); return true; }
      if ((O[i] === 'ā' || O[i] === 'Ą') && phase2(CHAPTERS[glob.story.chapter]) && !glob.story.marketOn){
-       glob.story.marketOn = 1; timeTo(8); const n = marketSell(true); saveGlob(); renderStoryCard();
+       if (!window.__instant && glob.story.mkDay != null && (glob.story.isleDays || 1) <= glob.story.mkDay){ hintT('🌙 « Demain matin, on ouvre ! » Va dormir : touche ta maison avec la main.'); return true; }
+       glob.story.marketOn = 1; const n = marketSell(true); saveGlob(); renderStoryCard();
        openStoryModal({mode:'letter', who:'gaspard', kicker:'Le lendemain, vers 8 h', title:'Le premier marché', paras:[{who:'toi', t:'On sonne la cloche du port. Les premiers clients arrivent, un panier au bras.'}, `Le marché a rapporté ${n} 🐚 ! Il ouvrira maintenant chaque matin.`], go:'Continuer'});
        return true; }
      return false; },
@@ -7565,6 +7568,73 @@ const SCENES = {
     B('gaspard', '« Avant la grande tempête, il y avait un vrai port ici… Le vieux Job tient toujours son phare ? Salue-le pour moi ! »'),
     B('gaspard', '« Apporte-moi les **coquillages nacrés** de tes plages, je t’échangerai ce que j’ai dans ma cale. Je repasserai de temps en temps ! »')]
 };
+
+/* ---------- les maisons : on toque, on rentre dormir ---------- */
+let homeAct = null;
+/* faire passer le temps en douceur (dormir, se reposer) */
+function timeRun(toH, capA, capB, done){
+  if (nightOn){ return; }
+  const reduce = window.__instant || matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const h0 = tday * 24, h1 = toH > h0 ? toH : toH + 24, crosses = h1 >= 24;
+  const fin = () => { tday = (h1 % 24) / 24; tTarget = null; forceDraw = true; try { updateClock(); } catch(e){} if (crosses && isStory() && glob.story){ glob.story.isleDays = (glob.story.isleDays || 1) + 1; saveGlob(); } if (done) done(); };
+  if (reduce){ toast(capB, 2000); fin(); return; }
+  nightOn = true; tTarget = null;
+  const cap = document.createElement('div'); cap.className = 'night-cap'; cap.innerHTML = `<span>${capA}</span>`; document.body.append(cap);
+  const sp = cap.firstChild, t0 = performance.now(); let dur = crosses ? 5200 : 3600, swapped = false;
+  cap.onclick = () => { dur = Math.min(dur, performance.now() - t0 + 500); };
+  const step = now => {
+    const k = Math.min(1, (now - t0) / dur), e = k < 0.5 ? 2*k*k : 1 - (-2*k + 2)**2 / 2, h = h0 + (h1 - h0) * e;
+    tday = (h % 24) / 24; forceDraw = true; try { updateClock(); } catch(err){}
+    if (!swapped && k > 0.62){ swapped = true; sp.style.opacity = 0; setTimeout(() => { sp.textContent = capB; sp.style.opacity = 1; }, 450); }
+    if (k < 1) requestAnimationFrame(step);
+    else setTimeout(() => { cap.remove(); nightOn = false; fin(); }, 700);
+  };
+  requestAnimationFrame(step);
+}
+function sleepNow(){
+  timeRun(7, '🌙 Bonne nuit…', '☀️ Le lendemain matin', () => { try { marketMorning(); } catch(e){} try { checkStory(); } catch(e){} renderStoryCard(); });
+}
+function restNow(){
+  timeRun(21.5, '☕ Tu te reposes un peu…', '🌙 La nuit tombe sur l’île', () => { renderStoryCard(); });
+}
+const HOME_LINES = {
+  tomas:'Chez Tomas. Ça sent le poisson grillé… et le ciré mouillé.',
+  kofi:'Chez Kofi. Des copeaux de bois jusque sur le paillasson.',
+  lina:'Chez Lina. Une bonne odeur de pain chaud s’échappe par la fenêtre.',
+  elias:'La cabane d’Elias, au milieu des arbres.',
+  margaux:'Chez Margaux. Des plans partout, même scotchés sur la porte.',
+  paloma:'Chez Paloma. D’ici, on voit son bateau au port.',
+  philippe:'Chez Philippe et Annick. Marguerite meugle derrière la clôture.',
+  ondine:'Chez Ondine. Ça bourdonne doucement autour des fleurs.',
+  yuna:'Chez Yuna. Une combinaison de plongée sèche devant la porte.',
+  voyageurs:'La maison des voyageurs. On y parle souvent du continent.'
+};
+function openHomeBubble(i){
+  if (!glob.story || !glob.story.ville || glob.story.v !== 2) return false;
+  const H = glob.story.homes || {}, key = H[i], hh = tday * 24;
+  const show = (lines, go, act, alt) => { homeAct = act || null; openStoryModal({mode:'home', who:lines[0].w, kicker:'', title:'Une maison', paras:lines.map(l => l.t), go, alt, short:lines}); document.querySelectorAll('.sb-read').forEach(x => x.hidden = true); return true; };
+  if (key === 'toi' || key === 'toi_c'){
+    const night = hh >= 18 || hh < 6;
+    return show([B('carnet', night ? 'Ta maison est toute calme. Il se fait tard…' : 'Ta maison est toute calme. Une petite pause ?')],
+      night ? '🌙 Dormir jusqu’au matin' : '☕ Se reposer jusqu’à la nuit', night ? sleepNow : restNow, 'Plus tard');
+  }
+  const v = villagers().find(v => v.home === i);
+  if (v && O[i] === 'h'){
+    const fem = typeof V_FEM !== 'undefined' && V_FEM.has(v.name);
+    const lines = [B('carnet', `Ici vit **${v.name}**, ${v.job}. ${fem ? 'Elle' : 'Il'} ${v.trait}.`)];
+    const c = curReq(); if (c && c.v === v) lines.push(B('carnet', `${v.name} aimerait quelque chose : « ${c.rq.t} »`));
+    return show(lines, 'Fermer');
+  }
+  if (key && HOME_LINES[key]){
+    const who = PEOPLE[key] ? key : 'carnet';
+    const lines = [B(who, HOME_LINES[key])];
+    const w = glob.story.wish && WISHES.find(x => x.id === glob.story.wish.id);
+    if (w && w.who === key) lines.push(B(key, w.text));
+    return show(lines, 'Fermer');
+  }
+  if (O[i] === 'h' && typeof houseEmpty === 'function' && houseEmpty(i)) return show([B('carnet', 'Personne n’habite ici… pour l’instant. Quelqu’un viendra bientôt du continent.')], 'Fermer');
+  return false;
+}
 function shortFor(ch, part){ try { if (!ch || glob.story.v !== 2) return null; const s = SHORT[ch.title]; const a = s && s[part]; return a && a.length ? a : null; } catch(e){ return null; } }
 
 const bEsc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -7943,7 +8013,7 @@ const HINTS = {
 "Le goûter": {
   "Des gâteaux au miel": () => { const r = resv(); return 'Touche la boulangerie avec la main, puis choisis le gâteau : 2 grains de blé, 1 lait et 1 miel.' + (r.lait < 1 ? ' Le lait vient des vaches, quand il y a une grange.' : r.miel < 1 ? ' Le miel vient des ruches.' : ''); },
   "Des crêpes": () => { const r = resv(); return 'Touche la crêperie avec la main : une crêpe demande 1 grain de blé et 1 lait.' + (r.lait < 1 ? ' Le lait vient des vaches, quand il y a une grange.' : ''); },
-  "L’enseigne pour Lina": "L’enseigne est dans ton sac. Attends que la nuit tombe, ouvre le sac, puis pose-la sur une case collée à la boulangerie."},
+  "L’enseigne pour Lina": "L’enseigne est dans ton sac. Touche ta maison pour te reposer jusqu’à la nuit, puis ouvre le sac et pose-la sur une case collée à la boulangerie."},
 "Le belvédère": {
   "Le belvédère": objHint('ɧ', 'Le belvédère', 'Pose-le sur ton île principale.'),
   "Un chemin jusqu’au belvédère": "Trace un chemin sans trou, qui part d’une maison du village et touche le belvédère.",
@@ -8498,6 +8568,7 @@ function cnChiffres(pg){
   if (glob.story.chapter >= 3){ pg.append(cnEl('h3', '', 'Les repas')); pg.append(cnEl('p', '', (glob.story.fedV ? '🥕 Les habitants ont des légumes à manger.' : '🥕 Les habitants manquent de légumes…') + (cnt('1') ? (glob.story.fed ? ' 🥖 La boulangerie a son blé.' : ' 🥖 La boulangerie manque de blé…') : ''))); }
 }
 storyGo.onclick = () => {
+  if (storyMode === 'home'){ storyBox.hidden = true; storyMode = null; const a = homeAct; homeAct = null; if (a) a(); return; }
   if (storyPages && storyPages.k < storyPages.texts.length - 1){ storyPages.k++; showStoryPage(); return; }
   if (storyMode === 'outro'){
     const done = glob.story.pendingOutro ?? glob.story.chapter;
@@ -8532,6 +8603,7 @@ storyGo.onclick = () => {
   updateStats();
 };
 storyAlt.onclick = () => {
+  if (storyMode === 'home'){ storyBox.hidden = true; storyMode = null; homeAct = null; return; }
   if (storyMode === 'invite'){ glob.story.asked = true; saveGlob(); toast('L’histoire t’attend dans la ⚙'); }
   storyBox.hidden = true;
 };
