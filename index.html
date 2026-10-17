@@ -216,6 +216,133 @@ button.fold{flex:none;width:32px;height:30px;border:1px solid var(--line);backgr
 #storyBox.bulle .row.center{position:sticky;bottom:0;background:var(--surface);padding:6px 0 10px;margin:0;gap:10px}
 #storyBox.bulle .sb-read{margin-right:auto;padding:0;font-size:12.5px}
 @keyframes sbIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* ---------- les boutiques : un panneau qui monte du bas ---------- */
+#storyBox.panneau{background:rgba(6,12,22,.25);display:block;padding:0}
+#storyBox.panneau .story-card{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;max-width:560px;margin:0 auto;max-height:66vh;border-radius:20px 20px 0 0;padding:12px 14px calc(14px + env(safe-area-inset-bottom,0px)) 68px;box-sizing:border-box;gap:6px;align-items:stretch;text-align:left;box-shadow:0 -10px 30px rgba(0,0,0,.35);animation:pnIn .25s ease-out;overflow-y:auto}
+#storyBox.panneau #storyFace{position:absolute;left:12px;top:12px;width:44px;height:44px;border-radius:50%}
+#storyBox.panneau .story-top{display:block;text-align:left;padding-right:36px}
+#storyBox.panneau #storyKicker{display:none}
+#storyBox.panneau #storyTitle{font-family:inherit;font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.05em;text-transform:uppercase;margin:0}
+#storyBox.panneau .story-who{display:none}
+#storyBox.panneau .story-body p{font-size:15px;line-height:1.4;margin:0;font-family:inherit;font-style:normal;color:var(--ink);border:0;padding:0}
+#storyBox.panneau .row.center{display:none}
+#storyBox.panneau .trade{display:flex;flex-direction:column;gap:6px;margin:6px 0 0 -56px}
+#storyBox.panneau .trade-have{display:none}
+#storyBox.panneau .story-body > .trade:first-child{margin-top:30px}
+.pn-poche{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--muted);margin:2px 0 4px}
+.pn-poche b{background:var(--surface2);color:var(--ink);border-radius:999px;padding:3px 9px;font-weight:600}
+.pn-note{font-size:13px;color:var(--muted);margin:2px 0 4px;line-height:1.4}
+.pn-sec{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:6px 0 0}
+#storyBox.panneau .trade-btn{display:flex;align-items:center;justify-content:flex-start;gap:10px;text-align:left;background:var(--surface2);border:0;border-radius:12px;padding:9px 12px;font-size:15px;color:var(--ink)}
+#storyBox.panneau .trade-btn .get{font-weight:600}
+#storyBox.panneau .trade-btn .give{margin-left:auto;font-size:14px;white-space:nowrap;background:var(--accent);color:var(--on-amber);border-radius:999px;padding:4px 10px;font-weight:700}
+#storyBox.panneau .trade-btn:disabled{opacity:.45}
+#storyBox.panneau .trade-btn:disabled .give{background:var(--line2);color:var(--ink)}
+#storyBox.panneau .archi-map{width:100%;max-width:340px;margin:6px auto 0 -56px;display:block}
+.pn-x{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;border:0;background:var(--surface2);color:var(--ink);font-size:18px;line-height:1;cursor:pointer}
+#storyBox:not(.panneau) .pn-x{display:none}
+@keyframes pnIn{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion: reduce){#storyBox.panneau .story-card{animation:none}}
+
+/* ---------- le carnet, refait : un panneau qui monte du bas, 4 onglets ---------- */
+.carnet{place-items:end center;padding:0;background:rgba(6,12,22,.4)}
+#carnet .cn-book{width:min(560px,100%);height:92dvh;border:0;border-radius:22px 22px 0 0;box-shadow:0 -10px 30px rgba(0,0,0,.35);animation:pnIn .25s ease-out}
+#carnet .cn-top{gap:12px;padding:14px 16px 8px;justify-content:flex-start}
+#carnet .cn-top canvas{width:40px;height:40px;border-radius:50%;background:var(--accent-soft);image-rendering:pixelated;flex:none}
+#carnet .cn-name{font-family:inherit;font-style:normal;font-weight:700;font-size:19px}
+#carnet .cn-sub{display:block;font-size:12px;color:var(--muted);font-weight:400;margin-top:2px}
+#carnet .cn-close{margin-left:auto;border:0;background:var(--surface2);font-size:17px}
+#carnet .cn-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:2px 12px 6px;padding:4px;background:var(--surface2);border-radius:14px;border:0;overflow:visible}
+#carnet .cn-tabs button{display:flex;flex-direction:column;align-items:center;gap:2px;font-family:inherit;font-size:12px;font-weight:600;text-transform:none;letter-spacing:0;border:0;border-radius:11px;padding:7px 0 6px;color:var(--muted);background:transparent}
+#carnet .cn-tabs button i{font-style:normal;font-size:18px;line-height:1.1}
+#carnet .cn-tabs button[aria-pressed="true"]{background:var(--surface);color:var(--ink);border:0;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+#carnet .cn-page{padding:6px 14px 26px}
+#carnet .cn-page h2{font-family:inherit;font-style:normal;font-weight:700;font-size:20px;margin:6px 0 8px}
+#carnet .cn-page h3,#carnet .cn-lab{font-family:inherit;font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:14px 2px 6px}
+#carnet .cn-grp{border-radius:14px;overflow:hidden;display:flex;flex-direction:column;gap:1px;background:var(--line)}
+#carnet .cn-row{display:flex;align-items:center;gap:12px;background:var(--surface2);padding:9px 12px;font-size:15px;border:0;color:var(--ink);font:inherit;text-align:left;cursor:pointer;width:100%}
+#carnet .cn-row canvas{width:36px;height:36px;border-radius:50%;background:var(--accent-soft);image-rendering:pixelated;flex:none}
+#carnet .cn-row .ch{margin-left:auto;color:var(--muted)}
+#carnet .cn-row.cur{box-shadow:inset 0 0 0 2px var(--accent)}
+#carnet .cn-row.more{color:var(--muted);font-size:14px}
+#carnet .cn-back{background:none;border:0;color:var(--accent);font:inherit;font-size:14px;font-weight:600;padding:6px 0;cursor:pointer}
+#carnet .cn-moment{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px;text-align:center}
+#carnet .cn-msg{display:flex;gap:10px;align-items:flex-start;margin:0 0 9px}
+#carnet .cn-msg canvas{width:32px;height:32px;border-radius:50%;background:var(--accent-soft);image-rendering:pixelated;flex:none}
+#carnet .cn-msg div{background:var(--surface2);border-radius:4px 14px 14px 14px;padding:8px 12px;font-size:15px;line-height:1.45}
+#carnet .cn-msg.r div{background:transparent;padding:5px 2px;color:var(--muted);font-style:italic}
+#carnet .cn-ppl{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+#carnet .cn-pc{background:var(--surface2);border-radius:14px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;border:0;color:var(--ink);font:inherit;cursor:pointer}
+#carnet .cn-pc canvas{width:52px;height:52px;border-radius:50%;background:var(--accent-soft);image-rendering:pixelated}
+#carnet .cn-pc b{font-size:14px}.cn-pc span{font-size:11.5px;color:var(--muted);line-height:1.2}
+#carnet .cn-pc.new{box-shadow:inset 0 0 0 2px var(--accent)}
+#carnet .cn-who{display:flex;gap:14px;align-items:center;margin:4px 0 10px}
+#carnet .cn-who canvas{width:72px;height:72px;border-radius:50%;background:var(--accent-soft);image-rendering:pixelated}
+#carnet .cn-who b{display:block;font-size:20px}.cn-who span{color:var(--muted);font-size:14px}
+#carnet .cn-facts{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:1px;border-radius:14px;overflow:hidden;background:var(--line)}
+#carnet .cn-facts li{background:var(--surface2);padding:10px 12px;font-size:15px;line-height:1.4}
+#carnet .cn-photos{grid-template-columns:1fr 1fr;gap:8px}
+#carnet .cn-photo{padding:0;border-radius:14px;overflow:hidden}
+#carnet .cn-photo img{border-radius:0;aspect-ratio:1;object-fit:cover}
+#carnet .cn-photo figcaption{font-family:inherit;font-size:12px;text-align:left;padding:6px 8px;margin:0}
+#carnet .cn-photo.big img{aspect-ratio:auto}
+#carnet .cn-stat{border-radius:14px}
+#carnet .cn-stat b{font-family:inherit;font-weight:700}
+#carnet .cn-kick{font-family:inherit;letter-spacing:.05em;font-weight:700;font-size:12px}
+#carnet .cn-vil{border-radius:14px;padding:8px 10px}
+#carnet .cn-vil canvas{border-radius:50%}
+@media (min-width:700px){.carnet{place-items:center}#carnet .cn-book{border-radius:22px;height:min(86dvh,760px)}}
+/* ---------- les réglages : un panneau rangé par thèmes ---------- */
+#gmBack{position:fixed;inset:0;z-index:58;background:rgba(6,12,22,.4)}
+#gmBack[hidden]{display:none}
+#gearMenu{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:59;width:auto;max-width:560px;margin:0 auto;max-height:90dvh;overflow-y:auto;border:0;border-radius:22px 22px 0 0;padding:0 14px calc(18px + env(safe-area-inset-bottom,0px));gap:0;box-shadow:0 -10px 30px rgba(0,0,0,.35);animation:pnIn .25s ease-out}
+#gearMenu > .label,#gearMenu > .hint{display:none}
+.gm-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;padding:14px 2px 8px;background:var(--surface)}
+.gm-head h2{margin:0;font-size:19px;font-weight:700;font-family:inherit}
+.gm-head button{margin-left:auto;width:34px;height:34px;border-radius:50%;border:0;background:var(--surface2);color:var(--ink);font-size:17px;cursor:pointer}
+.gm-lab{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 2px 6px}
+.gm-lab.danger{color:#e5736b}
+.gm-grp{border-radius:14px;overflow:hidden;display:flex;flex-direction:column;gap:1px;background:var(--line)}
+.gm-grp > *{border-radius:0 !important;margin:0 !important}
+.gm-grp .btn,.gm-row{display:flex;align-items:center;gap:10px;width:100%;justify-content:flex-start;text-align:left;background:var(--surface2);border:0;padding:12px;font-size:15px;color:var(--ink);min-height:46px;box-sizing:border-box}
+.gm-grp .btn.go::after{content:'›';margin-left:auto;color:var(--muted)}
+.gm-row > span:first-child{flex:none}
+.gm-row .seg{margin-left:auto;flex:none;display:flex;gap:2px;background:var(--surface);border-radius:10px;padding:2px}
+.gm-row .seg button{flex:none;border:0;background:transparent;color:var(--muted);border-radius:8px;padding:6px 10px;font:inherit;font-size:13px;min-height:0}
+.gm-row .seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-amber);font-weight:700}
+.gm-grp #soundBtn::after,.gm-grp #ecoBtn::after{content:'';margin-left:auto;width:44px;height:26px;border-radius:13px;flex:none;background:var(--line2) radial-gradient(circle at 13px 13px,#fff 9px,transparent 10px)}
+.gm-grp #soundBtn[aria-pressed="true"]::after,.gm-grp #ecoBtn[aria-pressed="true"]::after{background:var(--accent) radial-gradient(circle at 31px 13px,#fff 9px,transparent 10px)}
+.gm-grp .tlist{background:var(--surface2);padding:4px 6px;gap:2px}
+.gm-grp .row{display:flex;gap:1px;background:var(--line)}
+.gm-grp .row .btn{flex:1;justify-content:center}
+.gm-grp .confirm{background:var(--surface2);padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.gm-grp .confirm .btn{width:auto;min-height:0;padding:8px 14px;border-radius:10px !important;background:var(--surface)}
+.gm-grp .confirm .btn.danger{background:#c9564d;color:#fff}
+.gm-note{font-size:13px;color:var(--muted);margin:6px 4px 0;line-height:1.4}
+#storyRestart{color:#e5736b}
+#resetSection{display:none}
+.gm-grp [hidden]{display:none !important}
+/* ---------- l'horloge : toucher l'heure ouvre saison, heure et météo ---------- */
+.clock-in{cursor:pointer}
+.clock-in::after{content:' ▾';font-size:.8em;opacity:.7}
+#timePop{position:fixed;z-index:57;left:12px;width:min(340px,calc(100vw - 24px));background:var(--surface);color:var(--ink);border-radius:18px;padding:12px 14px 14px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:0;animation:sbIn .2s ease-out}
+#timePop[hidden]{display:none}
+#timePop .tp-h{font-size:17px;font-weight:700;margin:0 2px 2px}
+#timePop .group{display:contents}
+#timePop .label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:12px 2px 6px}
+#timePop .seg{display:flex;flex-wrap:nowrap;gap:2px;background:var(--surface2);border-radius:12px;padding:3px}
+#timePop .seg button{flex:1;border:0;background:transparent;color:var(--muted);border-radius:9px;padding:8px 2px;font:inherit;font-size:13px;min-height:0;box-shadow:none}
+#timePop .seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-amber);font-weight:700}
+#timePop .seg.tp-auto{margin-top:6px;padding:0}
+#timePop .seg.tp-auto button{display:flex;align-items:center;justify-content:flex-start;padding:11px 12px;font-size:15px;color:var(--ink);background:transparent;font-weight:400}
+#timePop .seg.tp-auto button::after{content:'';margin-left:auto;width:44px;height:26px;border-radius:13px;flex:none;background:var(--line2) radial-gradient(circle at 13px 13px,#fff 9px,transparent 10px)}
+#timePop .seg.tp-auto button[aria-pressed="true"]::after{background:var(--accent) radial-gradient(circle at 31px 13px,#fff 9px,transparent 10px)}
+
+.gm-grp .trow .btn{width:auto;min-height:0;padding:6px 12px;background:var(--surface);border-radius:8px !important;flex:none;font-size:13px}
+.gm-grp .trow{min-height:44px;padding:4px 6px}
+#gearMenu > *,.gm-grp > *{flex-shrink:0}
+#gearMenu .trow{background:transparent}
 /* ---------- la nuit entre deux chapitres ---------- */
 .night-cap{position:fixed;inset:0;z-index:45;display:flex;align-items:flex-start;justify-content:center;padding-top:22vh;cursor:pointer}
 .night-cap span{background:rgba(10,18,32,.72);color:#f4ecd8;font-family:var(--f-display);font-size:19px;padding:10px 18px;border-radius:14px;transition:opacity .5s;box-shadow:0 6px 20px rgba(0,0,0,.3)}
@@ -3507,8 +3634,10 @@ function frame(ts){
   forceDraw = false; lastDraw = ts;
   const dt = Math.min(0.1, (ts - last)/1000); last = ts;
   now = reduce ? 0 : ts;
+  const tPrevDay = tday;
   if (tTarget != null){ const d = ((tTarget - tday) % 1 + 1) % 1; if (d < 0.004 || reduce){ tday = tTarget; tTarget = null; } else tday = (tday + Math.min(d, dt*0.3)) % 1; forceDraw = true; if (typeof updateClock === 'function') updateClock(); }
   else if (autoTime && !reduce) { const t0 = tday; tday = (tday + dt/720) % 1; if (t0 < 0.22 && tday >= 0.22) nextWeather(); if (t0 < 0.3 && tday >= 0.3 && isStory()) try { marketMorning(); } catch(e){} }
+  if (tday < tPrevDay - 0.5 && isStory() && glob.story && glob.story.ville){ glob.story.isleDays = (glob.story.isleDays || 1) + 1; saveGlob(); }
   if (avatarOn()){ if (!player) player = playerSpawn(); updatePlayer(dt); }
   if (!reduce){ updateWalkers(dt); updateCars(dt); updateBoats(dt); updateFerry(dt); updateTrains(dt); updateAnimals(dt); updateFireworks(dt); if (!eco) updateParticles(dt); }
   if (stormT > 0) stormT = stormHold ? Math.max(stormT, 6) : Math.max(0, stormT - dt);
@@ -4159,9 +4288,15 @@ function openTrade(){
   const basics = [{pay:{k:3}, get:{b:5}}, {pay:{k:3}, get:{p:4}}, {pay:{k:5}, get:{a:2}, if:() => glob.story.chapter >= 5}, {pay:{v:3}, get:{b:4}, if:() => glob.story.chapter >= 3}, {pay:{pie:1}, get:{p:6}, if:() => glob.story.chapter > 5}].filter(d => !d.if || d.if());
   { // trois échanges au hasard, les mêmes pendant tout le passage
     let seed = Math.floor(((glob.story.stock || {}).pick || 0.5) * 233280); const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
-    for (let k = basics.length - 1; k > 0; k--){ const j = (rnd()*(k+1))|0; [basics[k], basics[j]] = [basics[j], basics[k]]; } basics.length = Math.min(3, basics.length); }
+    for (let k = basics.length - 1; k > 0; k--){ const j = (rnd()*(k+1))|0; [basics[k], basics[j]] = [basics[j], basics[k]]; } basics.length = Math.min(2, basics.length); }
   const askM = (glob.story.merchant || {}).ask, askD = askM && !askM.done ? ASKS.find(a => a.id === askM.id) : null;
   const deals = [...(askD ? [{pay:askD.pay, get:{k:askD.k}, ask:true}] : []), ...rares.map(([id, k]) => ({pay:{k}, get:{bag:id}, if:() => glob.story.chapter >= 6})), {pay:{k:20}, get:{cap:12}, if:() => glob.story.chapter >= 6 && bagCap() < 12}, ...basics, ...((resv().gateau || 0) > 0 ? [{pay:{gateau:1}, get:{a:3}}] : []), ...((resv().crepe || 0) > 1 ? [{pay:{crepe:2}, get:{b:5}}] : []), ...((resv().lait || 0) >= 4 ? [{pay:{lait:4}, get:{b:4}}] : []), ...((resv().miel || 0) >= 3 ? [{pay:{miel:3}, get:{p:4}}] : []), ...((resv().w || 0) >= 15 ? [{pay:{w:5}, get:{p:3}}] : []), ...((resv().oeuf || 0) >= 6 ? [{pay:{oeuf:6}, get:{p:4}}] : []), ...(marketOn() ? ORDERS.map(([id, k]) => ({pay:{k}, get:{bag:id}, order:true})) : [])];
+  { // un seul échange de surplus (au hasard, le même tout le passage), et seulement la prochaine commande du continent
+    const SUR = ['gateau', 'crepe', 'lait', 'miel', 'w', 'oeuf'], isSur = d => Object.keys(d.pay).some(k => SUR.includes(k));
+    const sur = deals.filter(isSur), keep = sur[Math.floor(((glob.story.stock || {}).pick || 0) * sur.length)] || null;
+    const nextOrder = deals.find(d => d.order && !cnt(d.get.bag) && !(bag()[d.get.bag]));
+    for (let k = deals.length - 1; k >= 0; k--){ const d = deals[k]; if ((isSur(d) && d !== keep) || (d.order && d !== nextOrder)) deals.splice(k, 1); }
+  }
   const btns = [];
   const can = d => { const r = resv(); if (d.get.bag && bagCount() >= bagCap()) return false; return !Object.entries(d.pay).some(([k, n]) => (r[k] || 0) < n); };
   const label = d => d.ask ? `Demande du continent : ${resTxt(d.pay)} → ${resTxt(d.get)}` : d.order ? `Commande du continent : ${resTxt(d.pay)} → ${(TOOLS.find(t => t.id === d.get.bag) || {}).name} 🎒` : d.get.bag ? `${resTxt(d.pay)} → ${(TOOLS.find(t => t.id === d.get.bag) || {}).name} 🎒` : d.get.cap ? `${resTxt(d.pay)} → un grand sac à dos (12 places) 🎒` : `${resTxt(d.pay)} → ${resTxt(d.get)}`;
@@ -4326,6 +4461,7 @@ function interact(x, y){
   if (resOn() && glob.story.ville && O[i] === '1' && glob.story.chapter > 5){ openKitchen(); return; }
   if (resOn() && glob.story.ville && O[i] === 'K' && glob.story.farm){ openCreperie(); return; }
   if (resOn() && glob.story.ville && O[i] === 'ɧ'){ openPanorama(); return; }
+  if (resOn() && glob.story.ville && O[i] === '2' && (glob.story.rl || []).some(k => R_LETTERS[k])){ openCafeWall(); return; }
   if (resOn() && glob.story.ville && O[i] === 'Ă'){ takeEggs(i); return; }
   if (resOn() && glob.story.ville && glob.story.farm && (O[i] === 'v' || O[i] === 'Ç')){ milkAt(i); return; }
   if (resOn() && glob.story.ville && O[i] === 'Ą'){ openStall(i); return; }
@@ -4620,7 +4756,7 @@ function scheduleSfx(){
 const soundBtn = document.getElementById('soundBtn');
 function applySound(){
   const on = soundOn();
-  soundBtn.setAttribute('aria-pressed', on); soundBtn.textContent = on ? '🔊 Sons : activés' : '🔈 Sons : coupés';
+  soundBtn.setAttribute('aria-pressed', on); soundBtn.textContent = on ? '🔊 Sons' : '🔈 Sons';
   if (on){ initAudio(); if (actx && actx.state !== 'running') actx.resume(); }
   else if (actx) actx.suspend();
 }
@@ -4694,7 +4830,7 @@ updateGrowBtn();
 
 /* ---------- roue crantée ---------- */
 const gearBtn = document.getElementById('gearBtn'), gearMenu = document.getElementById('gearMenu');
-function setMenu(open){ gearMenu.hidden = !open; gearBtn.setAttribute('aria-expanded', open); if (!open){ confirmRow.hidden = true; resetRow.hidden = false; const sc = document.getElementById('storyConfirm'); if (sc){ sc.hidden = true; updateStoryBtn(); } } }
+function setMenu(open){ gearMenu.hidden = !open; { const bk = document.getElementById('gmBack'); if (bk) bk.hidden = !open; } if (open){ const tp = document.getElementById('timePop'); if (tp) tp.hidden = true; } gearBtn.setAttribute('aria-expanded', open); if (!open){ confirmRow.hidden = true; resetRow.hidden = true; const sc = document.getElementById('storyConfirm'); if (sc){ sc.hidden = true; updateStoryBtn(); } } }
 gearBtn.onclick = e => { e.stopPropagation(); if (gearMenu.hidden) updateStoryBtn(); setMenu(gearMenu.hidden); };
 document.addEventListener('pointerdown', e => { if (!gearMenu.hidden && !gearMenu.contains(e.target) && e.target !== gearBtn) setMenu(false); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
@@ -5005,7 +5141,7 @@ function renderTerrains(){
     const d = isCur ? {n:N} : readJSON(tKey(t.id));
     const size = document.createElement('span'); size.className = 'tsize'; size.textContent = d && d.n ? `${d.n}×${d.n}` : '';
     row.append(name, size);
-    if (isCur) row.append(mkBtn('Renommer', () => startRename(row, t)));
+    if (isCur){ row.append(mkBtn('Renommer', () => startRename(row, t))); if (!t.story){ const more = mkBtn('⋯', () => { const rr = document.getElementById('resetRow'), cr = document.getElementById('confirmRow'); if (!cr.hidden){ cr.hidden = true; rr.hidden = true; } else rr.hidden = !rr.hidden; }); more.setAttribute('aria-label', 'Remettre ce terrain à zéro'); row.append(more); } }
     else if (t.story) row.append(mkBtn('Ouvrir', () => switchTerrain(t.id)));
     else {
       row.append(mkBtn('Ouvrir', () => switchTerrain(t.id)));
@@ -5018,7 +5154,7 @@ function renderTerrains(){
     }
     tlist.append(row);
   }
-  document.getElementById('resetSection').hidden = isStory();
+  document.getElementById('resetSection').hidden = isStory(); { const rr = document.getElementById('resetRow'); if (rr) rr.hidden = true; }
   updateStoryBtn();
 }
 function startRename(row, t){
@@ -5257,7 +5393,7 @@ function openAtelier(){
   el.hidden = false;
 }
 { let taps = [];
-  document.addEventListener('click', e => { if (!e.target.closest || !e.target.closest('.compass, .brand')) return; const t = Date.now(); taps = taps.filter(x => t - x < 2500); taps.push(t); if (taps.length >= 5){ taps = []; openAtelier(); } }, true); }
+  document.addEventListener('click', e => { if (!e.target.closest || !e.target.closest('.compass, .brand-t')) return; const t = Date.now(); taps = taps.filter(x => t - x < 2500); taps.push(t); if (taps.length >= 5){ taps = []; openAtelier(); } }, true); }
 setTimeout(atAuto, 300);
 
 /* ---------- l'histoire ---------- */
@@ -5612,7 +5748,7 @@ const CHAPTERS_V2 = [
    intro:['Une barque sort de la brume. Un homme en ciré saute sur la plage, glisse sur un galet, se rattrape de justesse.', '« Bonjour ! Pardon, je m’appelle Tomas. J’habite sur le petit îlot, là-bas, dans la brume. D’habitude, la nuit, il n’y a que la lumière du phare. Mais hier, il y avait plein de petites lumières partout ! Alors je suis venu voir. »', '« C’est ta cabane ? Elle est jolie, hein ! Mais du bois flotté, au premier coup de vent… Par contre, tu as vu ces vieilles pierres, dans l’herbe ? Ce sont les restes de l’ancien village. Avec ça, on peut construire une vraie maison. Ramasse-les, je vais te montrer. »', '« Ah, et tiens, mes graines ! Pose un potager près de chez toi, tu le trouveras dans les Objets. Moi j’en ai un, chez moi, et je ne m’en passerais pour rien au monde. »'],
    goals1:[['Ramasse les vieilles pierres', () => found('Ŝ'), () => spawned('Ŝ', 5), 'Tomas a remarqué de vieilles pierres dans l’herbe…', 'Ramasse les vieilles pierres à la main ✋ : chacune donne 2 pierres.'],
      ['Ta maison', () => Math.min(1, cnt('h')), 1, 'Ta cabane ne tiendra pas l’hiver…', 'Construis une maison en pierre (dans les Objets).'],
-     ['Ton potager', () => Math.min(1, cnt('V')), 1, 'Et les graines que Tomas t’a données ?', 'Pose un potager près de chez toi.']],
+     ['Ton potager', () => Math.min(1, cnt('V') - cntIn('V', 'ilot')), 1, 'Et les graines que Tomas t’a données ?', 'Pose un potager près de chez toi.']],
    mid:['« Elle est belle, ta maison… Dis, je peux te demander quelque chose ? Sur mon îlot, mon puits s’est effondré pendant la dernière tempête. Depuis, je n’ai plus d’eau douce. Je me débrouille avec l’eau de pluie, mais bon… Tu en aurais, toi ? »', '« Et puis, à vrai dire, je me sens bien, ici. Si je construisais une maison à côté de la tienne ? Avec un chemin entre les deux, et un puits pour nous deux ? »'],
    give2:['c','W'],
    goals2:[['La maison de Tomas', () => cnt('h') >= 2 ? 1 : 0, 1, 'Tomas aimerait vivre près de toi…', 'Construis une deuxième maison, pour Tomas.'],
@@ -7416,6 +7552,19 @@ const SHORT = {
       B('lina', '« Tout le monde sur le quai ! Une **photo**, pour se souvenir de ce soir ! »')]
   }
 };
+
+const SCENES = {
+  'Un, deux, trois !':[B('tomas', '« Un, deux, trois ! »', 'Tomas pousse, tu pousses, Kofi arrive en courant…'), B('carnet', 'Plouf ! La barque est à l’eau. Tomas, trempé jusqu’aux genoux, éclate de rire.')],
+  'La longue-vue':[B('carnet', 'Dans la longue-vue : des herbes hautes, des épis dorés, un vieux muret… et les restes d’un ancien ponton. Quelqu’un a vécu là, autrefois.'), B('lina', '« C’est bien ça ! Du **blé sauvage** ! »', 'Lina, par-dessus ton épaule :')],
+  'Pour les générations futures':[B('carnet', 'Tout le monde éclate de rire. Tomas en a les larmes aux yeux, et même Job sourit dans sa barbe.'), B('kofi', '« Pour les générations futures. »', 'Kofi lisse le petit papier et l’accroche au mur du café, très sérieux.')],
+  'Sur le toit':[B('carnet', 'Sur le toit, coincée entre deux ardoises : la chaîne dorée de la **boussole** ! Mais la mouette s’envole… et la boussole tombe dans la charrette de foin de Philippe.'), B('annick', '« Elle est forcément dans une des **bottes de foin**… Mais laquelle ? »')],
+  'L’essaim retrouvé':[B('carnet', 'Le voilà ! Une grosse grappe d’abeilles, toute ronronnante, accrochée à une branche.'), B('ondine', '« Merci ! Ce soir, on goûte le **miel**. »', 'Ondine secoue doucement la branche : tout l’essaim tombe dans sa caisse, sans une piqûre.')],
+  'Quelque chose de gros':[B('yuna', '« Il y a quelque chose de gros, là-dessous… Il me faut de l’aide ! »', 'Yuna remonte, tout essoufflée.'), B('carnet', 'Tout le monde tire sur la corde… et la vieille **cloche** du port sort de l’eau, couverte d’algues.')],
+  'Le premier marché':[B('carnet', 'On sonne la cloche du port. Les premiers clients arrivent, un panier au bras.')],
+  'Le marchand':[B('gaspard', '« Ho ho ! Un quai, ici, de nouveau ! **Gaspard**, trente ans de navette entre les îles et le continent. »'),
+    B('gaspard', '« Avant la grande tempête, il y avait un vrai port ici… Le vieux Job tient toujours son phare ? Salue-le pour moi ! »'),
+    B('gaspard', '« Apporte-moi les **coquillages nacrés** de tes plages, je t’échangerai ce que j’ai dans ma cale. Je repasserai de temps en temps ! »')]
+};
 function shortFor(ch, part){ try { if (!ch || glob.story.v !== 2) return null; const s = SHORT[ch.title]; const a = s && s[part]; return a && a.length ? a : null; } catch(e){ return null; } }
 
 const bEsc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -7483,7 +7632,7 @@ function nightEnd(){
 function nightRun(then){
   const end = nightEnd();
   if (nightOn) return true;
-  if (window.__instant || matchMedia('(prefers-reduced-motion: reduce)').matches){ tday = end/24; tTarget = null; forceDraw = true; try { updateClock(); } catch(e){} toast('☀️ Le lendemain matin…'); return false; }
+  if (window.__instant || matchMedia('(prefers-reduced-motion: reduce)').matches){ tday = end/24; tTarget = null; forceDraw = true; try { updateClock(); } catch(e){} if (isStory() && glob.story){ glob.story.isleDays = (glob.story.isleDays || 1) + 1; saveGlob(); } toast('☀️ Le lendemain matin…'); return false; }
   nightOn = true; tTarget = null;
   const cap = document.createElement('div'); cap.className = 'night-cap'; cap.innerHTML = '<span>🌙 La nuit tombe sur l’île…</span>'; document.body.append(cap);
   const sp = cap.firstChild, h0 = tday * 24 < 12 ? tday * 24 + 24 : tday * 24, h1 = 24 + end, t0 = performance.now(); let dur = 5200, morning = false;
@@ -7493,16 +7642,53 @@ function nightRun(then){
     tday = (h % 24) / 24; forceDraw = true; try { updateClock(); } catch(err){}
     if (!morning && h >= h1 - 2.5){ morning = true; sp.style.opacity = 0; setTimeout(() => { sp.textContent = '☀️ Le lendemain matin'; sp.style.opacity = 1; }, 450); }
     if (k < 1) requestAnimationFrame(step);
-    else setTimeout(() => { cap.remove(); nightOn = false; tday = end/24; forceDraw = true; then(); }, 700);
+    else setTimeout(() => { cap.remove(); nightOn = false; tday = end/24; forceDraw = true; if (isStory() && glob.story){ glob.story.isleDays = (glob.story.isleDays || 1) + 1; saveGlob(); } then(); }, 700);
   };
   requestAnimationFrame(step);
   return true;
 }
+
+/* ---------- les boutiques en panneau : ce qu'on obtient à gauche, le prix à droite ---------- */
+function panneauize(mode, title, who){
+  const card = storyBox.querySelector('.story-card');
+  let x = card.querySelector('.pn-x'); if (!x){ x = document.createElement('button'); x.type = 'button'; x.className = 'pn-x'; x.setAttribute('aria-label', 'Fermer'); x.textContent = '×'; x.onclick = () => storyGo.click(); card.append(x); }
+  const p = PEOPLE[who]; storyTitle.textContent = (p ? p.name + ' · ' : '') + title;
+  for (const tr of storyBody.querySelectorAll('.trade')){
+    const have = tr.querySelector('.trade-have');
+    if (have){
+      if (/^Dans ta/.test(have.textContent)){
+        const pc = document.createElement('div'); pc.className = 'pn-poche'; have.after(pc);
+        const draw = () => { const ht = have.textContent, ix = ht.indexOf(' : '), lab = ix < 0 ? ht : ht.slice(0, ix), rest = ix < 0 ? '' : ht.slice(ix + 3); pc.innerHTML = ''; pc.append(document.createTextNode(lab.replace('Dans ta réserve', 'Dans ta réserve').trim() + ' '));
+          for (const part of (rest || '').split(' · ')){ if (!part.trim()) continue; const b = document.createElement('b'); b.textContent = part.trim().replace(/^dans ton sac : (.*)$/, '$1 🎒'); pc.append(b); } };
+        draw(); new MutationObserver(draw).observe(have, {childList:true, characterData:true, subtree:true});
+      } else { have.className = 'pn-note'; }
+    }
+    let lastSec = null;
+    for (const b of tr.querySelectorAll('.trade-btn')){
+      let t = b.textContent, sec = null;
+      const m = /^(Commande du continent|Demande du continent) : (.*)$/.exec(t); if (m){ sec = m[1]; t = m[2]; }
+      let get = t, give = '';
+      const k = /^(.*?) : (.*) → (.*)$/.exec(t), a = /^(.*) → (.*)$/.exec(t);
+      if (k){ get = k[1]; give = k[2]; } else if (a){ give = a[1]; get = a[2]; }
+      if (sec && sec !== lastSec){ const h = document.createElement('div'); h.className = 'pn-sec'; h.textContent = sec === 'Demande du continent' ? 'Une demande du continent' : 'Commande du continent'; b.before(h); }
+      lastSec = sec;
+      b.textContent = ''; const g = document.createElement('span'); g.className = 'get'; g.textContent = get.replace(/^1 /, '').replace(/^./, c => c.toUpperCase()); b.append(g);
+      if (give){ const v = document.createElement('span'); v.className = 'give'; v.textContent = give; b.append(v); }
+    }
+  }
+  const map = storyBody.querySelector('.archi-map'); if (map) map.style.marginLeft = '-56px';
+}
 let storyArgs = null, storyLong = false;
 function openStoryModal(args){
   let {mode, who, kicker, title, paras, rewards, go, alt, times, short, ch} = args;
+  if (!short && !storyLong && glob.story && glob.story.v === 2 && (mode === 'letter' || mode === 'gaspard') && SCENES[title] && paras.every(x => typeof x === 'string' || (x && x.t))){
+    short = SCENES[title].slice();
+    if (title === 'Le premier marché'){ const last = String(paras[paras.length - 1]); const m = /(\d+)/.exec(last); short.push(B('gaspard', `« Le marché a rapporté **${m ? m[1] : '?'} 🐚** ! Il ouvrira maintenant chaque matin. »`)); }
+  }
   const bulle = !!short && !storyLong; storyLong = false; storyArgs = args;
   storyBox.classList.toggle('bulle', bulle);
+  const panneau = !bulle && glob.story && glob.story.v === 2 && (mode === 'trade' || (mode === 'letter' && paras && paras.some(x => x && x.classList && x.classList.contains('trade'))));
+  storyBox.classList.toggle('panneau', !!panneau);
   if (bulle) times = bulleTimes(times, (paras || []).length, short.length);
   storyMode = mode;
   setSpeaker(who); storySpeaker = who;
@@ -7526,6 +7712,7 @@ function openStoryModal(args){
   if (bulle && !storyPages){ setSpeaker(short[0].w); bulleWho(); }
   storyBox.hidden = false; storyBox.querySelector('.story-card').scrollTop = 0;
   if (bulle) requestAnimationFrame(placeBulle); else if (sbTip) sbTip.hidden = true;
+  if (panneau){ storyPages = null; for (const el of storyBody.children) el.hidden = false; panneauize(mode, title, who); }
 }
 /* un paragraphe à la fois, avec un bouton « Suivant » */
 let storyPages = null;
@@ -7989,11 +8176,12 @@ document.getElementById('storyBtn').onclick = () => {
   const has = glob.story.started && terrains.list.some(t => t.id === glob.story.terrain);
   if (!has){ setMenu(false); startStory(); }
   else if (!isStory()) switchTerrain(glob.story.terrain);
-  else { setMenu(false); openBook(); }
+  else { setMenu(false); if (glob.story.ville){ cnHist = null; openCarnet('histoire'); } else openBook(); }
 };
 document.getElementById('scBook').onclick = () => { scPopClose(); if (glob.story.ville){ cnHist = null; openCarnet('histoire'); } else openBook(); };
 /* ---------- le carnet de bord : histoire, habitants, plans, souvenirs, trouvailles, chiffres ---------- */
-const CN_TABS = [['histoire', 'Histoire'], ['habitants', 'Habitants'], ['plans', 'Plans'], ['souvenirs', 'Album'], ['trouvailles', 'Trouvailles'], ['lettres', 'Lettres'], ['chiffres', 'Mon île']];
+const CN_TABS = [['histoire', 'Histoire', '📖'], ['habitants', 'Habitants', '👥'], ['souvenirs', 'Album', '📷'], ['chiffres', 'Mon île', '🏝️']];
+let cnPerson = null, cnOpenS = {};
 let cnTab = 'histoire', cnHist = null;
 const cnEl = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
 const nomTxt = t => fmtTxt(t && t.t ? t.t : t);
@@ -8054,16 +8242,149 @@ function keepSouvenir(cv, title, auto){
 }
 function openCarnet(tab){
   if (tab) cnTab = tab;
+  if (!CN_TABS.some(t => t[0] === cnTab)) cnTab = 'histoire';
   if (!glob.story.since){ glob.story.since = Date.now(); saveGlob(); }
-  document.getElementById('cnName').textContent = `Le carnet de ${glob.story.name || 'bord'}`;
+  { const top = document.querySelector('.cn-top'); let cv = top.querySelector('canvas'); if (!cv){ cv = document.createElement('canvas'); cv.width = 16; cv.height = 16; top.prepend(cv); try { drawBookFace(cv); } catch(e){} } }
+  { const nm = document.getElementById('cnName'); nm.textContent = `Le carnet de ${glob.story.name || 'bord'}`; const c = Math.min(glob.story.chapter, CHAPTERS.length - 1); if (CHAPTERS[c]){ const si = seasonInfo(c); const sub = cnEl('span', 'cn-sub', glob.story.chapter >= CHAPTERS.length ? 'Toutes les saisons sont écrites… pour l’instant' : `Saison ${si.s} · chapitre ${si.k} sur ${si.n}`); nm.append(sub); } }
   const tabs = document.getElementById('cnTabs'); tabs.innerHTML = '';
-  for (const [id, label] of CN_TABS){ const b = cnEl('button', '', label); b.type = 'button'; b.setAttribute('aria-pressed', id === cnTab); b.onclick = () => { cnTab = id; openCarnet(); }; tabs.append(b); }
+  for (const [id, label, ic] of CN_TABS){ const b = cnEl('button', ''); b.type = 'button'; b.innerHTML = `<i>${ic}</i>`; b.append(label); b.setAttribute('aria-pressed', id === cnTab); b.onclick = () => { cnTab = id; if (id === 'histoire') cnHist = null; if (id === 'habitants') cnPerson = null; openCarnet(); }; tabs.append(b); }
   const pg = document.getElementById('cnPage'); pg.innerHTML = ''; pg.scrollTop = 0;
-  ({histoire:cnHistoire, habitants:cnHabitants, plans:cnPlans, souvenirs:cnSouvenirs, trouvailles:cnTrouvailles, lettres:cnLettres, chiffres:cnChiffres})[cnTab](pg);
+  ({histoire:cnHistoire2, habitants:cnHabitants2, souvenirs:cnSouvenirs, chiffres:cnChiffres})[cnTab](pg);
   document.getElementById('carnet').hidden = false;
 }
 document.getElementById('cnClose').onclick = () => { document.getElementById('carnet').hidden = true; };
 document.getElementById('carnet').addEventListener('click', e => { if (e.target.id === 'carnet') e.target.hidden = true; });
+
+const cnFace = (who, ch) => { const c = document.createElement('canvas'); c.width = 16; c.height = 16; try { if (!who || who === 'toi' || who === 'carnet') drawBookFace(c); else if (PEOPLE[who]) drawPortrait(c, PEOPLE[who]); else drawBookFace(c); } catch(e){} return c; };
+/* l'histoire : la liste des chapitres, puis un chapitre qui se lit comme une conversation */
+function cnHistoire2(pg){
+  const last = Math.min(glob.story.chapter, CHAPTERS.length - 1, glob.story.introSeen ?? -1);
+  if (last < 0){ pg.append(cnEl('h2', '', 'Ton carnet'), cnEl('p', 'cn-empty', 'Les pages sont encore blanches… ton histoire va bientôt commencer.')); return; }
+  if (cnHist != null && cnHist <= last) return cnChapitre(pg, cnHist, last);
+  const curS = CHAPTERS[last].season;
+  for (let s = curS; s >= 1; s--){
+    const list = []; CHAPTERS.forEach((c, i) => { if (c.season === s && i <= last) list.push(i); });
+    if (!list.length) continue;
+    pg.append(cnEl('div', 'cn-lab', `Saison ${s}` + (s === curS && glob.story.chapter < CHAPTERS.length ? ' · en cours' : '')));
+    const g = cnEl('div', 'cn-grp'), open = s === curS || cnOpenS[s];
+    (open ? list : list.slice(-3)).forEach(i => {
+      const c = CHAPTERS[i], r = cnEl('button', 'cn-row' + (i === glob.story.chapter ? ' cur' : '')); r.type = 'button';
+      r.append(cnFace(c.who), cnEl('span', '', c.title), cnEl('span', 'ch', '›')); r.onclick = () => { cnHist = i; openCarnet(); }; g.append(r);
+    });
+    if (!open && list.length > 3){ const m = cnEl('button', 'cn-row more', `Voir les ${list.length - 3} premiers chapitres ⌄`); m.type = 'button'; m.onclick = () => { cnOpenS[s] = 1; openCarnet(); }; g.prepend(m); }
+    pg.append(g);
+  }
+}
+function cnChapitre(pg, i, last){
+  const ch = CHAPTERS[i], si = seasonInfo(i);
+  const back = cnEl('button', 'cn-back', '‹ Tous les chapitres'); back.type = 'button'; back.onclick = () => { cnHist = null; openCarnet(); };
+  pg.append(back, cnEl('div', 'cn-kick', `Saison ${si.s} · chapitre ${si.k}`), cnEl('h2', '', ch.title));
+  const part = (lab, arr, who) => {
+    if (!arr || !arr.length) return; pg.append(cnEl('div', 'cn-moment', lab));
+    for (const t0 of arr){
+      if (t0 && t0.nodeType) continue;
+      const txt = nomTxt(t0); if (!txt) continue;
+      const w = t0 && typeof t0 === 'object' && t0.who ? t0.who : who, nar = w === 'toi' || w === 'carnet';
+      const m = cnEl('div', 'cn-msg' + (nar ? ' r' : '')); m.append(cnFace(nar ? 'carnet' : w), cnEl('div', '', txt)); pg.append(m);
+    }
+  };
+  part('L’arrivée', ch.intro, ch.who);
+  if (ch.mid && phaseOrPast(i)) part('La suite', typeof ch.mid === 'function' ? ch.mid() : ch.mid, ch.who);
+  if (ch.mid2 && (i < glob.story.chapter || phase3(ch))) part('Encore un peu plus tard', typeof ch.mid2 === 'function' ? ch.mid2() : ch.mid2, ch.who);
+  if (i < glob.story.chapter){ part('Le soir', ch.outro, ch.outroWho || ch.who); if (ch.dawn && (glob.story.dawnSeen || {})[i]) part('Le lendemain matin', ch.dawn, 'carnet'); }
+  else pg.append(cnEl('p', 'cn-empty', '… la suite s’écrit en ce moment.'));
+  const nav = cnEl('div', 'cn-nav'), prev = cnEl('button', '', '‹ Chapitre d’avant'), next = cnEl('button', '', 'Chapitre suivant ›');
+  prev.disabled = i === 0; next.disabled = i === last;
+  prev.onclick = () => { cnHist--; openCarnet(); }; next.onclick = () => { cnHist++; openCarnet(); };
+  nav.style.marginTop = '16px'; nav.append(prev, next); pg.append(nav);
+}
+/* les habitants : une grille de portraits ; on touche pour en savoir plus */
+function cnHabitants2(pg){
+  const met = peopleMet();
+  if (cnPerson && PEOPLE[cnPerson]){
+    const w = cnPerson, p = PEOPLE[w];
+    const back = cnEl('button', 'cn-back', '‹ Tous les habitants'); back.type = 'button'; back.onclick = () => { cnPerson = null; openCarnet(); };
+    const hd = cnEl('div', 'cn-who'), t = cnEl('div'); t.append(cnEl('b', '', p.name), cnEl('span', '', p.role)); hd.append(cnFace(w), t);
+    const ul = cnEl('ul', 'cn-facts');
+    for (const [tx, cond] of FACTS[w] || [[`${p.role.charAt(0).toUpperCase() + p.role.slice(1)}.`]]) if (!cond || cond()) ul.append(cnEl('li', '', tx));
+    for (const tx of (glob.story.facts || {})[w] || []) ul.append(cnEl('li', '', tx));
+    pg.append(back, hd, ul); return;
+  }
+  if (!met.length){ pg.append(cnEl('p', 'cn-empty', 'Tu n’as encore rencontré personne… pour l’instant.')); }
+  else {
+    pg.append(cnEl('div', 'cn-lab', `Les gens de l’île · ${met.length}`));
+    const g = cnEl('div', 'cn-ppl'), newest = met[met.length - 1];
+    for (const w of met){ const p = PEOPLE[w], c = cnEl('button', 'cn-pc' + (w === newest ? ' new' : '')); c.type = 'button'; c.append(cnFace(w), cnEl('b', '', p.name), cnEl('span', '', p.role)); c.onclick = () => { cnPerson = w; openCarnet(); }; g.append(c); }
+    pg.append(g);
+  }
+  const vs = villagers();
+  if (vs.length){
+    pg.append(cnEl('div', 'cn-lab', `Les villageois · ${vs.length}`));
+    const vb = cnEl('div', 'cn-villagers');
+    for (const v of vs){
+      const row = cnEl('div', 'cn-vil'), cv = document.createElement('canvas'); cv.width = 16; cv.height = 16; try { drawPortrait(cv, residentLook(v.name)); } catch(e){}
+      const t = cnEl('div'); const qn = v.home != null ? (quartiers().find(q => q.hs.includes(v.home)) || {}).name : null;
+      t.append(cnEl('b', '', v.name), cnEl('span', '', ` · ${v.job}`), cnEl('small', '', v.home == null ? 'attend une maison, sous sa tente près du port' : v.trait + (qn ? ` · habite ${qn}` : '')));
+      for (const fct of ((glob.story.vfacts || {})[v.name] || [])) t.append(cnEl('small', 'cn-fact', fct));
+      row.append(cv, t); vb.append(row);
+    }
+    pg.append(vb);
+  }
+}
+/* le mur du café : les lettres de R., épinglées par Kofi */
+function openCafeWall(){
+  const L = (glob.story.rl || []).filter(k => R_LETTERS[k]);
+  openStoryModal({mode:'letter', who:'kofi', kicker:'Le café', title:'Le mur du café', paras:['Sur le mur du café, Kofi a épinglé les lettres trouvées dans les bouteilles. Personne ne sait qui les écrit.', ...L.map(k => letterPaper(R_LETTERS[k].t, R_LETTERS[k].hand))], go:'Fermer'});
+}
+/* ---------- les réglages, rangés par thèmes ---------- */
+(function gmBuild(){
+  const gm = document.getElementById('gearMenu'); if (!gm || gm.dataset.v2) return; gm.dataset.v2 = 1;
+  const $ = id => document.getElementById(id);
+  const back = document.createElement('div'); back.id = 'gmBack'; back.hidden = true; document.body.append(back, gm);
+  back.addEventListener('click', () => setMenu(false));
+  const head = cnEl('div', 'gm-head'); head.append(cnEl('h2', '', 'Réglages')); const x = cnEl('button', '', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Fermer'); x.onclick = () => setMenu(false); head.append(x);
+  const sec = (lab, kids, danger) => { const l = cnEl('div', 'gm-lab' + (danger ? ' danger' : ''), lab); const g = cnEl('div', 'gm-grp'); for (const k of kids) if (k) g.append(k); return [l, g]; };
+  const row = (lab, el) => { const r = cnEl('div', 'gm-row'); r.append(cnEl('span', '', lab), el); return r; };
+  const timeBtn = cnEl('button', 'btn go', '🍂 Saison, heure, météo'); timeBtn.type = 'button'; timeBtn.id = 'gmTimeBtn';
+  timeBtn.onclick = e => { e.stopPropagation(); setMenu(false); openTimePop(); };
+  const tutoBtn = cnEl('button', 'btn go', '⛵ Revoir la traversée'); tutoBtn.type = 'button'; tutoBtn.onclick = () => { setMenu(false); showTuto(); };
+  for (const id of ['storyBtn', 'chapterRestart', 'helpBtn', 'exportBtn', 'importBtn']) $(id).classList.add('go');
+  $('askClear').textContent = '🗑️ Effacer ce terrain'; $('askSample').textContent = '🏘️ Repartir de l’exemple';
+  { const hs = $('handSeg'); const t = {'': 'Non', l: 'Gauche', r: 'Droite'}; hs.querySelectorAll('button').forEach(b => b.textContent = t[b.dataset.h]); }
+  const note = cnEl('p', 'gm-note', 'La copie contient tous tes terrains et tes cadeaux. Range-la dans Fichiers : tu pourras tout récupérer, même sur un autre appareil.');
+  const terr = cnEl('div', 'gm-lab', 'Mes terrains'); const tg = cnEl('div', 'gm-grp');
+  const newRow = $('newEmpty').parentNode; newRow.hidden = true; $('newEmpty').textContent = '▫️ Terrain vide'; $('newSample').textContent = '🏘️ Village d’exemple';
+  const nb = cnEl('button', 'btn', '＋ Nouveau terrain'); nb.type = 'button'; nb.id = 'gmNew'; nb.style.color = 'var(--accent)'; nb.style.fontWeight = '600';
+  nb.onclick = e => { e.stopPropagation(); newRow.hidden = !newRow.hidden; };
+  $('resetRow').hidden = true;
+  tg.append($('tlist'), $('resetRow'), $('confirmRow'), nb, newRow, $('growBtn'));
+  const parts = [head,
+    ...sec('Mon île', [timeBtn]),
+    ...sec('L’histoire', [$('storyBtn'), $('chapterRestart')]),
+    terr, tg,
+    ...sec('Affichage', [row('Thème', $('themeSeg')), row('Une seule main', $('handSeg')), $('soundBtn'), $('ecoBtn')]),
+    ...sec('Aide', [$('helpBtn'), tutoBtn]),
+    ...sec('Sauvegarde', [$('exportBtn'), $('importBtn')]), note];
+  const danger = sec('Zone sensible', [$('storyRestart'), $('storyConfirm')], true); danger[0].id = 'gmDangerLab';
+  parts.push(...danger);
+  // le reste (anciens titres, méteo déplacée…) : on vide, puis on remet dans l'ordre
+  const keep = [$('importFile'), $('menuTimeSlot'), $('meteoSeg'), $('storyDangerLabel'), $('resetSection')];
+  gm.innerHTML = ''; for (const p of parts) gm.append(p); for (const k of keep) if (k) gm.append(k);
+  $('storyDangerLabel').hidden = true; $('storyDangerLabel').style.display = 'none';
+  // le petit menu de l'horloge
+  const tp = document.createElement('div'); tp.id = 'timePop'; tp.hidden = true; document.body.append(tp);
+  const ml = cnEl('div', 'label', 'Météo'); tp.append(cnEl('div', 'tp-h', 'Mon île'), $('menuTimeSlot'), ml, $('meteoSeg'));
+  { const a = $('autoTime'); if (a && a.parentNode) a.parentNode.classList.add('tp-auto'); a.textContent = '⏳ Le temps passe'; }
+  document.addEventListener('click', e => { if (!e.target.closest || !e.target.closest('.clock-in')) return; e.stopPropagation(); tp.hidden ? openTimePop() : (tp.hidden = true); });
+  document.addEventListener('pointerdown', e => { if (!tp.hidden && !tp.contains(e.target) && !(e.target.closest && e.target.closest('.clock-in, #gmTimeBtn'))) tp.hidden = true; }, true);
+})();
+function openTimePop(){
+  const tp = document.getElementById('timePop'); if (!tp) return;
+  const c = [...document.querySelectorAll('.clock-in')].find(e => e.offsetParent), r = c ? c.getBoundingClientRect() : null;
+  tp.style.top = Math.round(r ? r.bottom + 10 : 70) + 'px'; tp.style.left = Math.round(r ? Math.max(12, Math.min(innerWidth - tp.offsetWidth - 12, r.left - 30)) : 12) + 'px';
+  tp.hidden = false;
+  const w = tp.offsetWidth; if (r) tp.style.left = Math.round(Math.max(12, Math.min(innerWidth - w - 12, r.left - 30))) + 'px';
+}
 function cnHistoire(pg){
   const last = Math.min(glob.story.chapter, CHAPTERS.length - 1, glob.story.introSeen ?? -1);
   if (last < 0){ pg.append(cnEl('h2', '', 'Ton carnet'), cnEl('p', 'cn-empty', 'Les pages sont encore blanches… ton histoire va bientôt commencer.')); return; }
@@ -8162,7 +8483,7 @@ function openPanorama(){
   openStoryModal({mode:'trade', who:'margaux', kicker:'Du haut du belvédère', title:'La carte de l’archipel', paras:['Tout l’archipel s’étale sous vos pieds. Margaux dessine à toute vitesse, la langue entre les dents.', cv], go:'Redescendre'});
 }
 function cnChiffres(pg){
-  const days = Math.max(1, Math.ceil((Date.now() - (glob.story.since || Date.now())) / 86400000));
+  const days = Math.max(1, glob.story.isleDays || 1);
   const isles = Object.keys(glob.story.isles || {}).filter(k => !(glob.story.fogs || []).some(f => f.key === k && f.to > 0)).length + 1;
   const trees = O.reduce((n, o) => n + (TREES.has(o) ? 1 : 0), 0), r = resv();
   pg.append(cnEl('div', 'cn-kick', glob.story.ville ? tierName() : ''), cnEl('h2', '', 'Mon île en chiffres'));
@@ -8224,7 +8545,7 @@ const ecoBtn = document.getElementById('ecoBtn');
 function setEco(on){
   eco = !!on; glob.eco = eco; saveGlob();
   ecoBtn.setAttribute('aria-pressed', eco);
-  ecoBtn.textContent = eco ? '🔋 Mode économie : activé' : '🔋 Mode économie : désactivé';
+  ecoBtn.textContent = '🔋 Économie de batterie';
 }
 ecoBtn.onclick = () => { setEco(!eco); toast(eco ? 'Mode économie activé' : 'Mode économie désactivé'); };
 
@@ -8263,7 +8584,7 @@ glob.ui = glob.ui || {}; if (glob.ui.storyMin == null && innerWidth < 600){ glob
 const mqNarrow = matchMedia('(max-width: 859px)');
 function placeTimeControls(){
   const sg = document.getElementById('seasonGroup'), tg = document.getElementById('timeGroup');
-  if (mqNarrow.matches || document.documentElement.classList.contains('full')){ const slot = document.getElementById('menuTimeSlot'); slot.append(sg, tg); }
+  if (mqNarrow.matches || document.documentElement.classList.contains('full')){ const slot = document.getElementById('menuTimeSlot'); slot.append(sg, tg); const tb = document.getElementById('gmTimeBtn'); if (tb) tb.hidden = false; }
   else { const panel = document.querySelector('.panel'); panel.append(sg, tg); }
 }
 mqNarrow.addEventListener ? mqNarrow.addEventListener('change', placeTimeControls) : mqNarrow.addListener(placeTimeControls);
