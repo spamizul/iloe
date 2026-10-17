@@ -4642,7 +4642,7 @@ function place(x, y, forceErase){
   if (handTarget(i)){ hintT(O[i] === 'æ' ? '✋ Prends la main pour rallumer la lanterne' : '✋ Prends la main pour ramasser'); return; }
   if (t.kind === 'erase'){
     { const k = O[i] ? i : (() => { const bl = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x])); return bl ? bl[0]*N + x : -1; })();
-      const msg = k >= 0 && resOn() ? PROTECTED[O[k]] : null; if (msg){ hintT(msg); return; }
+      const msg = k >= 0 && resOn() ? (O[k] === 'ï' ? tentWho(k) : PROTECTED[O[k]]) : null; if (msg){ hintT(msg); return; }
       if (k >= 0 && resOn() && glob.story.ville && inIsle(k, 'pins') && TREES.has(O[k]) && glob.story.chapter >= S3I('La forêt d’Elias')){ hintT('🌲 Elias : « Pas celui-là. Il est vivant. »'); return; }
       if (k >= 0 && O[k] === 'Ċ' && resOn() && (glob.story.balOff || []).includes(k)){ relight(k); return; }
       if (k >= 0 && (O[k] === 'h' || O[k] === 'Ĉ')){ const hw = homeWho(k); if (hw && !(breakOk && breakOk.i === k && Date.now() - breakOk.t < 6000)){ breakOk = {i:k, t:Date.now()}; toast(hw.t, 3000); stroke = null; return; } breakOk = null; }
@@ -8089,6 +8089,13 @@ function gBike(i){
 
 /* ---------- petites réparations ---------- */
 let breakOk = null;
+function tentWho(k){
+  const v = villagers().find(v => v.home == null && v.tent === k);
+  if (v) return `⛺ ${v.name} dort sous cette tente, en attendant une maison. Construis-en une, et la tente se repliera.`;
+  if (glob.story.palomaTent === k && !glob.story.palomaHome) return '⛺ Paloma dort sous cette tente. Construis-lui une maison près du port.';
+  if (glob.story.tentsSet && !glob.story.tentsGone && !Object.values(glob.story.homes || {}).includes('voyageurs')) return '⛺ Les voyageurs dorment sous cette tente. Il leur faut une maison.';
+  return null;
+}
 function homeWho(k){
   if (!resOn() || !glob.story.ville) return null;
   const v = villagers().find(v => v.home === k); if (v && O[k] === 'h') return {t:`🏡 ${v.name} habite ici ! Touche encore pour casser sa maison.`};
