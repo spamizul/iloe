@@ -113,7 +113,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .gift-card .btn{font-size:15px;padding:10px 18px}
 #giftCv{width:112px;height:140px;image-rendering:pixelated}
 .gift-text{margin:0;font-size:15px}
-.tool.isgift span::after{content:" ✨"}
+.tool.fresh{position:relative}.tool.fresh::after{content:'';position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:#e2574c;box-shadow:0 0 0 2px var(--surface, #1b2129)}
 .storycard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
 .sc-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .sc-title{font-family:var(--f-display);font-size:15px;min-width:0}
@@ -856,6 +856,12 @@ html.oh-l .thumb-in{flex-direction:row-reverse}
 #storyBox .cafe-list canvas{width:24px;height:24px;image-rendering:pixelated;border-radius:6px}
 #resHud .tier-chip{margin-left:4px;padding-left:8px;border-left:1px solid var(--line2)}
 #resHud.free{pointer-events:auto;cursor:pointer;z-index:40}
+#storyBox.bulle .name-in{width:100%;box-sizing:border-box;margin:8px 0 6px}
+#storyBox.bulle .look-box{margin-top:4px}
+#storyBox.bulle .look-rows{gap:6px}
+#storyBox.bulle .look-row{flex-wrap:nowrap;gap:4px}
+#storyBox.bulle .look-row span{width:auto;flex:0 0 64px;font-size:11px}
+#storyBox.bulle .look-row .sw{width:20px;height:20px;flex:0 0 20px}
 </style>
 
 <div class="wrap" lang="fr">
@@ -1185,7 +1191,7 @@ Object.assign(glob, readJSON(GKEY) || {});
 applyTheme();
 glob.story = Object.assign({asked:false, started:false, terrain:null, chapter:0, unlocked:[], pendingOutro:null}, glob.story || {});
 if (glob.story.introSeen == null) glob.story.introSeen = glob.story.started ? Math.min(glob.story.chapter, 6) : -1;
-function saveGlob(){ writeJSON(GKEY, glob); }
+function saveGlob(){ if (window.__restoring) return; writeJSON(GKEY, glob); }
 function applyTheme(){
   const t = (glob.ui && glob.ui.theme) || 'dark';
   if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
@@ -1193,7 +1199,7 @@ function applyTheme(){
 }
 document.querySelectorAll('#themeSeg button').forEach(b => b.onclick = () => { glob.ui = glob.ui || {}; glob.ui.theme = b.dataset.t; saveGlob(); applyTheme(); });
 function terrainData(){ return {n:N, g:G.join(''), o:O.map(c => c || '.').join(''), season}; }
-function save(){ writeJSON(tKey(terrains.cur), terrainData()); }
+function save(){ if (window.__restoring) return; writeJSON(tKey(terrains.cur), terrainData()); }
 // anciens rails posés sur la mer : ils deviennent un viaduc (eau des deux côtés)
 function railsOverWater(){
   const g = (x, y) => (x < 0 || y < 0 || x >= N || y >= N) ? 'w' : G[y*N + x];
@@ -3473,14 +3479,14 @@ function drawMist(c2){
       g.addColorStop(0, `rgba(${col},0)`); g.addColorStop(0.62, `rgba(${col},0)`); g.addColorStop(0.86, `rgba(${col},${(0.8*f.a).toFixed(3)})`); g.addColorStop(1, `rgba(${col},${(0.93*f.a).toFixed(3)})`);
       c2.fillStyle = g; c2.fillRect(-60, -60, 120, 120); c2.restore(); continue;
     }
-    const holes = f.key === 'pins' && f.thick && isStory() ? balLit() : [], offs = f.key === 'pins' && f.thick && isStory() ? (glob.story.balOff || []).filter(j => O[j] === 'Ċ') : [];
+    const holes = f.key === 'pins' && f.thick && isStory() ? pinHoles() : [], offs = f.key === 'pins' && f.thick && isStory() ? (glob.story.balOff || []).filter(j => O[j] === 'Ċ') : [];
     if (holes.length || offs.length){
       c2.restore(); const bw = Math.ceil(f.rx*T*2) + 4, bh = Math.ceil(f.ry*T*2) + 4; if (mistCv.width !== bw || mistCv.height !== bh){ mistCv.width = bw; mistCv.height = bh; }
       const m = mistCv.getContext('2d'); m.clearRect(0, 0, bw, bh); m.save(); m.translate(bw/2, bh/2); m.scale(f.rx*T, f.ry*T);
       const gm = m.createRadialGradient(0, 0, 0, 0, 0, 1); gm.addColorStop(0, `rgba(${col},${(0.98*f.a).toFixed(3)})`); gm.addColorStop(0.72, `rgba(${col},${(0.95*f.a).toFixed(3)})`); gm.addColorStop(0.9, `rgba(${col},${(0.6*f.a).toFixed(3)})`); gm.addColorStop(1, `rgba(${col},0)`);
       m.fillStyle = gm; m.beginPath(); m.arc(0, 0, 1, 0, 6.29); m.fill(); m.restore();
       m.globalCompositeOperation = 'destination-out';
-      for (const j of holes){ const hx = (j % N)*T + 8 - (f.cx*T + 8) + bw/2, hy = ((j / N)|0)*T + 8 - (f.cy*T + 8) + bh/2, rr = (balR() + 1.2)*T; const hg = m.createRadialGradient(hx, hy, 0, hx, hy, rr); hg.addColorStop(0, 'rgba(0,0,0,1)'); hg.addColorStop(0.55, 'rgba(0,0,0,.92)'); hg.addColorStop(1, 'rgba(0,0,0,0)'); m.fillStyle = hg; m.fillRect(hx - rr, hy - rr, rr*2, rr*2); }
+      for (const [j, hr] of holes){ const hx = (j % N)*T + 8 - (f.cx*T + 8) + bw/2, hy = ((j / N)|0)*T + 8 - (f.cy*T + 8) + bh/2, rr = hr*T; const hg = m.createRadialGradient(hx, hy, 0, hx, hy, rr); hg.addColorStop(0, 'rgba(0,0,0,1)'); hg.addColorStop(0.55, 'rgba(0,0,0,.92)'); hg.addColorStop(1, 'rgba(0,0,0,0)'); m.fillStyle = hg; m.fillRect(hx - rr, hy - rr, rr*2, rr*2); }
       for (const j of offs){ const hx = (j % N)*T + 8 - (f.cx*T + 8) + bw/2, hy = ((j / N)|0)*T + 8 - (f.cy*T + 8) + bh/2, rr = 1.3*T; const hg = m.createRadialGradient(hx, hy, 0, hx, hy, rr); hg.addColorStop(0, 'rgba(0,0,0,1)'); hg.addColorStop(0.6, 'rgba(0,0,0,.85)'); hg.addColorStop(1, 'rgba(0,0,0,0)'); m.fillStyle = hg; m.fillRect(hx - rr, hy - rr, rr*2, rr*2); }
       m.globalCompositeOperation = 'source-over';
       c2.drawImage(mistCv, Math.round(f.cx*T + 8 - bw/2), Math.round(f.cy*T + 8 - bh/2)); continue;
@@ -3816,7 +3822,7 @@ let activeGroup = 'Habitations';
 const GROUP_ORDER = ['Habitations', 'Commerces', 'Services', 'Mobilier', 'Loisirs', 'Campagne', 'Nature', 'Eau et port', 'Sols', 'Voies'];
 const REGROUP = {
   'Sols':'gpµ¶±£#*~ȷ&%s!', 'Voies':'cR+Xn', 'Eau et port':'wqÎGBJN6ÛÖÝLßĀāĄĊ',
-  'Campagne':'kz^voVmÇɃȚŚƑÉueyĂĆ', 'Habitations':'ĈhITÆï', 'Commerces':'SK129üùË',
+  'Campagne':'kz^voVmÇɃȚŚƑÉueyĂ', 'Habitations':'ĈhITÆïĆ', 'Commerces':'SK129üùË',
   'Services':'AEéèàœiaD', 'Mobilier':'QɱçâêîôblŧɖɟɮɥʃFWæ8ÊÂ', 'Loisirs':'ûë3OjÏ4ÔYUZ0dÑŸɧ', 'Nature':'tPÀfHrM5øþðŒC'};
 for (const t of TOOLS) for (const [g, ids] of Object.entries(REGROUP)) if ([...ids].includes(t.id)) t.group = g;
 try { const a = readJSON('iloe-tab'); if (a && GROUP_ORDER.includes(a)) activeGroup = a; } catch(e){}
@@ -3858,7 +3864,7 @@ function buildTools(){
     const ord = [...(REGROUP[g] || '')];
     const isNew = g === 'Nouveautés';
     for (const t of (isNew ? fresh.map(id => avail.find(t => t.id === id)) : avail.filter(t => t.group === g)).sort((a, b) => isNew ? 0 : (ord.indexOf(a.id) + 1 || 99) - (ord.indexOf(b.id) + 1 || 99))){
-      const b = document.createElement('button'); b.className = 'tool' + (t.gift || t.story ? ' isgift' : ''); b.id = (isNew ? 'toolnew-' : 'tool-') + t.id; b.type = 'button';
+      const b = document.createElement('button'); b.className = 'tool' + (resOn() && (glob.story.fresh || []).includes(t.id) ? ' fresh' : ''); b.id = (isNew ? 'toolnew-' : 'tool-') + t.id; b.type = 'button';
       b.setAttribute('aria-pressed', t.id === tool);
       const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; if (isNew) setTimeout(() => drawIconTo(t, cv)); else iconCanvases[t.id] = cv;
       const sp = document.createElement('span'); sp.textContent = t.name;
@@ -3881,7 +3887,7 @@ function renderSearch(q){
   const found = TOOLS.filter(t => t.kind !== 'erase' && unlocked(t.id) && (fold(t.name).includes(k) || fold(t.group).includes(k)));
   if (!found.length){ const h = document.createElement('p'); h.className = 'hint'; h.textContent = 'Rien trouvé… essaie un autre mot.'; res.append(h); return; }
   for (const t of found){
-    const b = document.createElement('button'); b.className = 'tool' + (t.gift || t.story ? ' isgift' : ''); b.id = 'tool-' + t.id; b.type = 'button';
+    const b = document.createElement('button'); b.className = 'tool' + (resOn() && (glob.story.fresh || []).includes(t.id) ? ' fresh' : ''); b.id = 'tool-' + t.id; b.type = 'button';
     b.setAttribute('aria-pressed', t.id === tool);
     const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; drawIconTo(t, cv);
     const sp = document.createElement('span'); sp.textContent = t.name;
@@ -4158,7 +4164,7 @@ const FREE_PROD = {'Ś':'b', 'Ț':'p', 'Ƀ':'a', 'Ƒ':'m'};
 let freeAcc = 0, freeChk = 0;
 function freeTick(dt){
   const st = freeSt(); freeAcc += dt; freeChk += dt;
-  if (freeChk > 2){ freeChk = 0; const k = freeTierNow(); if (k > (st.tier || 0) && storyBox.hidden){ st.tier = k; saveGlob(); try { buildTools(); renderRecent(); } catch(e){} const nw = FREE_TIERS.slice(1, k + 1).flatMap(t => t[2]); const last = FREE_TIERS[k]; if (storyBox.hidden) freeBubble([B('carnet', `Ton île devient **${last[1].toLowerCase() === 'village' ? 'un village' : last[1].toLowerCase() === 'bourg' ? 'un bourg' : last[1].toLowerCase() === 'petite ville' ? 'une petite ville' : 'une ville'}** !`), ...(last[2].length ? [B('carnet', 'Nouveaux bâtiments : ' + last[2].map(toolNm).join(', ') + '.')] : [])], 'Super !'); renderRes(true); } }
+  if (freeChk > 2){ freeChk = 0; try { dfCheck(); } catch(e){} const k = freeTierNow(); if (k > (st.tier || 0) && storyBox.hidden){ st.tier = k; saveGlob(); try { buildTools(); renderRecent(); } catch(e){} const nw = FREE_TIERS.slice(1, k + 1).flatMap(t => t[2]); const last = FREE_TIERS[k]; if (storyBox.hidden) freeBubble([B('carnet', `Ton île devient **${last[1].toLowerCase() === 'village' ? 'un village' : last[1].toLowerCase() === 'bourg' ? 'un bourg' : last[1].toLowerCase() === 'petite ville' ? 'une petite ville' : 'une ville'}** !`), ...(last[2].length ? [B('carnet', 'Nouveaux bâtiments : ' + last[2].map(toolNm).join(', ') + '.')] : [])], 'Super !'); renderRes(true); } }
   if (freeAcc < 120) return; freeAcc = 0;
   const big = Math.floor(crowdCount() / 20), add = {b:1 + big, p:1 + big};
   for (const [o, k] of Object.entries(FREE_PROD)){ const n = Math.min(4, cnt(o)); if (n) add[k] = (add[k] || 0) + n; }
@@ -4167,14 +4173,15 @@ function freeTick(dt){
 }
 function freeHud(el){
   const r = resv(), st = freeSt(), k = Math.max(st.tier || 0, freeTierNow());
-  el.innerHTML = `<span>🪵 <b>${r.b}</b></span><span>🪨 <b>${r.p}</b></span>` + (r.a || cnt('Ƀ') ? `<span>🧱 <b>${r.a}</b></span>` : '') + (r.m || cnt('Ƒ') ? `<span>⚙️ <b>${r.m}</b></span>` : '') + `<span class="tier-chip">🏘️ <b>${FREE_TIERS[k][1]}</b></span>`;
+  el.innerHTML = `<span>🪵 <b>${r.b}</b></span><span>🪨 <b>${r.p}</b></span>` + (r.a || cnt('Ƀ') ? `<span>🧱 <b>${r.a}</b></span>` : '') + (r.m || cnt('Ƒ') ? `<span>⚙️ <b>${r.m}</b></span>` : '') + `<span class="tier-chip">🏘️ <b>${FREE_TIERS[k][1]}</b></span>` + (() => { const d = dfCur(), s0 = dfState(); return d && s0 ? `<span class="tier-chip">🎯 <b>${s0.ok.length}/${d.st.length}</b></span>` : ''; })();
   el.onclick = () => {
     const n = crowdCount(), nx = FREE_TIERS[k + 1];
     const lines = [B('carnet', `**${FREE_TIERS[k][1]}** · ${n} habitant${n > 1 ? 's' : ''}.`)];
     if (nx) lines.push(B('carnet', `Prochain palier : **${nx[1]}**, à ${nx[0]} habitants.` + (nx[2].length ? ` Tu pourras construire : ${nx[2].map(toolNm).join(', ')}.` : '')));
+    lines.push(...dfLines());
     lines.push(B('carnet', 'Ta ville produit un peu de bois et de pierre toutes les 2 minutes de jeu, plus quand elle grandit, et encore plus avec une scierie, un atelier du tailleur, un four à briques ou une forge.'));
     if (st.crate && Object.values(st.crate).some(v => v > 0)) lines.push(B('carnet', `Une caisse du continent t’attend : ${resTxt(st.crate)}.`));
-    freeBubble(lines, st.crate && Object.values(st.crate).some(v => v > 0) ? '📦 Ouvrir la caisse' : 'Fermer', st.crate && Object.values(st.crate).some(v => v > 0) ? () => freeOpen() : null);
+    freeBubble(lines, st.crate && Object.values(st.crate).some(v => v > 0) ? '📦 Ouvrir la caisse' : 'Fermer', st.crate && Object.values(st.crate).some(v => v > 0) ? () => freeOpen() : null, dfCur() ? '🎲 Autre défi' : null, dfCur() ? () => { dfNew(true); toast('🎯 Nouveau défi : ' + dfCur().t, 2600); } : null);
   };
 }
 
@@ -4237,6 +4244,7 @@ function tide(){
     const land = mainLand(), feet = []; for (let i = 0; i < N*N; i++) if (land[i] && G[i] === 's' && !O[i] && !fogAt(i % N, (i / N)|0) && near8(i, j => G[j] === 'w')) feet.push(i);
     if (feet.length){ O[feet[(Math.random()*feet.length)|0]] = 'ǰ'; k++; }
   }
+  try { k += farmBeach(); } catch(e){}
   if (glob.story.chapter >= 11 && Math.random() < 0.25 && cand.length && !cnt('ȸ')){ O[cand.pop()] = 'ȸ'; k++; }
   if (shellsOn()) for (let n = 0, m = 1 + (Math.random() < 0.5 ? 1 : 0); n < m && cand.length && cnt('ȿ') < 4; n++){ O[cand.pop()] = 'ȿ'; k++; }
   try { bubbleTide(); } catch(e){}
@@ -4371,13 +4379,13 @@ function renderBag(){
     const cv = document.createElement('canvas'); cv.width = 16; cv.height = 20; drawDish(cv, k);
     const sp = document.createElement('span'); sp.textContent = `${DISHES[k]} ×${n}`;
     b.append(cv, sp); b.onclick = e => { e.stopPropagation(); hintT(k === 'k' ? '🎒 Des coquillages : Gaspard les échange contre ce qu’il a dans sa cale' : `🎒 ${DISHES[k]} : à offrir ou à garder pour une fête`); }; list.append(b); }
-  { const mb = isStory() ? ((glob.story.mail || {}).bag || []) : []; for (const m of mb){
+  { const mb = isStory() ? ((glob.story.mail || {}).bag || []) : freeMail().bag; for (const m of mb){
     const b = document.createElement('button'); b.type = 'button'; b.className = 'dish mail';
     const ic = document.createElement('span'); ic.className = 'mail-ic'; ic.textContent = '✉️';
     const sp = document.createElement('span'); sp.textContent = `Pour ${mailName(m)}`;
     b.append(ic, sp); b.onclick = e => { e.stopPropagation(); const hm = mailHome(m); bagPop.hidden = true; bagBtn.setAttribute('aria-expanded', 'false'); if (hm == null){ hintT(`✉️ ${mailName(m)} n’a plus de maison… garde la lettre, en attendant.`); return; } showAddr(mailName(m), hm); }; list.append(b); } }
   bagPop.append(list);
-  if (!ids.length && !dishKinds() && !(isStory() && ((glob.story.mail || {}).bag || []).length)){ const p = document.createElement('p'); p.style.marginTop = '8px'; p.textContent = 'Le reste de ton sac est vide. Un appui long avec la main ✋ sur un objet de ton île le range ici.'; bagPop.append(p); }
+  if (!ids.length && !dishKinds() && !(isStory() ? ((glob.story.mail || {}).bag || []).length : freeMail().bag.length)){ const p = document.createElement('p'); p.style.marginTop = '8px'; p.textContent = 'Le reste de ton sac est vide. Un appui long avec la main ✋ sur un objet de ton île le range ici.'; bagPop.append(p); }
 }
 bagBtn.onclick = e => { e.stopPropagation(); { const r = bagBtn.getBoundingClientRect(); bagPop.style.top = Math.round(r.bottom + 8) + 'px'; } bagPop.hidden = !bagPop.hidden; bagBtn.setAttribute('aria-expanded', String(!bagPop.hidden)); renderBag(); };
 document.addEventListener('pointerdown', e => { if (!e.target.closest || !e.target.closest('#bagBtn, #bagPop')) bagPop.hidden = true; }, true);
@@ -4441,7 +4449,7 @@ function bonusPick(id, i){
         const qs = []; for (let j = 0; j < N*N; j++) if (G[j] === 'q' && !O[j] && !inIsle(j, 'ilot')) qs.push(j);
         const ends = qs.filter(j => [1, -1, N, -N].filter(d => G[j + d] === 'q').length <= 1), at = (ends.length ? ends : qs)[0];
         let at2 = at; if (at2 == null){ const land = mainLand(); for (let j = 0; j < N*N && at2 == null; j++) if (!O[j] && land[j] && (G[j] === 'g' || G[j] === 's') && near8(j, m => G[m] === 'q' && !inIsle(m, 'ilot'))) at2 = j; }
-        if (at2 != null){ O[at2] = 'ā'; save(); } else bagAdd('ā');
+        { const bb = bag(); bb['ā'] = (bb['ā'] || 0) + 1; saveGlob(); renderBag(); setTimeout(() => toast('🔔 La cloche est dans ton sac. Elle attendra le jour où le port revivra.', 3500), 1200); }
         openStoryModal({mode:'letter', who:'yuna', kicker:'La plongeuse', title:'Quelque chose de gros', paras:['Yuna remonte, tout essoufflée. « Il y a quelque chose de gros, là-dessous… Il me faut de l’aide ! »', {who:'toi', t:'Tout le monde tire sur la corde, et la vieille cloche du port sort de l’eau, couverte d’algues.'}], go:'Continuer'});
       }
       saveGlob(); renderStoryCard(); return true; }
@@ -4513,6 +4521,7 @@ function handTap(x, y, cx, cy){
   if (resOn() && glob.story.ville && O[i] === '2' && !acts.length) acts.push('Entrer');
   if (resOn() && !acts.length){ const hk = homeKind(i); if (hk) acts.push(hk === 'own' ? 'Entrer' : hk === 'empty' ? 'Regarder' : 'Toquer'); }
   if (!acts.length){ const bl = bldReact(i); if (bl) acts.push(bl); }
+  if (!acts.length){ const fa = freeAct(i); if (fa) acts.push(fa); }
   const nm = nameOf(i);
   if (!acts.length){ if (nm) hintT('🏷️ ' + nm); return; }
   showBldPop(nm || '', acts[0], () => go(x, y), cx, cy);
@@ -4540,13 +4549,14 @@ function nameOf(i){
   { const sp = {'Č':'Pin mort', 'č':'La source', 'Ď':'Le canoë d’Elias'}[o]; if (sp) return sp; }
   if (o === 'Ą' && isStory()){ const p = (glob.story.stalls || {})[i]; if (MARKET[p]) return `Étal · ${MARKET[p][0].toLowerCase()}`; }
   if (!t) return null;
-  const v = villagers().find(v => v.home === i);
+  if (!isStory() && o === 'h') return `Maison de ${houseName(i)}`;
+  const v = isStory() ? villagers().find(v => v.home === i) : null;
   if (v) return `${t.name} de ${v.name}`;
-  { const H = (glob.story && glob.story.homes) || {}; if (H[i] && HOME_LABEL[H[i]]) return HOME_LABEL[H[i]]; }
+  { const H = (isStory() && glob.story && glob.story.homes) || {}; if (H[i] && HOME_LABEL[H[i]]) return HOME_LABEL[H[i]]; }
   if (o === 'Ĉ' && inIsle(i, 'ilot') && glob.story && glob.story.v === 2) return 'Ancienne cabane de Tomas';
   if (o === 'h' && glob.story && glob.story.v === 2 && isStory() && !inIsle(i, 'champs')) return 'Maison libre';
   if (o === 'Ĉ' && glob.story && glob.story.v === 2 && isStory()) return 'Cabane libre';
-  const own = {'1':'Lina', 'K':'Margaux', 'L':'Job', 'Ț':'Kofi', 'u':'Ondine', 'è':'Germaine'}[o];
+  const own = isStory() ? {'1':'Lina', 'K':'Margaux', 'L':'Job', 'Ț':'Kofi', 'u':'Ondine', 'è':'Germaine'}[o] : null;
   if (o === 'h' && inIsle(i, 'champs')) return 'Maison de Philippe et Annick';
   if (o === 'Ç' && inIsle(i, 'champs')) return 'Grange de Philippe et Annick';
   return own ? `${t.name} ${/^[AEIOUÉÈ]/.test(own) ? 'd’' : 'de '}${own}` : t.name;
@@ -4587,6 +4597,7 @@ function interact(x, y){
   }
   if (resOn() && glob.story.ville && (O[i] === 'h' || O[i] === 'Ĉ' || O[i] === 'L') && openHomeBubble(i)) return;
   if (bldReact(i) && openBldBubble(i)) return;
+  if (!isStory() && freeAct(i) && freeTap(i)) return;
   if (!handTarget(i)){ let j = i; if (!O[j]){ const below = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x])); if (below) j = below[0]*N + x; } const nm = O[j] && nameOf(j); if (nm) hintT('🏷️ ' + nm); return; }
   if (O[i] === 'Ȝ'){ openMerchant(); return; }
   if (O[i] === 'Ț'){ hintT('🔨 Kofi taille les pierres de tes maisons : chacune te coûte une pierre de moins.'); return; }
@@ -4595,6 +4606,7 @@ function interact(x, y){
   if (id === 'ɋ' && !cnt('Ƀ')){ hintT('🧱 Il te faut d’abord un four à briques pour cuire cette argile'); return; }
   if (id === 'ɍ' && !cnt('Ƒ')){ hintT('⚙️ Il te faut d’abord une forge pour fondre ce minerai'); return; }
   O[i] = null; f[key] = (f[key] || 0) + 1;
+  if ((id === 'ď' || id === 'ñ') && resOn() && inIsle(i, 'pins')) pinOpen(i, id === 'ď' ? 2.6 : 2.8);
   if (bonusPick(id, i)){ gateCheck(); syncWalkers(); updateStats(); queueSave(); return; }
   if (id === 'ǝ'){ const k = glob.story.lpage || 0, t = LETTERS_M[k % LETTERS_M.length]; glob.story.lpage = k + 1; addPage(t + ' — M.'); saveGlob(); toast('✉️ Une lettre : « ' + t + ' »'); }
   else if (id === 'ƥ'){ const k = glob.story.mpage || 0, t = PAGES_M[k % PAGES_M.length]; glob.story.mpage = k + 1; addPage(t); saveGlob(); toast('📜 Une page du carnet ! « ' + t + ' »'); }
@@ -4633,10 +4645,11 @@ function place(x, y, forceErase){
       const msg = k >= 0 && resOn() ? PROTECTED[O[k]] : null; if (msg){ hintT(msg); return; }
       if (k >= 0 && resOn() && glob.story.ville && inIsle(k, 'pins') && TREES.has(O[k]) && glob.story.chapter >= S3I('La forêt d’Elias')){ hintT('🌲 Elias : « Pas celui-là. Il est vivant. »'); return; }
       if (k >= 0 && O[k] === 'Ċ' && resOn() && (glob.story.balOff || []).includes(k)){ relight(k); return; }
+      if (k >= 0 && (O[k] === 'h' || O[k] === 'Ĉ')){ const hw = homeWho(k); if (hw && !(breakOk && breakOk.i === k && Date.now() - breakOk.t < 6000)){ breakOk = {i:k, t:Date.now()}; toast(hw.t, 3000); stroke = null; return; } breakOk = null; }
       if (k >= 0 && O[k] === 'h') releaseHome(k); }
     if (O[i] === 'ř'){ harvest('ř'); if (!resOn()) toast('⛏️ Rocher cassé'); O[i] = null; setTimeout(gateCheck, 0); }
     else if (O[i] === 'Ć' || O[i] === 'ć'){ const a = longereAnchor(i); for (const j of [a, a + 1, a + 2]) if (j >= 0 && (O[j] === 'Ć' || O[j] === 'ć')) O[j] = null; }
-    else if (O[i]){ harvest(O[i]); O[i] = null; }
+    else if (O[i]){ if (O[i] === 'Č' && resOn() && inIsle(i, 'pins')) pinOpen(i, 2.8); harvest(O[i]); O[i] = null; }
     else {
       // le haut d'un arbre, d'une maison ou d'une tour dépasse sur la case du dessus : on efface l'objet qu'on voit
       const below = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x]));
@@ -5299,6 +5312,7 @@ document.getElementById('exportBtn').onclick = async () => {
 /* tout remettre comme dans le fichier : l'histoire, ses terrains, le mode libre */
 function restoreSave(d, ok){
   try {
+    window.__restoring = true;
     for (const t of terrains.list){ try { localStorage.removeItem(tKey(t.id)); } catch(e){} }
     const list = []; let storyId = null, cur = null;
     ok.forEach((t, n) => {
@@ -5316,10 +5330,10 @@ function restoreSave(d, ok){
     if (!g.ui && keep.ui) glob.ui = keep.ui;
     if (glob.story){ if (storyId) glob.story.terrain = storyId; else { glob.story.started = false; glob.story.terrain = null; } }
     terrains = {cur:cur || storyId || list[0].id, list};
-    writeJSON(IDX, terrains); saveGlob();
+    writeJSON(IDX, terrains); writeJSON(GKEY, glob); window.__restoring = true;
     toast('Sauvegarde restaurée', 1500);
-    setTimeout(() => location.reload(), 600);
-  } catch(e){ toast("La sauvegarde n'a pas pu être restaurée"); }
+    setTimeout(() => location.reload(), 400);
+  } catch(e){ window.__restoring = false; toast("La sauvegarde n'a pas pu être restaurée"); }
 }
 setTimeout(() => { try { if (!isStory()){ renderRes(); freeOpen(); } } catch(e){} }, 1500);
 const importFile = document.getElementById('importFile');
@@ -5438,7 +5452,7 @@ function showTuto(done){
 
 /* ---------- l'atelier : un panneau caché pour tester l'histoire (5 appuis sur la boussole) ---------- */
 const AT_H = "window.__instant=true; const free=(f,key)=>{const a=[];for(let i=0;i<N*N;i++) if(!O[i]&&f(G[i])&&(!key||inIsle(i,key))&&!fogAt(i%N,(i/N)|0)) a.push(i); return a;}; const c=i=>[i%N,(i/N)|0];\nconst put=(id,n,key,g='g')=>{ const a=free(x=>x===g||(g==='g'&&x==='s'&&false),key); selectTool(id); let k=0; for(const i of a){ if(k>=n) break; const b=O[i]; place(...c(i)); if(O[i]===id||(SAPLING[id]&&O[i]===SAPLING[id])) k++; } return k; };\nconst ground=(id,n,key,from='g')=>{ const a=free(x=>x===from,key); let k=0; for(const i of a){ if(k>=n) break; G[i]=id; k++; } groundDirty=true; save(); updateStats(); return k; };", AT_IA = "if(glob.story.chapter>0){glob.story.res={b:9999,p:9999,a:9999,m:9999,t:9999};} const onI=(id,n,key,gs='gs!')=>{selectTool(id); let k=0; for(let i=0;i<N*N&&k<n;i++) if(inIsle(i,key)&&!O[i]&&gs.includes(G[i])&&!fogAt(i%N,(i/N)|0)){ place(i%N,(i/N)|0); if(O[i]===id||(id==='À'&&O[i]==='ą')) k++; } return k;}; const bridge=key=>{let best=1e9,bi=0,bj=0; const ML=mainLand(); for(let i=0;i<N*N;i++) if(G[i]!=='w'&&!inIsle(i,key)&&ML[i]) for(let j=0;j<N*N;j++) if(G[j]!=='w'&&inIsle(j,key)){ const d=Math.abs(i%N-j%N)+Math.abs(((i/N)|0)-((j/N)|0)); if(d<best){best=d;bi=i;bj=j;} } let x=bi%N,y=(bi/N)|0; const tx=bj%N,ty=(bj/N)|0; while(x!==tx||y!==ty){ if(y!==ty) y+=Math.sign(ty-y); else x+=Math.sign(tx-x); const k=y*N+x; if(G[k]==='w'){ G[k]='n'; O[k]=null; } } groundDirty=true; save(); return best;}; const railLine=(from,key)=>{ let best=1e9,bj=-1; for(let j=0;j<N*N;j++) if(G[j]!=='w'&&inIsle(j,key)){ const d=Math.abs(from%N-j%N)+Math.abs(((from/N)|0)-((j/N)|0)); if(d<best){best=d;bj=j;} } let x=from%N,y=(from/N)|0; const tx=bj%N,ty=(bj/N)|0; while(x!==tx||y!==ty){ if(x!==tx) x+=Math.sign(tx-x); else y+=Math.sign(ty-y); const k=y*N+x; O[k]=null; G[k]=G[k]==='w'||G[k]==='¤'?'¤':'X'; } groundDirty=true; save(); }; const ia=id=>{let n=0; for(let i=0;i<N*N;i++) if(O[i]===id){ interact(i%N,(i/N)|0); n++; } return n;}; const wat=()=>{const w=[]; for(let i=0;i<N*N;i++) if(G[i]==='w'&&!O[i]&&!fogAt(i%N,(i/N)|0)) w.push(i); return w;}; const nearPath=(id,n)=>{selectTool(id); let k=0; for(let i=0;i<N*N&&k<n;i++) if(!O[i]&&G[i]==='g'&&!fogAt(i%N,(i/N)|0)&&near8(i,j=>G[j]==='c')){ place(i%N,(i/N)|0); if(O[i]===id) k++; } return k;};", AT_STEPS = ["ia('ŵ'); for(let i=0;i<N*N;i++) if(O[i]==='ř') place(i%N,(i/N)|0,true); gateCheck(); put('Ĉ',1); checkStory(); let n=0; while(!storyBox.hidden && n++<10) storyGo.click(); put('4',1);", "const nb=id=>{const k=O.indexOf(id); for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1],[2,0],[0,2],[-2,0],[0,-2]]){ const x=k%N+dx,y=((k/N)|0)+dy,j=y*N+x; if(!O[j]&&G[j]!=='w'){ selectTool('ŧ'); place(x,y); if(O[j]==='ŧ') return; } } }; nb('Ĉ'); nb('L'); put('ŧ',4); put('ŧ',4,null,'s'); window._dbg=[cnt('ŧ'),torchNear('L')];", "ia('Ŝ'); put('h',1); put('V',1); checkStory(); let n=0; while(!storyBox.hidden && n++<10) storyGo.click(); window._mid=phase2(CHAPTERS[2]); for(let i=0;i<N*N-4;i++){ const ok=[0,1,2,3].every(d=>!O[i+d]&&G[i+d]==='g'&&((i+d)%N)>=(i%N)&&!fogAt((i+d)%N,((i+d)/N)|0)); if(ok){ selectTool('h'); place(i%N,(i/N)|0); place((i+3)%N,((i+3)/N)|0); G[i+1]='c'; G[i+2]='c'; groundDirty=true; save(); break; } } put('W',1); window._dbg=[window._mid, housesLinked(), cnt('h')];", "ia('Ŋ'); window._n=(glob.story.unlocked2||[]).includes('N'); const ilw=[]; for(let i=0;i<N*N;i++) if(G[i]==='w'&&inIsle(i,'ilot')&&near8(i,j=>G[j]!=='w'&&inIsle(j,'ilot'))) ilw.push(i); for(const i of ilw.slice(0,3)) G[i]='q'; groundDirty=true; save(); onI('N',2,'ilot'); checkStory(); let n=0; while(!storyBox.hidden && n++<10) storyGo.click(); window._mid=phase2(CHAPTERS[3]); const a=[]; for(let i=0;i<N*N;i++) if(G[i]==='w'&&!fogAt(i%N,(i/N)|0)&&near8(i,j=>G[j]==='s')&&!inIsle(i,'ilot')) a.push(i); for(const i of a.slice(0,4)) G[i]='q'; groundDirty=true; save(); const w=wat(); selectTool('B'); place(...c(w[40])); place(...c(w[60])); window._dbg=[window._n, window._mid, quaiIlot(), cntIn('N','ilot'), cnt('B'), cntG('q')-quaiIlot()];", "put('Ț',1); put('h',2); checkStory(); let n=0; while(!storyBox.hidden && n++<10) storyGo.click(); window._mid=phase2(CHAPTERS[4]); for(const f of glob.story.fogs) f.a=f.to; ia('ƿ'); bridge('carriere'); put('Ƀ',1); for(let t=0;t<6&&found('ɋ')<3;t++){ ia('ɋ'); if(found('ɋ')<3) tide(); } put('h',Math.max(0,10-residents())); window._dbg=[window._mid, found('ɋ'), bridgeTo('carriere'), cnt('ï'), cnt('ɋ'), JSON.stringify(glob.story.fogs.find(f=>f.key==='carriere')), (()=>{const i=O.indexOf('ɋ'); return i<0?'none':[isleBlocked(i), fogAt(i%N,(i/N)|0), G[i]];})()];", "resv().w=12; checkStory(); let n=0; while(!storyBox.hidden && n++<10) storyGo.click(); window._mid=phase2(CHAPTERS[5]); put('m',1); put('1',1); put('h',Math.max(0,5-cnt('h'))); put('h',Math.max(0,14-residents())); window._dbg=[window._mid, cnt('m'), cnt('1'), cnt('h')];", "const ML=mainLand(); let a=0; for(let i=0;i<N*N&&a<30;i++) if(ML[i]&&!O[i]&&G[i]==='g'&&!fogAt(i%N,(i/N)|0)){ O[i]='t'; a++; } save(); window._t=treesMain(); checkStory(); let n=0; while(!storyBox.hidden && n++<10) storyGo.click(); window._mid=phase2(CHAPTERS[6]); put('Ś',1); ground('£',6); put('Ĉ',1); window._dbg=[window._t, window._mid, cnt('Ś'), cntG('£'), cabinsMain(), glob.story.c0];", "ia('ƿ'); checkStory(); let n=0; while(!storyBox.hidden && n++<10) storyGo.click(); window._mid=phase2(CHAPTERS[7]); put('h',1); ground('c',12); for(const id of ['2','K','S']){ selectTool(id); for(let i=N;i<N*N-N;i++) if(!O[i]&&G[i]==='g'&&!fogAt(i%N,(i/N)|0)&&[1,-1,N,-N].some(d=>G[i+d]==='c')){ place(i%N,(i/N)|0); if(O[i]===id) break; } } put('l',4); { const c=O.indexOf('2'); selectTool('ɟ'); let k=0; for(const d of [1,-1,N,-N,2,-2,N+1,N-1,-N+1,-N-1,2*N,-2*N,2*N+1,2*N-1,-2*N+1,-2*N-1]){ const j=c+d; if(k<3&&!O[j]&&G[j]!=='w'&&!fogAt(j%N,(j/N)|0)){ place(j%N,(j/N)|0); if(O[j]==='ɟ') k++; } } } window._dbg=[found('ƿ'), window._mid, cnt('2'), cnt('K'), cnt('S'), cntG('c'), unlocked('2'), unlocked('K'), countTouchPath('2'), countTouchPath('K'), countTouchPath('S'), cnt('l'), cnt('î'), tierName()];", "ground('p',12); selectTool('Q'); for(let i=0;i<N*N;i++) if(!O[i]&&(G[i]==='g'||G[i]==='p')&&near8(i,j=>G[j]==='p')){ place(...c(i)); if(cnt('Q')) break; } put('9',1); selectTool('b'); let d=0; for(let i=0;i<N*N&&d<4;i++) if(!O[i]&&G[i]==='g'&&near8(i,j=>G[j]==='p')){ place(...c(i)); if(O[i]==='b') d++; } checkStory(); let n=0; while(!storyBox.hidden && n++<10) storyGo.click(); window._m2=phase2(CHAPTERS[8]); put('ɟ',4); selectTool('main'); const doors=inviteDoors(); for(const i of doors) interact(i%N,(i/N)|0); window._inv=[invitedCount(), doors.length]; checkStory(); n=0; while(!storyBox.hidden && n++<10) storyGo.click(); window._m3=phase3(CHAPTERS[8]); put('ɮ',6); resv().pie=3; save(); window._dbg=[window._m2, window._inv, window._m3, cnt('ɟ'), cnt('ɮ'), tierName()];", "window._cut=JSON.stringify(glob.story.bridgeCut); for(const i of glob.story.bridgeCut||[]) G[i]='n'; { const need=glob.story.quai0||0; const a=[]; for(let i=0;i<N*N;i++) if(G[i]==='w'&&!fogAt(i%N,(i/N)|0)&&near8(i,j=>G[j]==='q'&&!inIsle(j,'ilot'))) a.push(i); let k=0; while(CHAPTERS[9].goals.find(g=>g[0]==='Le quai réparé')[1]()<need && k<a.length){ G[a[k++]]='q'; } } groundDirty=true; save(); window._br=JSON.stringify(glob.story.broken); for(const k of Object.keys(glob.story.broken||{})) interact((+k)%N,((+k)/N)|0); for(let i=0;i<N*N;i++) if(O[i]==='Ó') interact(i%N,(i/N)|0); for(let i=0;i<N*N;i++) if(O[i]==='B'&&G[i]!=='w'){ interact(i%N,(i/N)|0); break; } { let q=0; while(!storyBox.hidden && storyMode==='letter' && q++<3) storyGo.click(); } { const need=glob.story.quai0||0; const a=[]; for(let i=0;i<N*N;i++) if(G[i]==='w'&&!fogAt(i%N,(i/N)|0)&&near8(i,j=>G[j]==='q'&&!inIsle(j,'ilot'))) a.push(i); let k=0; while(CHAPTERS[9].goals.find(g=>g[0]==='Le quai réparé')[1]()<need && k<a.length){ G[a[k++]]='q'; } groundDirty=true; save(); } window._g=CHAPTERS[9].goals.map(g=>[g[0],g[1](),needOf(g[2])]); window._dbg=[window._cut, window._br, JSON.stringify(window._g), O.some((o,i)=>o==='B'&&G[i]!=='w'), glob.story.debris0];", "let m0=0; while(!storyBox.hidden && m0++<8) storyGo.click(); for(let k=0;k<3;k++){ const i=O.indexOf('ȸ'); if(i<0) break; interact(i%N,(i/N)|0); let q=0; while(!storyBox.hidden && storyMode==='letter' && q++<4) storyGo.click(); } window._midOpen=[storyMode, storyBox.hidden, phase2(CHAPTERS[10])]; let n=0; while(!storyBox.hidden && n++<10) storyGo.click(); checkStory(); n=0; while(!storyBox.hidden && n++<10) storyGo.click(); { const w2=wat(); let d=0; for(const i of w2){ if(d>=6) break; if(near8(i,j=>G[j]==='q'||G[j]==='Î')){ G[i]='Î'; d++; } } groundDirty=true; save(); } checkStory(); n=0; while(!storyBox.hidden && n++<10) storyGo.click(); window._m3=phase3(CHAPTERS[10]); { const L=O.indexOf('L'); interact(L%N,(L/N)|0); let q=0; while(!storyBox.hidden && storyMode==='letter' && q++<4) storyGo.click(); } window._dbg=[cnt('ɤ'), JSON.stringify(window._midOpen), glob.story.bottle2, cntG('Î'), window._m3, glob.story.vue, !!glob.story.isles.champs];", "let m0=0; while(!storyBox.hidden && m0++<5) storyGo.click(); bridge('champs'); ia('ɤ'); put('h',1); window._g=CHAPTERS[11].goals1.map(g=>[g[0],g[1](),needOf(g[2])]); checkStory(); let n=0; while(!storyBox.hidden && n++<10) storyGo.click(); window._mid=phase2(CHAPTERS[11]); put('h',1); checkStory(); let a=0; for(let i=0;i<N*N&&a<8;i++) if(inIsle(i,'champs')&&G[i]==='g'&&!O[i]){ G[i]='k'; a++; } groundDirty=true; save(); checkStory(); window._dbg=[glob.story.palomaHome, glob.story.palomaTent, cnt('ɤ'), (()=>{const i=O.indexOf('ɤ'); return i<0?'none':[isleBlocked(i), fogAt(i%N,(i/N)|0), G[i], handTarget(i)];})(), bridgeTo('champs'), JSON.stringify(glob.story.spawn), JSON.stringify(window._g), window._mid, found('ɤ'), resv().w, CHAPTERS[11].goals2[0][1]()];", "let m0=0; while(!storyBox.hidden && m0++<5) storyGo.click(); onI('h',1,'champs','g'); onI('Ç',1,'champs','g'); put('F',8); onI('v',3,'champs','g'); window._g=CHAPTERS[12].goals1.map(g=>[g[0],g[1](),needOf(g[2])]); checkStory(); let n=0; while(!storyBox.hidden && n++<10) storyGo.click(); window._mid=phase2(CHAPTERS[12]); resv().w=20; put('o',4); { const fh=O.findIndex((o,i)=>o==='h'&&inIsle(i,'champs')), mh=O.findIndex((o,i)=>o==='h'&&!inIsle(i,'champs')&&mainLand()[i]); const a=fh+1, b=mh+1; let x=a%N,y=(a/N)|0; const tx=b%N,ty=(b/N)|0; const setc=k=>{ if(k===fh||k===mh) return; O[k]=null; G[k]=G[k]==='w'||G[k]==='n'?'n':'c'; }; setc(y*N+x); while(x!==tx||y!==ty){ if(x!==tx) x+=Math.sign(tx-x); else y+=Math.sign(ty-y); setc(y*N+x); } G[a]=G[a]==='w'?'n':'c'; G[b]=G[b]==='w'?'n':'c'; groundDirty=true; save(); } window._dbg=[JSON.stringify(window._g), window._mid, cnt('o'), farmLinked()];", "let m0=0; while(!storyBox.hidden && m0++<5) storyGo.click(); window._w0=JSON.stringify([waitingV().length, islandNews()&&islandNews().k, cnt('ï')]); put('h',2); checkStory(); window._dbg=[window._w0, JSON.stringify(villagers().map(v=>[v.name,v.job,v.home!=null])), cnt('ï'), islandNews()&&islandNews().k, tierName(), residents()];", "let m0=0; while(!storyBox.hidden && m0++<5) storyGo.click(); resv().k=60; openTrade(); const bs=[...document.querySelectorAll('.trade-btn')]; window._labels=bs.map(b=>b.textContent).slice(0,5); bs[0].click(); if(bs[3]) bs[3].click(); storyGo.click(); const id=Object.keys(bag())[0]; bagBtn.click(); document.querySelector('#bagPop .bag-list button:nth-child(2)').click(); const a=free(x=>x==='g'); const before=bagCount(); place(...c(a[0])); const placed=O[a[0]]; const after=bagCount(); bagStore(...c(a[0])); window._dbg=[JSON.stringify(window._labels), id, placed, before, after, JSON.stringify(bag()), bagCap(), bagBtn.hidden, document.getElementById('bagN').textContent]; setTimeout(()=>{bagBtn.click();},100);", "let m0=0; while(!storyBox.hidden && m0++<8) storyGo.click(); const g=glob.story.gull; interact(g%N,(g/N)|0); const q1=glob.story.q4; selectTool('ɥ',true); bagTool='ɥ'; if(![1,-1,N,-N,N+1,N-1,-N+1,-N-1].some(d=>!O[g+d]&&G[g+d]!=='w')){ for(const d of [1,-1,N,-N]) if(G[g+d]!=='w'&&O[g+d]!=='h'){ O[g+d]=null; break; } } for(const d of [1,-1,N,-N,N+1,N-1,-N+1,-N-1]){ const j=g+d; if(!O[j]&&G[j]!=='w'){ place(j%N,(j/N)|0); if(O[j]==='ɥ') break; } } interact(g%N,(g/N)|0); let n=0; while(!storyBox.hidden && n++<8) storyGo.click(); const q2=glob.story.q4; for(let i=0;i<N*N&&glob.story.q4<3;i++) if(O[i]==='o') interact(i%N,(i/N)|0); checkStory(); window._dbg=[g,q1,q2,glob.story.q4,cnt('ɥ')];", "let m0=0; while(!storyBox.hidden && m0++<8) storyGo.click(); put('h',1); put('f',8); selectTool('u'); let u=0; for(let i=0;i<N*N&&u<3;i++) if(!O[i]&&G[i]==='g'&&!fogAt(i%N,(i/N)|0)&&near8(i,j=>O[j]==='f')){ place(i%N,(i/N)|0); if(O[i]==='u') u++; } window._g=CHAPTERS[14].goals1.map(g=>[g[0],g[1](),needOf(g[2])]); checkStory(); let n=0; while(!storyBox.hidden && n++<8) storyGo.click(); for(let i=0;i<N*N&&!glob.story.swarmFound;i++) if(TREES.has(O[i])) interact(i%N,(i/N)|0); window._dbg=[JSON.stringify(window._g), phase2(CHAPTERS[14]), glob.story.swarmFound]; if(!storyBox.hidden && storyMode==='letter') storyGo.click(); checkStory();", "let m0=0; while(!storyBox.hidden && m0++<8) storyGo.click(); checkStory(); m0=0; while(!storyBox.hidden && m0++<8) storyGo.click(); const r=resv(); r.w=60; r.lait=20; r.miel=20; openKitchen(); const kb=[...document.querySelectorAll('.trade-btn')].find(b=>b.textContent.includes('Gâteau')); for(let k=0;k<3;k++) kb&&kb.click(); storyGo.click(); let k=0; for(let i=0;i<N*N;i++) if(O[i]==='K'){ k=i; break; } openCreperie(); const cb=document.querySelector('.trade-btn'); for(let z=0;z<6;z++) cb.click(); storyGo.click(); window._g=[r.gateau,r.crepe,!!glob.story.honey,!!glob.story.farm,glob.story.chapter,storyMode,storyBox.hidden]; checkStory(); let n=0; while(!storyBox.hidden && n++<8) storyGo.click(); tday=23/24; selectTool('ʃ',true); bagTool='ʃ'; const b1=O.indexOf('1'); let ok=0; for(const d of [1,-1,N,-N,N+1,N-1,-N+1,-N-1]){ const j=b1+d; if(!O[j]&&G[j]!=='w'){ place(j%N,(j/N)|0); if(O[j]==='ʃ'){ok=1;break;} } } window._dbg=[JSON.stringify(window._g), phase2(CHAPTERS[15]), ok, cnt('ʃ')];", "let m0=0; while(!storyBox.hidden && m0++<8) storyGo.click(); let bi=-1; for(let i=N;i<N*N-N&&bi<0;i++) if(!O[i]&&G[i]==='g'&&onMainIsle(i)&&!fogAt(i%N,(i/N)|0)&&!O[i-N]) bi=i; selectTool('ɧ'); place(bi%N,(bi/N)|0); { const mh=O.findIndex((o,i)=>o==='h'&&onMainIsle(i)); const a=bi+1,b=mh+1; let x=a%N,y=(a/N)|0; const tx=b%N,ty=(b/N)|0; const setc=k=>{ if(k===bi||k===mh) return; O[k]=null; G[k]=G[k]==='w'||G[k]==='n'?'n':'c'; }; setc(y*N+x); while(x!==tx||y!==ty){ if(x!==tx) x+=Math.sign(tx-x); else y+=Math.sign(ty-y); setc(y*N+x); } groundDirty=true; save(); } window._g=CHAPTERS[16].goals1.map(g=>[g[0],g[1](),needOf(g[2])]); checkStory(); let n=0; while(!storyBox.hidden && n++<8) storyGo.click(); interact(bi%N,(bi/N)|0); n=0; while(!storyBox.hidden && n++<8) storyGo.click(); window._dbg=[JSON.stringify(window._g), glob.story.carte];", "let m0=0; while(!storyBox.hidden && m0++<8) storyGo.click(); put('è',1); window._pe=[cnt('è'), unlocked('è'), tool]; for(let i=0;i<N*N;i++) if(O[i]==='h'&&mainLand()[i]&&![1,-1,N,-N].some(d=>walkable(G[i+d]))){ let done=0; for(const d of [1,-1,N,-N]){ const j=i+d; if(!O[j]&&G[j]!=='w'){ G[j]='c'; done=1; break; } } if(!done) for(const d of [1,-1,N,-N]){ const j=i+d; if(G[j]!=='w'&&O[j]!=='h'){ O[j]=null; G[j]='c'; break; } } } groundDirty=true; save(); window._g=CHAPTERS[17].goals1.map(g=>[g[0],g[1](),needOf(g[2])]); checkStory(); let n=0; while(!storyBox.hidden && n++<8) storyGo.click(); const L=glob.story.letters||[]; for(let k=0;k<L.length;k++){ const c=L[glob.story.letterK]; if(!c) break; const at=c.i!=null?c.i:O.indexOf(c.obj); interact(at%N,(at/N)|0); } window._dbg=[JSON.stringify(window._pe), JSON.stringify(window._g), JSON.stringify(L.map(l=>l.name)), glob.story.letterK];", "let m0=0; while(!storyBox.hidden && m0++<8) storyGo.click(); glob.story.harvested=(glob.story.harvested||0)+45; resv().w=40; put('o',3); window._g=CHAPTERS[18].goals1.map(g=>[g[0],g[1](),needOf(g[2])]); checkStory(); let n=0; while(!storyBox.hidden && n++<8) storyGo.click(); resv().w=40; if(O.indexOf('Ç')<0) onI('Ç',1,'champs','g'); const gi=O.indexOf('Ç'); interact(gi%N,(gi/N)|0); window._dbg=[JSON.stringify(window._g), glob.story.grain, gi, isleBlocked(gi), fogAt(gi%N,(gi/N)|0), phase2(CHAPTERS[18]), glob.story.chapter, glob.story.introSeen, glob.story.pendingOutro, resv().w];"];
-const AT_S3 = {"La place vide": "try { resv().pie=2; const bi=O.findIndex((o,i)=>o==='B'&&G[i]==='w'); interact(bi%N,(bi/N)|0); checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); ia('ǰ'); const cab=eliasCabin(); selectTool('ǰ',true); bagTool='ǰ'; let k=0; for(let i=0;i<N*N&&k<4;i++) if(!O[i]&&G[i]==='g'&&mainLand()[i]&&!fogAt(i%N,(i/N)|0)){ place(i%N,(i/N)|0); if(O[i]==='ş') k++; } selectTool('l'); let lp=0; for(const d of [1,-1,N,-N,N+1,N-1,-N+1,-N-1,2,-2,2*N,-2*N]){ const j=cab+d; if(!O[j]&&G[j]!=='w'&&G[j]!=='c'){ place(j%N,(j/N)|0); if(O[j]==='l'){ lp=1; break; } } } if(!lp){ const j=cab+1; O[j]=null; G[j]='g'; place(j%N,(j/N)|0); } window._dbg=[cab, glob.story.row, glob.story.pinE, k, bag()['ǰ']]; } catch(e){ console.warn(e); } if(!glob.story.row){ glob.story.row=1; } checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} if((glob.story.pinE||0)<4) glob.story.pinE=4; if(!CHAPTERS[glob.story.chapter].goals[1][1]()){ const cab=eliasCabin(); const base=cab>=0?cab:O.indexOf('Ĉ'); for(const d of [1,-1,N,-N,N+1,N-1,-N+1,-N-1]){ const j=base+d; if(G[j]!=='w'&&!['h','L','Ĉ','1','K'].includes(O[j])){ O[j]='l'; if(G[j]==='c') G[j]='g'; break; } } save(); }", "La plongeuse": "try { selectTool('Ā'); for(let i=0;i<N*N;i++) if(G[i]==='w'&&!O[i]&&near8(i,j=>G[j]==='q'&&!inIsle(j,'ilot'))){ place(i%N,(i/N)|0); if(O[i]==='Ā') break; } put('h',1); checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); for(let k=0;k<3;k++){ const i=O.indexOf('ý'); if(i<0) break; interact(i%N,(i/N)|0); let q=0; while(!storyBox.hidden&&q++<4) storyGo.click(); } window._dbg=[cnt('Ā'), found('ý'), cnt('ā'), JSON.stringify(glob.story.trouv), JSON.stringify(glob.story.homes)]; } catch(e){ console.warn(e); } const fF=glob.story.found||(glob.story.found={}); const setF=(id,n)=>{ fF[id+'_'+glob.story.chapter]=Math.max(fF[id+'_'+glob.story.chapter]||0,n); }; if(!cnt('Ā')){ const w=wat().find(i=>near8(i,j=>G[j]==='q')); if(w!=null) O[w]='Ā'; } if(!CHAPTERS[glob.story.chapter].goals1[1][1]()) put('h',1); checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} setF('ý',3); if(!cnt('ā')) bagAdd('ā'); saveGlob(); save();", "Le poulailler": "try { onI('Ă',1,'champs','g'); const p=O.indexOf('Ă'); selectTool('F'); let f=0; for(let i=0;i<N*N&&f<4;i++) if(!O[i]&&G[i]!=='w'&&cheb(i,p)<=2&&cheb(i,p)>=1&&!'cRXqn'.includes(G[i])){ place(i%N,(i/N)|0); if(O[i]==='F') f++; } checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); ia('ă'); interact(p%N,(p/N)|0); glob.story.eggAt={}; interact(p%N,(p/N)|0); syncAnimals(); window._dbg=[p, f, found('ă'), spawned('ă',6), glob.story.hensBack, resv().oeuf, animals.filter(a=>a.kind==='hen').length]; } catch(e){ console.warn(e); } const fF=glob.story.found||(glob.story.found={}); const setF=(id,n)=>{ fF[id+'_'+glob.story.chapter]=Math.max(fF[id+'_'+glob.story.chapter]||0,n); }; if(!cnt('Ă')){ const a=free(x=>x==='g','champs'); if(a.length) O[a[0]]='Ă'; } { const p=O.indexOf('Ă'); let f=0; for(let i=0;i<N*N&&f<4;i++) if(cheb(i,p)<=2&&cheb(i,p)>=1){ if(O[i]==='F'){ f++; continue; } if(!O[i]&&G[i]!=='w'){ O[i]='F'; f++; } } save(); } checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} setF('ă',spawned('ă',6)); glob.story.hensBack=1; glob.story.eggsGot=Math.max(glob.story.eggsGot||0,(glob.story.eggs0||0)+4); saveGlob();", "Le marché du port": "try { { const ML=mainLand(); let made=0; for(let i=0;i<N*N&&made<4;i++) if(ML[i]&&!O[i]&&(G[i]==='g'||G[i]==='s')&&!inIsle(i,'ilot')&&!near8(i,j=>G[j]==='q')){ const w=[1,-1,N,-N].map(d=>i+d).find(j=>G[j]==='w'&&!O[j]); if(w!=null){ G[w]='q'; made++; } } groundDirty=true; save(); } selectTool('Ą'); let e=0; const et=[]; for(let i=0;i<N*N&&e<4;i++) if(!O[i]&&(G[i]==='g'||G[i]==='s')&&!inIsle(i,'ilot')&&near8(i,j=>G[j]==='q'&&!inIsle(j,'ilot'))&&mainLand()[i]){ place(i%N,(i/N)|0); if(O[i]==='Ą'){ e++; et.push(i);} } { const mh=O.findIndex((o,i)=>o==='h'&&mainLand()[i]); let best=-1; for(const d of [1,-1,N,-N]){ const j=et[0]+d; if(!O[j]&&G[j]!=='w'&&G[j]!=='q'){ best=j; break; } } const a=best, b=mh+1; let x=a%N,y=(a/N)|0; const tx=b%N,ty=(b/N)|0; const setc=k=>{ if(O[k]==='h'||O[k]==='Ą'||O[k]==='L') return; O[k]=null; G[k]=G[k]==='w'||G[k]==='n'?'n':G[k]==='q'?'q':'c'; }; setc(y*N+x); while(x!==tx||y!==ty){ if(x!==tx) x+=Math.sign(tx-x); else y+=Math.sign(ty-y); setc(y*N+x); } groundDirty=true; save(); } for(const i of et){ openStall(i); document.querySelectorAll('.trade-btn')[1].click(); } const r=resv(); r.w=40; r.oeuf=10; r.lait=10; r.miel=10; r.v=10; checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); const cl=O.indexOf('ā')>=0?O.indexOf('ā'):et[0]; interact(cl%N,(cl/N)|0); window._dbg=[e, linkedFrom(i=>O[i]==='Ą',i=>O[i]==='h'), JSON.stringify(glob.story.stalls), glob.story.marketOn, glob.story.marketEarned, resv().k]; let q=0; while(!storyBox.hidden&&q++<4) storyGo.click(); } catch(e){ console.warn(e); } { const et=[]; O.forEach((o,i)=>{ if(o==='Ą') et.push(i); }); const st=glob.story.stalls||(glob.story.stalls={}); for(const i of et) if(!st[i]) st[i]='v'; } checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} if(!glob.story.marketOn){ glob.story.marketOn=1; marketSell(true); } saveGlob();", "La longère": "try { const r=resv(); r.w=50; let a=-1; for(let i=0;i<N*N;i++) if(inIsle(i,'champs')&&longereSpot(i)){ a=i; break; } if(a<0) for(let i=0;i<N*N;i++) if(mainLand()[i]&&longereSpot(i)){ a=i; break; } selectTool('Ć'); place(a%N,(a/N)|0); window._lg0=JSON.stringify(glob.story.longere); for(let k=0;k<3;k++) interact(a%N,(a/N)|0); window._lg=JSON.stringify(glob.story.longere); checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); for(let t=0;t<3;t++){ const i=O.indexOf('ċ'); if(i<0) break; interact(i%N,(i/N)|0); } zoom=3; lookAt(a%N+1,(a/N)|0); forceDraw=true; window._dbg=[a, window._lg0, window._lg, O[a+1], O[a+2], found('ċ'), JSON.stringify(glob.story.kids), residents()]; } catch(e){ console.warn(e); } const fF=glob.story.found||(glob.story.found={}); const setF=(id,n)=>{ fF[id+'_'+glob.story.chapter]=Math.max(fF[id+'_'+glob.story.chapter]||0,n); }; if(!(glob.story.longere&&O[glob.story.longere.i]==='Ć')){ let a=-1; for(let i=0;i<N*N;i++) if(longereSpot(i)){ a=i; break; } if(a>=0){ O[a]='Ć'; O[a+1]=O[a+2]='ć'; glob.story.longere={i:a,s:0}; } } if(glob.story.longere) glob.story.longere.s=3; save(); checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} setF('ċ',3); saveGlob();", "La brume qui tourne": "try { const pinsL=[]; for(let i=0;i<N*N;i++) if(pinsLand(i)) pinsL.push(i); const dp=i=>Math.min(...pinsL.map(j=>dist2(i,j))); const pick=()=>{ let b=-1,bd=1e9; for(let i=0;i<N*N;i++) if(G[i]==='w'&&!O[i]&&baliseOk(i)){ const d=dp(i); if(d<bd){bd=d;b=i;} } return b; }; selectTool('Ċ'); let i0=pick(); place(i0%N,(i0/N)|0); window._first=[i0, cnt('Ċ'), mistDense(i0%N,(i0/N)|0), pinsL.length]; checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); let t=0; while(!balReach()&&t++<14){ const i=pick(); if(i<0) break; selectTool('Ċ'); place(i%N,(i/N)|0); } window._mid=[cnt('Ċ'), balNeed(), balReach(), JSON.stringify(glob.story.balOff)]; for(const j of [...(glob.story.balOff||[])]) interact(j%N,(j/N)|0); let t2=0; while(CHAPTERS[glob.story.chapter].goals[0][1]() < balNeed() && t2++<6){ const i=pick(); if(i<0) break; selectTool('Ċ'); place(i%N,(i/N)|0); } const g=glob.story.isles.pins; zoom=1.6; lookAt(g.cx,g.cy); forceDraw=true; window._dbg=[window._first, window._mid, glob.story.relit, cnt('Ċ'), JSON.stringify(pinsFog()), JSON.stringify(g), N]; } catch(e){ console.warn(e); } if(!cnt('Ċ')){ const w=wat().filter(i=>!mistDense(i%N,(i/N)|0)); if(w.length) O[w[0]]='Ċ'; save(); } checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} if(!balReach()){ const pinsL=[]; for(let i=0;i<N*N;i++) if(pinsLand(i)) pinsL.push(i); let cur=balLit()[0]; for(let t=0;t<20&&!balReach();t++){ let b=-1,bd=1e9; for(let i=0;i<N*N;i++) if(G[i]==='w'&&!O[i]&&dist2(i,cur)<=balR()+0.9){ const d=Math.min(...pinsL.map(j=>dist2(i,j))); if(d<bd){bd=d;b=i;} } if(b<0) break; O[b]='Ċ'; cur=b; } save(); } glob.story.windDone=1; glob.story.relit=1; glob.story.balOff=[]; glob.story.balNeed=Math.min(balNeed(), Math.max(3, balLit().length)); saveGlob();", "La boîte en fer": "try { for(let k=0;k<6;k++){ const i=O.indexOf('ý'); if(i<0) break; interact(i%N,(i/N)|0); } const pinsL=[]; for(let i=0;i<N*N;i++) if(pinsLand(i)) pinsL.push(i); selectTool('J'); let b=0; for(let i=0;i<N*N&&b<5;i++) if(G[i]==='w'&&!O[i]&&pinsL.some(j=>dist2(i,j)<=5)){ place(i%N,(i/N)|0); if(O[i]==='J') b++; } checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); const L=O.indexOf('L'); interact(L%N,(L/N)|0); window._dbg=[found('ý'), spawned('ý',6), b, glob.story.photoJob]; } catch(e){ console.warn(e); } const fF=glob.story.found||(glob.story.found={}); const setF=(id,n)=>{ fF[id+'_'+glob.story.chapter]=Math.max(fF[id+'_'+glob.story.chapter]||0,n); }; setF('ý',spawned('ý',6)); { const pinsL=[]; for(let i=0;i<N*N;i++) if(pinsLand(i)) pinsL.push(i); let b=CHAPTERS[glob.story.chapter].goals1[1][1](); for(let i=0;i<N*N&&b<5;i++) if(G[i]==='w'&&!O[i]&&pinsL.some(j=>dist2(i,j)<=5)){ O[i]='J'; b++; } save(); } checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} glob.story.photoJob=1; saveGlob();", "La traversée": "try { const r=resv(); r.gateau=2; r.crepe=2; const bi=O.findIndex((o,i)=>o==='B'&&G[i]==='w'); interact(bi%N,(bi/N)|0); checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); const tr=cnt('ď'); ia('ď'); window._dbg=[glob.story.cross, glob.story.pinsOpen, tr, found('ď'), glob.story.pinsCabin, (()=>{let n=0,b=0; for(let i=0;i<N*N;i++) if(pinsLand(i)){n++; if(isleBlocked(i)) b++;} return [n,b];})()]; } catch(e){ console.warn(e); } const fF=glob.story.found||(glob.story.found={}); const setF=(id,n)=>{ fF[id+'_'+glob.story.chapter]=Math.max(fF[id+'_'+glob.story.chapter]||0,n); }; glob.story.cross=1; checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} if(!glob.story.pinsOpen){ openPins(); trailSpawn(); } setF('ď',spawned('ď',5)); saveGlob();", "La forêt d’Elias": "try { ia('ñ'); const pt=O.findIndex((o,i)=>o==='P'&&inIsle(i,'pins')); if(pt>=0){ selectTool('x'); place(pt%N,(pt/N)|0,true); } window._live=pt>=0?O[pt]:'none'; for(let i=0;i<N*N;i++) if(O[i]==='Č') place(i%N,(i/N)|0,true); checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); ia('ǰ'); selectTool('ǰ',true); bagTool='ǰ'; let k=0; for(let i=0;i<N*N&&k<6;i++) if(pinsLand(i)&&!O[i]&&G[i]==='g'){ place(i%N,(i/N)|0); if(O[i]==='ş') k++; } selectTool('W'); const s=glob.story.srcAt; place(s%N,(s/N)|0); window._dbg=[window._live, found('ñ'), cnt('Č'), k, glob.story.pinP-glob.story.pinP0, s, O[s]]; } catch(e){ console.warn(e); } const fF=glob.story.found||(glob.story.found={}); const setF=(id,n)=>{ fF[id+'_'+glob.story.chapter]=Math.max(fF[id+'_'+glob.story.chapter]||0,n); }; setF('ñ',spawned('ñ',8)); for(let i=0;i<N*N;i++) if(O[i]==='Č') O[i]=null; save(); checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} glob.story.pinP=(glob.story.pinP0||0)+6; if(glob.story.srcAt!=null) O[glob.story.srcAt]='W'; save(); saveGlob();", "La fête des lumières": "try { const r=resv(); r.gateau=3; r.crepe=5; put('ɮ',8); checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); const c0=glob.story.canoe&&glob.story.canoe.path.length; for(let t=0;t<40&&!glob.story.canoeIn;t++){ glob.story.canoe.t=0; canoeTick(); if(t%3===2) for(const j of [...(glob.story.balOff||[])]) interact(j%N,(j/N)|0); } window._c=[c0, glob.story.canoeIn, glob.story.canoe.k]; checkStory(); n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); glob.story.groupPhoto=1; renderStoryCard(); window._dbg=[window._c, phase3(CHAPTERS[glob.story.chapter]), glob.story.groupPhoto]; } catch(e){ console.warn(e); } { const r=resv(); r.gateau=Math.max(r.gateau,2); r.crepe=Math.max(r.crepe,4); if(cnt('ɮ')-(glob.story.lamp0||0)<8) put('ɮ',8); } checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} glob.story.canoeIn=1; saveGlob(); checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} glob.story.groupPhoto=1; saveGlob(); renderStoryCard();"};
+const AT_S3 = {"La place vide": "try { resv().pie=2; const bi=O.findIndex((o,i)=>o==='B'&&G[i]==='w'); interact(bi%N,(bi/N)|0); checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); ia('ǰ'); const cab=eliasCabin(); selectTool('ǰ',true); bagTool='ǰ'; let k=0; for(let i=0;i<N*N&&k<4;i++) if(!O[i]&&G[i]==='g'&&mainLand()[i]&&!fogAt(i%N,(i/N)|0)){ place(i%N,(i/N)|0); if(O[i]==='ş') k++; } selectTool('l'); let lp=0; for(const d of [1,-1,N,-N,N+1,N-1,-N+1,-N-1,2,-2,2*N,-2*N]){ const j=cab+d; if(!O[j]&&G[j]!=='w'&&G[j]!=='c'){ place(j%N,(j/N)|0); if(O[j]==='l'){ lp=1; break; } } } if(!lp){ const j=cab+1; O[j]=null; G[j]='g'; place(j%N,(j/N)|0); } window._dbg=[cab, glob.story.row, glob.story.pinE, k, bag()['ǰ']]; } catch(e){ console.warn(e); } if(!glob.story.row){ glob.story.row=1; } checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} if((glob.story.pinE||0)<4) glob.story.pinE=4; if(!CHAPTERS[glob.story.chapter].goals[1][1]()){ const cab=eliasCabin(); const base=cab>=0?cab:O.indexOf('Ĉ'); for(const d of [1,-1,N,-N,N+1,N-1,-N+1,-N-1]){ const j=base+d; if(G[j]!=='w'&&!['h','L','Ĉ','1','K'].includes(O[j])){ O[j]='l'; if(G[j]==='c') G[j]='g'; break; } } save(); }", "La plongeuse": "try { selectTool('Ā'); for(let i=0;i<N*N;i++) if(G[i]==='w'&&!O[i]&&near8(i,j=>G[j]==='q'&&!inIsle(j,'ilot'))){ place(i%N,(i/N)|0); if(O[i]==='Ā') break; } put('h',1); checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); for(let k=0;k<3;k++){ const i=O.indexOf('ý'); if(i<0) break; interact(i%N,(i/N)|0); let q=0; while(!storyBox.hidden&&q++<4) storyGo.click(); } window._dbg=[cnt('Ā'), found('ý'), cnt('ā'), JSON.stringify(glob.story.trouv), JSON.stringify(glob.story.homes)]; } catch(e){ console.warn(e); } const fF=glob.story.found||(glob.story.found={}); const setF=(id,n)=>{ fF[id+'_'+glob.story.chapter]=Math.max(fF[id+'_'+glob.story.chapter]||0,n); }; if(!cnt('Ā')){ const w=wat().find(i=>near8(i,j=>G[j]==='q')); if(w!=null) O[w]='Ā'; } if(!CHAPTERS[glob.story.chapter].goals1[1][1]()) put('h',1); checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} setF('ý',3); if(!cnt('ā')) bagAdd('ā'); saveGlob(); save();", "Le poulailler": "try { onI('Ă',1,'champs','g'); const p=O.indexOf('Ă'); selectTool('F'); let f=0; for(let i=0;i<N*N&&f<4;i++) if(!O[i]&&G[i]!=='w'&&cheb(i,p)<=2&&cheb(i,p)>=1&&!'cRXqn'.includes(G[i])){ place(i%N,(i/N)|0); if(O[i]==='F') f++; } checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); ia('ă'); interact(p%N,(p/N)|0); glob.story.eggAt={}; interact(p%N,(p/N)|0); syncAnimals(); window._dbg=[p, f, found('ă'), spawned('ă',6), glob.story.hensBack, resv().oeuf, animals.filter(a=>a.kind==='hen').length]; } catch(e){ console.warn(e); } const fF=glob.story.found||(glob.story.found={}); const setF=(id,n)=>{ fF[id+'_'+glob.story.chapter]=Math.max(fF[id+'_'+glob.story.chapter]||0,n); }; if(!cnt('Ă')){ const a=free(x=>x==='g','champs'); if(a.length) O[a[0]]='Ă'; } { const p=O.indexOf('Ă'); let f=0; for(let i=0;i<N*N&&f<4;i++) if(cheb(i,p)<=2&&cheb(i,p)>=1){ if(O[i]==='F'){ f++; continue; } if(!O[i]&&G[i]!=='w'){ O[i]='F'; f++; } } save(); } checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} setF('ă',spawned('ă',6)); glob.story.hensBack=1; glob.story.eggsGot=Math.max(glob.story.eggsGot||0,(glob.story.eggs0||0)+4); saveGlob();", "Le marché du port": "try { { const ML=mainLand(); let made=0; for(let i=0;i<N*N&&made<4;i++) if(ML[i]&&!O[i]&&(G[i]==='g'||G[i]==='s')&&!inIsle(i,'ilot')&&!near8(i,j=>G[j]==='q')){ const w=[1,-1,N,-N].map(d=>i+d).find(j=>G[j]==='w'&&!O[j]); if(w!=null){ G[w]='q'; made++; } } groundDirty=true; save(); } selectTool('Ą'); let e=0; const et=[]; for(let i=0;i<N*N&&e<4;i++) if(!O[i]&&(G[i]==='g'||G[i]==='s')&&!inIsle(i,'ilot')&&near8(i,j=>G[j]==='q'&&!inIsle(j,'ilot'))&&mainLand()[i]){ place(i%N,(i/N)|0); if(O[i]==='Ą'){ e++; et.push(i);} } { const mh=O.findIndex((o,i)=>o==='h'&&mainLand()[i]); let best=-1; for(const d of [1,-1,N,-N]){ const j=et[0]+d; if(!O[j]&&G[j]!=='w'&&G[j]!=='q'){ best=j; break; } } const a=best, b=mh+1; let x=a%N,y=(a/N)|0; const tx=b%N,ty=(b/N)|0; const setc=k=>{ if(O[k]==='h'||O[k]==='Ą'||O[k]==='L') return; O[k]=null; G[k]=G[k]==='w'||G[k]==='n'?'n':G[k]==='q'?'q':'c'; }; setc(y*N+x); while(x!==tx||y!==ty){ if(x!==tx) x+=Math.sign(tx-x); else y+=Math.sign(ty-y); setc(y*N+x); } groundDirty=true; save(); } for(const i of et){ openStall(i); document.querySelectorAll('.trade-btn')[1].click(); } { const sp=[]; for(let j=0;j<N*N;j++) if(!O[j]&&(G[j]==='g'||G[j]==='s')&&et.some(s0=>dist2(s0,j)<=4)) sp.push(j); if(sp.length){ O[sp[0]]='ā'; if((bag()['ā']||0)>0) bagUse('ā'); save(); } } const r=resv(); r.w=40; r.oeuf=10; r.lait=10; r.miel=10; r.v=10; checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); const cl=O.indexOf('ā')>=0?O.indexOf('ā'):et[0]; interact(cl%N,(cl/N)|0); window._dbg=[e, linkedFrom(i=>O[i]==='Ą',i=>O[i]==='h'), JSON.stringify(glob.story.stalls), glob.story.marketOn, glob.story.marketEarned, resv().k]; let q=0; while(!storyBox.hidden&&q++<4) storyGo.click(); } catch(e){ console.warn(e); } { const et=[]; O.forEach((o,i)=>{ if(o==='Ą') et.push(i); }); const st=glob.story.stalls||(glob.story.stalls={}); for(const i of et) if(!st[i]) st[i]='v'; } checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} if(!glob.story.marketOn){ glob.story.marketOn=1; marketSell(true); } saveGlob();", "La longère": "try { const r=resv(); r.w=50; let a=-1; for(let i=0;i<N*N;i++) if(inIsle(i,'champs')&&longereSpot(i)){ a=i; break; } if(a<0) for(let i=0;i<N*N;i++) if(mainLand()[i]&&longereSpot(i)){ a=i; break; } selectTool('Ć'); place(a%N,(a/N)|0); window._lg0=JSON.stringify(glob.story.longere); for(let k=0;k<3;k++) interact(a%N,(a/N)|0); window._lg=JSON.stringify(glob.story.longere); checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); for(let t=0;t<3;t++){ const i=O.indexOf('ċ'); if(i<0) break; interact(i%N,(i/N)|0); } zoom=3; lookAt(a%N+1,(a/N)|0); forceDraw=true; window._dbg=[a, window._lg0, window._lg, O[a+1], O[a+2], found('ċ'), JSON.stringify(glob.story.kids), residents()]; } catch(e){ console.warn(e); } const fF=glob.story.found||(glob.story.found={}); const setF=(id,n)=>{ fF[id+'_'+glob.story.chapter]=Math.max(fF[id+'_'+glob.story.chapter]||0,n); }; if(!(glob.story.longere&&O[glob.story.longere.i]==='Ć')){ let a=-1; for(let i=0;i<N*N;i++) if(longereSpot(i)){ a=i; break; } if(a>=0){ O[a]='Ć'; O[a+1]=O[a+2]='ć'; glob.story.longere={i:a,s:0}; } } if(glob.story.longere) glob.story.longere.s=3; save(); checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} setF('ċ',3); saveGlob();", "La brume qui tourne": "try { const pinsL=[]; for(let i=0;i<N*N;i++) if(pinsLand(i)) pinsL.push(i); const dp=i=>Math.min(...pinsL.map(j=>dist2(i,j))); const pick=()=>{ let b=-1,bd=1e9; for(let i=0;i<N*N;i++) if(G[i]==='w'&&!O[i]&&baliseOk(i)){ const d=dp(i); if(d<bd){bd=d;b=i;} } return b; }; selectTool('Ċ'); let i0=pick(); place(i0%N,(i0/N)|0); window._first=[i0, cnt('Ċ'), mistDense(i0%N,(i0/N)|0), pinsL.length]; checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); let t=0; while(!balReach()&&t++<14){ const i=pick(); if(i<0) break; selectTool('Ċ'); place(i%N,(i/N)|0); } window._mid=[cnt('Ċ'), balNeed(), balReach(), JSON.stringify(glob.story.balOff)]; for(const j of [...(glob.story.balOff||[])]) interact(j%N,(j/N)|0); let t2=0; while(CHAPTERS[glob.story.chapter].goals[0][1]() < balNeed() && t2++<6){ const i=pick(); if(i<0) break; selectTool('Ċ'); place(i%N,(i/N)|0); } const g=glob.story.isles.pins; zoom=1.6; lookAt(g.cx,g.cy); forceDraw=true; window._dbg=[window._first, window._mid, glob.story.relit, cnt('Ċ'), JSON.stringify(pinsFog()), JSON.stringify(g), N]; } catch(e){ console.warn(e); } if(!cnt('Ċ')){ const w=wat().filter(i=>!mistDense(i%N,(i/N)|0)); if(w.length) O[w[0]]='Ċ'; save(); } checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} if(!balReach()){ const pinsL=[]; for(let i=0;i<N*N;i++) if(pinsLand(i)) pinsL.push(i); let cur=balLit()[0]; for(let t=0;t<20&&!balReach();t++){ let b=-1,bd=1e9; for(let i=0;i<N*N;i++) if(G[i]==='w'&&!O[i]&&dist2(i,cur)<=balR()+0.9){ const d=Math.min(...pinsL.map(j=>dist2(i,j))); if(d<bd){bd=d;b=i;} } if(b<0) break; O[b]='Ċ'; cur=b; } save(); } glob.story.windDone=1; glob.story.relit=1; glob.story.balOff=[]; glob.story.balNeed=Math.min(balNeed(), Math.max(3, balLit().length)); saveGlob();", "La boîte en fer": "try { for(let k=0;k<6;k++){ const i=O.indexOf('ý'); if(i<0) break; interact(i%N,(i/N)|0); } const pinsL=[]; for(let i=0;i<N*N;i++) if(pinsLand(i)) pinsL.push(i); selectTool('J'); let b=0; for(let i=0;i<N*N&&b<5;i++) if(G[i]==='w'&&!O[i]&&pinsL.some(j=>dist2(i,j)<=5)){ place(i%N,(i/N)|0); if(O[i]==='J') b++; } checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); const L=O.indexOf('L'); interact(L%N,(L/N)|0); window._dbg=[found('ý'), spawned('ý',6), b, glob.story.photoJob]; } catch(e){ console.warn(e); } const fF=glob.story.found||(glob.story.found={}); const setF=(id,n)=>{ fF[id+'_'+glob.story.chapter]=Math.max(fF[id+'_'+glob.story.chapter]||0,n); }; setF('ý',spawned('ý',6)); { const pinsL=[]; for(let i=0;i<N*N;i++) if(pinsLand(i)) pinsL.push(i); let b=CHAPTERS[glob.story.chapter].goals1[1][1](); for(let i=0;i<N*N&&b<5;i++) if(G[i]==='w'&&!O[i]&&pinsL.some(j=>dist2(i,j)<=5)){ O[i]='J'; b++; } save(); } checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} glob.story.photoJob=1; saveGlob();", "La traversée": "try { const r=resv(); r.gateau=2; r.crepe=2; const bi=O.findIndex((o,i)=>o==='B'&&G[i]==='w'); interact(bi%N,(bi/N)|0); checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); const tr=cnt('ď'); for(let rr=0; rr<8 && cnt('ď'); rr++){ for(let i=0;i<N*N;i++) if(O[i]==='ď' && !fogAt(i%N,(i/N)|0)) interact(i%N,(i/N)|0); _ph=null; } window._dbg=[glob.story.cross, glob.story.pinsOpen, tr, found('ď'), glob.story.pinsCabin, (()=>{let n=0,b=0; for(let i=0;i<N*N;i++) if(pinsLand(i)){n++; if(isleBlocked(i)) b++;} return [n,b];})()]; } catch(e){ console.warn(e); } const fF=glob.story.found||(glob.story.found={}); const setF=(id,n)=>{ fF[id+'_'+glob.story.chapter]=Math.max(fF[id+'_'+glob.story.chapter]||0,n); }; glob.story.cross=1; checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} if(!glob.story.pinsOpen){ openPins(); trailSpawn(); } setF('ď',spawned('ď',5)); saveGlob();", "La forêt d’Elias": "try { ia('ñ'); const pt=O.findIndex((o,i)=>o==='P'&&inIsle(i,'pins')); if(pt>=0){ selectTool('x'); place(pt%N,(pt/N)|0,true); } window._live=pt>=0?O[pt]:'none'; for(let i=0;i<N*N;i++) if(O[i]==='Č') place(i%N,(i/N)|0,true); checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); ia('ǰ'); selectTool('ǰ',true); bagTool='ǰ'; let k=0; for(let i=0;i<N*N&&k<6;i++) if(pinsLand(i)&&!O[i]&&G[i]==='g'){ place(i%N,(i/N)|0); if(O[i]==='ş') k++; } selectTool('W'); const s=glob.story.srcAt; place(s%N,(s/N)|0); window._dbg=[window._live, found('ñ'), cnt('Č'), k, glob.story.pinP-glob.story.pinP0, s, O[s]]; } catch(e){ console.warn(e); } const fF=glob.story.found||(glob.story.found={}); const setF=(id,n)=>{ fF[id+'_'+glob.story.chapter]=Math.max(fF[id+'_'+glob.story.chapter]||0,n); }; setF('ñ',spawned('ñ',8)); for(let i=0;i<N*N;i++) if(O[i]==='Č') O[i]=null; save(); checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} glob.story.pinP=(glob.story.pinP0||0)+6; if(glob.story.srcAt!=null) O[glob.story.srcAt]='W'; save(); saveGlob();", "La fête des lumières": "try { const r=resv(); r.gateau=3; r.crepe=5; put('ɮ',8); checkStory(); let n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); const c0=glob.story.canoe&&glob.story.canoe.path.length; for(let t=0;t<40&&!glob.story.canoeIn;t++){ glob.story.canoe.t=0; canoeTick(); if(t%3===2) for(const j of [...(glob.story.balOff||[])]) interact(j%N,(j/N)|0); } window._c=[c0, glob.story.canoeIn, glob.story.canoe.k]; checkStory(); n=0; while(!storyBox.hidden&&n++<12) storyGo.click(); glob.story.groupPhoto=1; renderStoryCard(); window._dbg=[window._c, phase3(CHAPTERS[glob.story.chapter]), glob.story.groupPhoto]; } catch(e){ console.warn(e); } { const r=resv(); r.gateau=Math.max(r.gateau,2); r.crepe=Math.max(r.crepe,4); if(cnt('ɮ')-(glob.story.lamp0||0)<8) put('ɮ',8); } checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} glob.story.canoeIn=1; saveGlob(); checkStory(); {let n9=0; while(!storyBox.hidden&&n9++<12) storyGo.click();} glob.story.groupPhoto=1; saveGlob(); renderStoryCard();"};
 const AT_BACK = 'iloe-atelier-copie', AT_GOTO = 'iloe-atelier-aller';
 const atWait = ms => new Promise(r => setTimeout(r, ms));
 function atBackup(){
@@ -5837,8 +5851,9 @@ const islandGare = () => O.reduce((n, o, i) => n + (o === 'i' && !inCont(i) ? 1 
 function fogAt(x, y){
   if (glob.story.v !== 2 || !isStory()) return false;
   return (glob.story.fogs || []).some(f => { if (f.soft || (f.a ?? f.to) <= 0.4) return false; const d = ((x - f.cx)/f.rx)**2 + ((y - f.cy)/f.ry)**2; if (f.inv) return d > 1.05; if (d >= 0.8) return false;
+    if (f.key === 'pins' && f.thick && pinHoleAt(x, y)) return false;
     // la brume d’une île cachée ne bloque que cette île, jamais les terres voisines
-    if (f.key && (glob.story.isles || {})[f.key]) return inIsle(y*N + x, f.key) && (f.key !== 'pins' || G[y*N + x] !== 'w');
+    if (f.key && (glob.story.isles || {})[f.key]) return inIsle(y*N + x, f.key) && ((f.key !== 'pins' && f.key !== 'pointe') || G[y*N + x] !== 'w') && (f.key !== 'pointe' || !inIsle(y*N + x, 'pins'));
     return true; });
 }
 const housesOnPath = () => O.reduce((n, o, i) => n + (o === 'h' && near8(i, j => G[j] === 'c') ? 1 : 0), 0);
@@ -6215,7 +6230,7 @@ const CHAPTERS_V2 = [
    onMid:() => { glob.story.yunaHome = 1; const near = []; for (let i = 0; i < N*N; i++) if (O[i] === 'Ā') near.push(i); spawnBubble(near.length ? near : portCells(), 4); (glob.story.spawn || (glob.story.spawn = {}))['ý_' + glob.story.chapter] = 3; saveGlob(); },
    goals2:[['Les trésors de l’ancien port', () => found('ý'), 3, '« Là où ça fait des bulles, il y a quelque chose ! »', 'Des bulles remontent près du port. Touche-les avec la main ✋, et Yuna plonge.']],
    get goals(){ return phase2(this) ? this.goals2 : this.goals1; },
-   outro:[{who:'toi', t:'Kofi frotte la cloche jusqu’à ce qu’elle brille, et on l’accroche au bout du quai. Yuna donne un petit coup : le son s’en va loin, très loin, sur la mer.'}, {who:'toi', t:'Là-haut, à la fenêtre du phare, la silhouette de Job ne bouge plus.'}, {who:'job', t:'Plus tard, au phare. « Cette cloche… elle sonnait les soirs de brume, pour que les bateaux retrouvent le port. »'}, {who:'job', t:'Job se tait un long moment. « Accrochez-la bien. Elle a assez dormi au fond. »'}],
+   outro:[{who:'toi', t:'Kofi frotte la cloche jusqu’à ce qu’elle brille. Yuna donne un petit coup : le son s’en va loin, très loin, sur la mer.'}, {who:'toi', t:'Là-haut, à la fenêtre du phare, la silhouette de Job ne bouge plus.'}, {who:'job', t:'Plus tard, au phare. « Cette cloche… elle sonnait les soirs de brume, pour que les bateaux retrouvent le port. »'}, {who:'job', t:'Job se tait un long moment. « Gardez-la bien. Elle a assez dormi au fond. »'}],
    reward:['ā']},
   {season:3, title:'Le poulailler', who:'annick', give:['Ă'],
    intro:['« Philippe a gagné un pari contre Gaspard. Et Gaspard a payé… en poules. »', {who:'toi', t:'De la cale du voilier sortent six poules, très mécontentes.'}, '« Il leur faut un poulailler sur la plaine, et vite ! Elles ont déjà picoré les bottes de Gaspard. »'],
@@ -6230,10 +6245,12 @@ const CHAPTERS_V2 = [
    outro:[{who:'lina', t:'Lina fait la toute première omelette de l’île. Tout le monde veut goûter. « Avec des œufs, mes crêpes vont être encore meilleures ! »'}, {who:'toi', t:'Paloma revient de sa balade en hors-bord, les joues rouges de vent.'}, {who:'annick', t:'Annick lui retire quelque chose des cheveux. « Tiens, tu as des aiguilles de pin… »'}, {who:'annick', t:'Elle les regarde de plus près. « Longues comme ma main. Il n’y a pas de pins comme ça chez nous. »'}, {who:'paloma', t:'Paloma éclate de rire. « Le vent ! Il apporte n’importe quoi, le vent ! » Et elle file.'}],
    reward:[]},
   {season:3, title:'Le marché du port', who:'gaspard', give:['Ą'],
+   onIntro:() => { if (!cnt('ā') && !(bag()['ā'] > 0)){ const bb = bag(); bb['ā'] = 1; saveGlob(); renderBag(); } },
    intro:[{who:'yuna', t:'Yuna remonte de plongée, une poignée de pièces vertes dans la main.'}, '« Des sous de l’ancien marché ! Le samedi matin, tout le quai sentait le poisson grillé et les fraises… On venait de toutes les îles. »', {who:'lina', t:'« Un marché ! J’y vendrais mon pain ! »'}, {who:'annick', t:'« Et nous, nos œufs ! » Ondine, tout bas : « …et mon miel. »'}],
    goals1:[['Des étals sur le quai', () => O.reduce((n, o, i) => n + (o === 'Ą' && near8(i, j => G[j] === 'q') ? 1 : 0), 0), 4, '« Comme autrefois, tout le long du quai ! »', 'L’étal est dans l’onglet Eau et port des Objets. Pose-les au bord du quai.'],
      ['Un chemin jusqu’au marché', () => linkedFrom(i => O[i] === 'Ą', i => O[i] === 'h') ? 1 : 0, 1, '« Il faut que tout le monde puisse venir ! »', 'Trace un chemin du village jusqu’aux étals.'],
-     ['Garnis les étals', () => Object.entries(glob.story.stalls || {}).filter(([k, p]) => O[+k] === 'Ą' && MARKET[p]).length, 4, '« Chaque étal vend une chose : à toi de choisir ! »', 'Touche un étal avec la main ✋ et choisis ce qu’il vend : œufs, pain, lait, miel, légumes…']],
+     ['Garnis les étals', () => Object.entries(glob.story.stalls || {}).filter(([k, p]) => O[+k] === 'Ą' && MARKET[p]).length, 4, '« Chaque étal vend une chose : à toi de choisir ! »', 'Touche un étal avec la main ✋ et choisis ce qu’il vend : œufs, pain, lait, miel, légumes…'],
+     ['La cloche du port', () => O.some((o, i) => o === 'ā' && O.some((p, j) => p === 'Ą' && dist2(i, j) <= 4.5)) ? 1 : 0, 1, '« Et la cloche, pour annoncer l’ouverture ! »', 'La cloche est dans ton sac 🎒 : pose-la tout près des étals.']],
    mid:['« Tout est prêt ! Demain matin, on sonne la cloche et on ouvre. »'],
    onMid:() => { glob.story.mkDay = glob.story.isleDays || 1; saveGlob(); },
    goals2:[['Le premier marché', () => glob.story.marketOn ? 1 : 0, 1, () => glob.story.mkDay != null && (glob.story.isleDays || 1) <= glob.story.mkDay ? '« Demain matin, on ouvre ! »' : 'Le jour se lève sur le port…', () => glob.story.mkDay != null && (glob.story.isleDays || 1) <= glob.story.mkDay ? 'Va dormir 🌙 : touche ta maison avec la main. Au matin, sonne la cloche du port ✋.' : 'Touche la cloche du port avec la main ✋ pour ouvrir le marché. Pas de cloche ? Touche un étal.']],
@@ -6279,7 +6296,7 @@ const CHAPTERS_V2 = [
    mid:[{who:'toi', t:'La première balise s’allume. Autour d’elle, la brume recule doucement, comme un rideau qu’on écarte.'}, '« Ça marche… Ça marche ! »'],
    onMid:() => { balNeed(); },
    get goals2(){ const g = [['Le chemin de feux', () => { const n = balLit().length; return balReach() ? Math.max(n, balNeed()) : Math.min(n, balNeed() - 1); }, () => balNeed(), '« Encore une, un peu plus loin ! »', 'Chaque balise fait reculer la brume autour d’elle. Pose la suivante sur l’eau qu’elle vient d’éclairer, jusqu’à la côte de l’île aux pins.']];
-     if (glob.story.windDone) g.push(['Rallume la balise', () => glob.story.relit || !(glob.story.balOff || []).length ? 1 : 0, 1, '« Le vent l’a soufflée ! »', 'Touche la balise éteinte avec la main ✋ pour la rallumer.']);
+     if (glob.story.windDone) g.push(['Rallume la balise', () => glob.story.relit || !(glob.story.balOff || []).filter(j => O[j] === 'Ċ').length ? 1 : 0, 1, '« Le vent l’a soufflée ! »', 'Touche la balise éteinte avec la main ✋ pour la rallumer.']);
      return g; },
    get goals(){ return phase2(this) ? this.goals2 : this.goals1; },
    wants:i => O[i] === 'Ċ' && (glob.story.balOff || []).includes(i),
@@ -6319,23 +6336,26 @@ const CHAPTERS_V2 = [
    reward:[]},
   {season:3, title:'La forêt d’Elias', who:'elias', give:[],
    onIntro:() => {
-     const free = i => pinsLand(i) && !O[i] && (G[i] === 'g' || G[i] === 's');
-     spawnFor('ñ', 8, free);
-     const ps = []; for (let i = 0; i < N*N; i++) if (pinsLand(i) && O[i] === 'P') ps.push(i);
-     let k = 0; for (const i of shuffleArr(ps)){ if (k >= 5) break; if (glob.story.pinsCabin != null && dist2(i, glob.story.pinsCabin) < 2) continue; O[i] = 'Č'; k++; }
+     const vis = i => !fogAt(i % N, (i / N)|0), edge = i => { let b = 1e9; for (const [j, r] of pinHoles()){ const d = dist2(i, j) - r; if (d < b) b = d; } return b; };
+     const free = i => pinsLand(i) && !O[i] && (G[i] === 'g' || G[i] === 's') && vis(i);
+     { const c1 = [], c2 = []; for (let i = 0; i < N*N; i++) if (free(i)) (edge(i) > -2.4 ? c1 : c2).push(i); const want = new Set(shuffleArr(c1).slice(0, 8).concat(shuffleArr(c2).slice(0, Math.max(0, 8 - c1.length)))); spawnFor('ñ', 8, i => want.has(i)); }
+     const ps = []; for (let i = 0; i < N*N; i++) if (pinsLand(i) && O[i] === 'P' && vis(i)) ps.push(i);
+     ps.sort((a, b) => edge(b) - edge(a));
+     let k = 0; for (const i of ps){ if (k >= 5) break; if (glob.story.pinsCabin != null && dist2(i, glob.story.pinsCabin) < 2) continue; O[i] = 'Č'; k++; }
      for (let i = 0; i < N*N && k < 5; i++) if (free(i) && G[i] === 'g'){ O[i] = 'Č'; k++; }
      glob.story.dead0 = cnt('Č'); glob.story.pinP0 = glob.story.pinP || 0; saveGlob(); save(); },
    intro:[{who:'toi', t:'Au matin, toute une équipe débarque sur l’île aux pins : Tomas, Lina, Yuna, et même Léon, qui a supplié pour venir.'}, 'Elias leur montre les arbres : beaucoup ont les aiguilles rousses. « Les ronces les étouffent, et le bois mort les rend malades. »', '« Une seule règle ici : on ne coupe jamais un pin vivant. Jamais. »'],
    goals1:[['Arrache les ronces', () => found('ñ'), () => spawned('ñ', 8), '« Doucement, sans abîmer les racines. »', 'Touche les ronces de l’île aux pins avec la main ✋.'],
      ['Le bois mort', () => Math.max(0, (glob.story.dead0 || 0) - cnt('Č')), () => glob.story.dead0 || 5, '« Ces pins-là sont partis. On les rend à la terre. »', 'Seuls les pins tout gris se cassent à la pioche ⛏️. Ils donnent du bois.']],
-   mid:[{who:'toi', t:'Elias marche droit vers une grosse pierre couverte de mousse, sans hésiter, et la soulève. Dessous, une source claire.'}, {who:'tomas', t:'« Comment tu savais qu’il y avait une source là ? »'}, {who:'leon', t:'« Et tu connais chaque arbre par cœur… On dirait que tu es déjà venu, avant ! »'}, 'Elias hausse les épaules. « Une île, c’est une île. »'],
+   mid:[{who:'toi', t:'Elias marche droit vers une grosse pierre couverte de mousse, sans hésiter, et la soulève. Dessous, une source claire.'}, {who:'tomas', t:'« Comment tu savais qu’il y avait une source là ? »'}, {who:'leon', t:'« On dirait que tu es déjà venu, avant ! »'}, 'Elias détourne les yeux. « Toutes les îles se ressemblent… Et il y a toujours une source, sous les pierres. »'],
    onMid:() => {
      const cab = glob.story.pinsCabin; let b = -1, bd = 1e9; for (let i = 0; i < N*N; i++) if (pinsLand(i) && !O[i] && G[i] === 'g'){ const d = cab != null ? dist2(i, cab) : 0; if (d >= 2 && d < bd){ bd = d; b = i; } }
      if (b >= 0){ O[b] = 'č'; glob.story.srcAt = b; }
-     spawnSmart('ǰ', 6, i => pinsLand(i) && G[i] === 'g'); glob.story.pinP0 = glob.story.pinP || 0; saveGlob(); save(); },
+     spawnSmart('ǰ', 6, i => pinsLand(i) && G[i] === 'g' && !fogAt(i % N, (i / N)|0)); glob.story.pinP0 = glob.story.pinP || 0; saveGlob(); save(); },
    goals2:[['Les jeunes pins', () => Math.max(0, (glob.story.pinP || 0) - (glob.story.pinP0 || 0)), 6, '« Un pin pour chaque pin parti. »', 'Ramasse les pommes de pin et plante-les sur l’île aux pins, depuis ton sac 🎒.'],
      ['Un puits sur la source', () => { const s = glob.story.srcAt; return s != null && (O[s] === 'W' || near8(s, j => O[j] === 'W')) ? 1 : 0; }, 1, '« L’été, la terre a soif. »', 'Le puits est dans les Objets. Pose-le sur la source qu’Elias a trouvée.']],
    get goals(){ return phase2(this) ? this.goals2 : this.goals1; },
+   onDone:() => { try { pinTrail(); } catch(e){} },
    outro:[{who:'toi', t:'Un petit sentier part vers l’autre bout de l’île, dans la brume. Léon s’y avance déjà.'}, 'Elias le rattrape doucement par l’épaule. « Pas par là. Pas encore. »', '« La forêt va guérir, grâce à vous. Je… je viendrai vous voir. Bientôt. Promis. »', {who:'toi', t:'La barque reprend le chemin des bouées. Sur la plage, Elias les regarde partir, la main levée, jusqu’à ce que la brume l’efface.'}],
    reward:[]},
   {season:3, title:'La fête des lumières', who:'lina', give:['ɮ'],
@@ -6586,7 +6606,7 @@ function startCanoe(){
 }
 /* l'île aux pins s'ouvre, la cabane d'Elias, la piste des petits pins gravés */
 function openPins(){
-  glob.story.pinsOpen = 1; revealIsle('pins'); { const f = pinsFog(); if (f){ f.a = Math.min(f.a ?? 1, 0.4); f.sp = 0.25; } }
+  glob.story.pinsOpen = 1; revealIsle('pins'); { const f = pinsFog(); if (f){ f.to = 1; f.a = Math.max(f.a ?? 1, 0.9); f.thick = 1; } } _ph = null;
   const g = (glob.story.isles || {}).pins; if (!g) return;
   if (!O.some((o, i) => o === 'Ĉ' && inIsle(i, 'pins'))){
     let b = -1, bd = 1e9; for (let i = 0; i < N*N; i++) if (pinsLand(i) && G[i] === 'g'){ const d = Math.hypot(i % N - g.cx, ((i / N)|0) - g.cy); if (d < bd){ bd = d; b = i; } }
@@ -6605,6 +6625,7 @@ function trailSpawn(){
     if (b >= 0) pick.push(b);
   }
   for (const i of pick) O[i] = 'ď';
+  glob.story.pinOpen = [[from, 3]]; _ph = null;
   (glob.story.spawn || (glob.story.spawn = {}))['ď_' + glob.story.chapter] = pick.length;
   saveGlob(); save(); forceDraw = true; return pick.length;
 }
@@ -6729,7 +6750,8 @@ function curReq(){
 }
 function pickReq(){
   if (!glob.story.ville || !resOn() || glob.story.req || Date.now() < (glob.story.reqAt || 0)) return;
-  const land = mainLand(), vs = villagers().filter(v => v.home != null && O[v.home] === 'h' && land[v.home]); if (!vs.length) return;
+  const vs0 = villagers().filter(v => v.home != null && O[v.home] === 'h' && !fogAt(v.home % N, (v.home / N)|0)); if (!vs0.length) return;
+  const rc = glob.story.reqCnt || (glob.story.reqCnt = {}), low = Math.min(...vs0.map(v => rc[v.name] || 0)), vs = vs0.filter(v => (rc[v.name] || 0) === low);
   const done = glob.story.reqDone || (glob.story.reqDone = []);
   const ok = rq => (rq.obj ? unlocked(rq.obj) && !(rq.not && unlocked(rq.not)) : rq.path ? unlocked('c') : !rq.need || rq.need());
   let pool = VREQS.filter(r => ok(r) && !done.includes(r.id));
@@ -6737,7 +6759,7 @@ function pickReq(){
   for (let tries = 0; tries < 20 && pool.length; tries++){
     const rq = pool[(Math.random()*pool.length)|0], v = vs[(Math.random()*vs.length)|0];
     if (!rq.give && reqProg(rq, v.home) >= (rq.n || 1)) continue;   // déjà fait chez lui : on en cherche une autre
-    glob.story.req = {id:rq.id, name:v.name}; saveGlob(); if (typeof renderNews === 'function') renderNews(); return;
+    glob.story.req = {id:rq.id, name:v.name}; rc[v.name] = (rc[v.name] || 0) + 1; saveGlob(); if (typeof renderNews === 'function') renderNews(); return;
   }
 }
 function finishReq(c){
@@ -6803,8 +6825,10 @@ function houseEmpty(i){
 function emptyHouses(){ const a = []; for (let i = 0; i < N*N; i++) if (O[i] === 'h' && houseEmpty(i) && !fogAt(i % N, (i / N)|0)) a.push(i); return a; }
 /* une maison vide attire, au bout d'un moment, quelqu'un du continent */
 function villagerTrickle(){
-  if (!glob.story.ville || glob.story.v !== 2 || glob.story.chapter <= 4 || waitingV().length) return;
-  const empty = emptyHouses(), now = Date.now();
+  try { tentsFold(); } catch(e){}
+  try { if (!glob.story.buoyClean && S3I('La traversée') >= 0 && glob.story.chapter > S3I('La traversée')) buoyClean(); } catch(e){}
+  if (!glob.story.ville || glob.story.v !== 2 || glob.story.chapter <= 4) return;
+  const empty = emptyHouses().slice(waitingV().length), now = Date.now();
   if (!empty.length){ if (glob.story.nextArr){ glob.story.nextArr = 0; saveGlob(); } return; }
   if (!V_NAMES.some(x => !villagers().some(v => v.name === x))) return;
   if (!glob.story.nextArr){ glob.story.nextArr = now + 90000; saveGlob(); return; }
@@ -6830,9 +6854,10 @@ function arriveVillagers(n, direct){
 /* une nouvelle maison ? le premier qui attend s'y installe */
 function settleVillagers(){
   const wait = waitingV(); if (!wait.length) return;
-  { const ch = CHAPTERS[glob.story.chapter]; if (ch && ch.homeFor && !glob.story[ch.homeFor + 'Home']) return; }
+  let houses = emptyHouses();
+  { const ch = CHAPTERS[glob.story.chapter]; if (ch && ch.homeFor && !glob.story[ch.homeFor + 'Home']) houses = houses.slice(1); }
   const taken = glob.story.takenHomes || (glob.story.takenHomes = []);
-  for (const i of emptyHouses()){
+  for (const i of houses){
     if (!wait.length) break;
     const v = wait.shift(); if (!taken.includes(i)) taken.push(i); v.home = i;
     if (v.tent != null && O[v.tent] === 'ï') O[v.tent] = null;
@@ -7354,7 +7379,8 @@ function askName(){
     openStoryModal({mode:'prologue', kicker:'Prologue', title:'La traversée', paras:[
       'Tu as tout laissé derrière toi : une barque, un sac, quelques outils, et l’envie de construire quelque chose à toi.',
       'Au petit matin, ta barque racle le sable d’une île déserte. Autour, la brume du large cache encore tout le reste de l’archipel.'],
-      go:'Commencer'});
+      short:[B('carnet', 'Tu as tout laissé derrière toi : une **barque**, un sac, quelques outils… et l’envie de construire quelque chose à toi.'), B('carnet', 'Au petit matin, ta barque racle le sable d’une **île déserte**. Autour, la brume cache encore tout l’archipel.')],
+      go:'Commencer'}); document.querySelectorAll('.sb-read').forEach(x => x.hidden = true);
     return;
   }
   askNameForm();
@@ -7378,7 +7404,8 @@ function askNameForm(){
   }
   const lg = document.createElement('button'); lg.type = 'button'; lg.className = 'look-long'; lg.textContent = 'Cheveux longs'; lg.onclick = () => { look.long = !look.long; redraw(); };
   rows.append(lg); box.append(cv, rows); redraw();
-  openStoryModal({mode:'name', who:'carnet', kicker:'Ton carnet de bord', title:'Comment tu t’appelles ?', paras:['Sur la couverture de ton carnet de bord, écris ton nom. Et dessine-toi, juste en dessous !', inp, box], go:'C’est parti'});
+  openStoryModal({mode:'name', who:'carnet', kicker:'Ton carnet de bord', title:'Comment tu t’appelles ?', paras:['Sur la couverture de ton carnet de bord, écris ton nom. Et dessine-toi, juste en dessous !', inp, box], go:'C’est parti', short:[B('carnet', 'Sur la couverture de ton carnet, écris ton **prénom**. Et dessine-toi, juste en dessous !')]});
+  document.querySelectorAll('.sb-read').forEach(x => x.hidden = true); storyBody.append(inp, box); storyBox.classList.add('sb-name'); requestAnimationFrame(() => { try { placeBulle(); } catch(e){} });
   setTimeout(() => inp.focus(), 50);
 }
 function makeIsland(){
@@ -7461,6 +7488,7 @@ const B = (w, t, p) => ({w, t, p});
 const SHORT = {
   // ---------------- Saison 1 ----------------
   'L’arrivée': {
+    intro:[B('carnet', '**{nom}**. Ton nom est maintenant écrit sur la couverture.'), B('carnet', 'La brume ne laisse voir que cette plage. Il va falloir t’abriter pour la nuit.')],
     mid:[B('carnet', 'Le soleil se couche et le vent du large se lève… Un petit **feu** devant ta cabane te ferait du bien.')],
     outro:[B('carnet', 'Le feu crépite. Ta cabane n’est pas bien grande, mais le vent ne passe pas. Pour la première fois, tu te sens un peu chez toi.')],
     dawn:[B('carnet', 'Pendant la nuit, le vent a chassé la brume. Une prairie, une plage, un vieux **phare** qui tourne encore au nord…'), B('carnet', 'Et au large, une petite forme se devine.')]
@@ -7533,6 +7561,11 @@ const SHORT = {
       B('margaux', '« Sur le continent, tout est déjà construit. Ici, tout reste à inventer… Je crois que je vais rester ! Une architecte, ça a besoin de carburant. »')]
   },
   'La fête de l’été': {
+    outro:[B('carnet', 'Le soir, toute l’île est réunie sur la place. Les **lampions** se balancent, les tables croulent sous les tartes de Lina.'),
+      B('carnet', 'Tomas raconte pour la dixième fois sa glissade sur un galet. Même Job est descendu de son phare. Elias, un peu à l’écart, sourit.'),
+      B('elias', '« Le vent tourne. »', 'Vers minuit, Elias se redresse d’un coup.'),
+      B('job', '« Tout le monde à l’abri ! »', 'Une rafale souffle les lampions. Au loin, le ciel devient noir.'),
+      B('carnet', 'Toute la nuit, la **tempête** hurle sur l’île. Et puis, au petit matin… le silence.')],
     intro:[B('lina', '« Tout ce qu’on a construit ! Mais il manque un cœur, à ce village ! »', 'Lina déboule, les joues pleines de farine.'),
       B('tomas', '« Une vraie **place** ! Une **fontaine** au milieu, un **marché**… et des bancs, des fleurs, que ce soit **joli**, hein ! »')],
     mid:[B('lina', '« C’est magnifique ! Il faut fêter ça : un grand **banquet** pour toute l’île ! »'),
@@ -7617,6 +7650,11 @@ const SHORT = {
       B('carnet', 'Au fond de la terrasse, Elias pose sa tasse, un peu trop fort. Il regarde le papier longtemps… puis s’en va, sans un mot.')]
   },
   'La moisson': {
+    outro:[B('carnet', 'Le soleil se couche sur la plaine. La grange est pleine, et toute l’île s’assoit sur les bottes de foin, épuisée et heureuse.'),
+      B('carnet', 'Quand Lina se retourne pour tendre une part de gâteau à Elias, sa place est **vide**.'),
+      B('tomas', '« Son **canoë**… Il n’est plus là. »', 'Tomas revient du port en courant.'),
+      B('carnet', 'Dans sa cabane, sur la table, un petit **pin taillé** dans le bois. Pas un mot.'),
+      B('carnet', 'Cette nuit-là, Job reste à sa fenêtre jusqu’au matin, les yeux fixés sur la brume.')],
     intro:[B('carnet', 'Le ciel pâlit sur la plaine… et le soleil se lève sur une mer de blé doré.'),
       B('philippe', '« La plaine est toute dorée ! C’est le grand jour de la **moisson** ! »'),
       B('annick', '« Il faut toutes les mains de l’île. Même Elias est descendu de sa forêt, c’est dire ! »')],
@@ -7638,8 +7676,8 @@ const SHORT = {
       B('yuna', '« Il me faudrait un **ponton** pour poser mon matériel… et une petite **maison**, pas trop loin de l’eau. »')],
     mid:[B('yuna', '« Parfait ! » Elle ajuste sa lampe… et plonge sans prévenir.'),
       B('tomas', '« Elle n’a même pas fini sa phrase ! »')],
-    outro:[B('carnet', 'On accroche la **cloche** au bout du quai. Yuna donne un petit coup : le son s’en va loin, très loin, sur la mer.'),
-      B('job', '« Cette cloche sonnait les soirs de brume, pour que les bateaux retrouvent le port… » Il se tait longtemps. « Accrochez-la bien. Elle a assez dormi au fond. »')]
+    outro:[B('carnet', 'Kofi frotte la **cloche** jusqu’à ce qu’elle brille. Yuna donne un petit coup : le son s’en va loin, très loin, sur la mer.'),
+      B('job', '« Cette cloche sonnait les soirs de brume, pour que les bateaux retrouvent le port… » Il se tait longtemps. « Gardez-la bien. Elle a assez dormi au fond. »')]
   },
   'Le poulailler': {
     intro:[B('annick', '« Philippe a gagné un **pari** contre Gaspard. Et Gaspard a payé… en **poules**. »'),
@@ -7686,6 +7724,12 @@ const SHORT = {
       B('carnet', 'Il la glisse contre son cœur et retourne à sa fenêtre. À la marée du soir, une **bouteille** s’échoue sur la plage.')]
   },
   'La traversée': {
+    outro:[B('carnet', 'Dans la clairière, une cabane de rondins. Elias lève la tête, et son morceau de bois lui tombe des mains.'),
+      B('elias', '« Les feux, sur l’eau… C’était vous ? Vous avez fait tout ça pour moi ? »'),
+      B('elias', '« Je suis content de vous voir. Mais je ne peux pas revenir. Pas encore. Les **pins** sont malades. »'),
+      B('tomas', '« Alors on t’aide ! »'),
+      B('job', '« Merci, petite. Merci. »', 'Le soir, Lina monte au phare annoncer la nouvelle. Job ferme les yeux.'),
+      B('carnet', 'Cette nuit-là, pour la première fois depuis le départ d’Elias, Job quitte sa fenêtre et va dormir.')],
     intro:[B('carnet', 'Le chemin de bouées brille au soleil du matin. Tomas a préparé la barque avant même le lever du jour.'),
       B('lina', '« Je viens aussi ! Il n’a pas mangé de bonnes choses depuis des semaines. »')],
     mid:[B('lina', '« Regarde ! Il a laissé des **marques** sur les arbres. »', 'Sur l’île aux pins, une partie de la brume s’est levée.')]
@@ -7694,12 +7738,18 @@ const SHORT = {
     intro:[B('elias', '« Les **ronces** les étouffent, et le **bois mort** les rend malades. »', 'Beaucoup de pins ont les aiguilles rousses.'),
       B('elias', '« Une seule règle ici : on ne coupe jamais un pin vivant. Jamais. »')],
     mid:[B('carnet', 'Elias marche droit vers une pierre couverte de mousse, sans hésiter, et la soulève. Dessous, une **source** claire.'),
-      B('leon', '« Tu connais chaque arbre par cœur… On dirait que tu es déjà venu, avant ! »'),
-      B('elias', '« Une île, c’est une île. »', 'Elias hausse les épaules.')],
+      B('tomas', '« Comment tu savais qu’il y avait une source là ? »'),
+      B('leon', '« On dirait que tu es déjà venu, avant ! »'),
+      B('elias', '« Toutes les îles se ressemblent… Et il y a toujours une source, sous les pierres. »', 'Elias détourne les yeux.')],
     outro:[B('elias', '« Pas par là. Pas encore. »', 'Léon s’avance déjà sur un sentier qui file dans la brume. Elias le rattrape doucement par l’épaule.'),
       B('elias', '« La forêt va guérir, grâce à vous. Je… je viendrai vous voir. Bientôt. Promis. »')]
   },
   'La fête des lumières': {
+    outro:[B('carnet', 'La photo se colle dans le carnet, avec le phare allumé à l’arrière-plan.'),
+      B('rose', '« Le phare… il clignote bizarre. »', 'Rose tire la manche de sa maman.'),
+      B('carnet', 'Crac. Le **phare s’éteint**. La musique s’arrête.'),
+      B('job', '« Il ne doit pas s’éteindre ! Jamais ! Pas une seule nuit ! »', 'Job court dans l’escalier, une lampe à huile à la main.'),
+      B('carnet', 'Au bout du quai, Elias est tout pâle. Il ne regarde pas le phare : il regarde la **brume**, du côté opposé à l’île aux pins.')],
     intro:[B('carnet', 'Une bouteille, mais pas de R. cette fois : une écorce de pin gravée au couteau. « Samedi soir. — E. »'),
       B('lina', '« Il vient ! Elias vient ! Il faut une fête, une vraie, avec des **lumières** partout ! »', 'Lina en lâche sa farine.')],
     mid:[B('lina', '« Le vent se lève… Pourvu que les **balises** tiennent ! »', 'Au loin, une toute petite lumière quitte l’île aux pins : le canoë d’Elias.')],
@@ -7887,8 +7937,8 @@ const LETTERS_W = {
   paloma:['une carte roulée', '« Une carte marine de la côte. Je l’accroche tout de suite. »']
 };
 const mailSt = () => glob.story.mail || (glob.story.mail = {day:null, bag:[], log:[]});
-function mailHome(m){ if (m.to){ return homeOf(m.to); } const v = villagers().find(v => v.name === m.v); return v && v.home != null && O[v.home] === 'h' ? v.home : null; }
-function mailName(m){ return m.to ? PEOPLE[m.to].name : m.v; }
+function mailHome(m){ if (m.fi != null) return O[m.fi] === 'h' ? m.fi : null; if (m.to){ return homeOf(m.to); } const v = villagers().find(v => v.name === m.v); return v && v.home != null && O[v.home] === 'h' ? v.home : null; }
+function mailName(m){ if (m.fi != null) return houseName(m.fi); return m.to ? PEOPLE[m.to].name : m.v; }
 function mailOn(){ const k = S3I('La factrice'); return resOn() && glob.story.ville && k >= 0 && glob.story.chapter > k && cnt('è') > 0; }
 function mailPeople(){
   const st = mailSt(), out = [];
@@ -8035,6 +8085,217 @@ function gBike(i){
   const st = glob.story; if (!st || !st.germaine) return false;
   if ((st.gBike == null || O[st.gBike] !== 'ô') && !(st.unlocked2 || []).includes('ô')){ const k = O.indexOf('ô'); st.gBike = k >= 0 ? k : null; }
   return st.gBike === i && O[i] === 'ô';
+}
+
+/* ---------- petites réparations ---------- */
+let breakOk = null;
+function homeWho(k){
+  if (!resOn() || !glob.story.ville) return null;
+  const v = villagers().find(v => v.home === k); if (v && O[k] === 'h') return {t:`🏡 ${v.name} habite ici ! Touche encore pour casser sa maison.`};
+  const key = (glob.story.homes || {})[k];
+  if (key === 'toi' || key === 'toi_c') return {t:'🏡 C’est ta maison ! Touche encore pour la casser.'};
+  if (key === 'voyageurs') return {t:'🏡 Les voyageurs habitent ici ! Touche encore pour casser leur maison.'};
+  if (key && PEOPLE[key]) return {t:`🏡 ${PEOPLE[key].name} habite ici ! Touche encore pour casser sa maison.`};
+  return null;
+}
+/* les bouées du passage : une fois la traversée faite, Tomas les repêche, sauf trois */
+function buoyClean(){
+  if (glob.story.buoyClean) return; glob.story.buoyClean = 1;
+  const path = []; for (let i = 0; i < N*N; i++) if (O[i] === 'J'){ for (let j = 0; j < N*N; j++) if (pinsLand(j) && dist2(i, j) <= 6){ path.push(i); break; } }
+  if (path.length > 3){
+    const q = []; for (let j = 0; j < N*N; j++) if (G[j] === 'q' && !inIsle(j, 'ilot')) q.push(j);
+    const dq = i => q.length ? Math.min(...q.map(j => dist2(i, j))) : 0;
+    path.sort((a, b) => dq(a) - dq(b));
+    for (const i of path.slice(3)) O[i] = null;
+    save(); forceDraw = true; setTimeout(() => toast('🛟 Tomas repêche les bouées du passage. Il en laisse trois, en souvenir.', 3500), 1500);
+  }
+  saveGlob();
+}
+/* les tentes des premiers voyageurs : repliées quand ils ont leur maison */
+function tentsFold(){
+  if (glob.story.vTentsGone || !Object.values(glob.story.homes || {}).includes('voyageurs')) return;
+  glob.story.vTentsGone = 1;
+  const keep = new Set(villagers().map(v => v.tent).filter(x => x != null)); if (glob.story.palomaTent != null) keep.add(glob.story.palomaTent);
+  let n = 0; for (let i = 0; i < N*N; i++) if (O[i] === 'ï' && !keep.has(i) && near8(i, j => G[j] === 'q' && !inIsle(j, 'ilot'))){ O[i] = null; n++; }
+  saveGlob(); if (n){ save(); forceDraw = true; }
+}
+/* un peu plus de bois flotté et de pierres sur les plages de la ferme */
+function farmBeach(){
+  if (!(glob.story.isles || {}).champs) return 0;
+  const shore = [], inI = id => { let n = 0; for (let i = 0; i < N*N; i++) if (O[i] === id && inIsle(i, 'champs')) n++; return n; };
+  for (let i = 0; i < N*N; i++) if (inIsle(i, 'champs') && !O[i] && G[i] !== 'w' && !fogAt(i % N, (i / N)|0) && near8(i, j => G[j] === 'w')) shore.push(i);
+  shuffleArr(shore); let k = 0;
+  for (let n = inI('ŵ'); n < 4 && shore.length; n++){ O[shore.pop()] = 'ŵ'; k++; }
+  for (let n = inI('r'); n < 2 && shore.length; n++){ O[shore.pop()] = 'r'; k++; }
+  return k;
+}
+
+/* ---------- la brume de l'île aux pins : elle s'ouvre pas à pas ---------- */
+let _ph = null, _phT = 0;
+function pinOpen(i, r){ const a = glob.story.pinOpen || (glob.story.pinOpen = []); a.push([i, r]); _ph = null; saveGlob(); forceDraw = true; }
+function pinHoles(){
+  const t = performance.now(); if (_ph && t - _phT < 500) return _ph;
+  const h = balLit().map(j => [j, balR() + 1.2]);
+  for (const p of glob.story.pinOpen || []) h.push(p);
+  if (s3Ch() === 'La traversée'){
+    const ms = []; for (let j = 0; j < N*N; j++) if (O[j] === 'ď') ms.push(j);
+    if (ms.length){ const op = glob.story.pinOpen || [], ref = op.length ? op[op.length - 1][0] : ms[0]; ms.sort((a, b) => dist2(a, ref) - dist2(b, ref)); h.push([ms[0], 1.8]); }
+  }
+  if (glob.story.pinsCabin != null && (glob.story.eliasFound || (s3Ch() === 'La traversée' && found('ď') >= spawned('ď', 5)))) h.push([glob.story.pinsCabin, 4.2]);
+  _ph = h; _phT = t; return h;
+}
+function pinHoleAt(x, y){ const i = y*N + x; return pinHoles().some(([j, r]) => dist2(i, j) <= r - 0.7); }
+/* la pointe : un bout d'île allongé, caché pour longtemps dans la brume */
+function pointeMake(){
+  const I = glob.story.isles || {}, g = I.pins; if (!g || I.pointe || glob.story.pointeTried) return;
+  glob.story.pointeTried = 1;
+  const land = mainLand(); let mx = 0, my = 0, mn = 0; for (let i = 0; i < N*N; i++) if (land[i] && !inIsle(i, 'pins')){ mx += i % N; my += (i / N)|0; mn++; }
+  if (!mn) return; mx /= mn; my /= mn;
+  const base = Math.atan2(g.cy - my, g.cx - mx);
+  for (const da of [0, 0.5, -0.5, 1, -1, 1.5, -1.5]){
+    const a = base + da, dx = Math.cos(a), dy = Math.sin(a), hor = Math.abs(dx) >= Math.abs(dy);
+    const rx = hor ? 5 : 2.6, ry = hor ? 2.6 : 5, off = (hor ? g.rx : g.ry) * 0.75 + (hor ? rx : ry);
+    const cx = Math.round(g.cx + dx * off), cy = Math.round(g.cy + dy * off);
+    let ok = cx - rx - 2 >= 0 && cy - ry - 2 >= 0 && cx + rx + 2 < N && cy + ry + 2 < N;
+    for (let y = Math.floor(cy - ry - 2); ok && y <= Math.ceil(cy + ry + 2); y++) for (let x = Math.floor(cx - rx - 2); ok && x <= Math.ceil(cx + rx + 2); x++){
+      if (((x - cx)/(rx + 2))**2 + ((y - cy)/(ry + 2))**2 > 1) continue;
+      const i = y*N + x; if (inIsle(i, 'pins')) continue;
+      if (G[i] !== 'w' || O[i] || inCont(i) || land[i] || Object.keys(I).some(k => k !== 'pins' && inIsle(i, k))) ok = false;
+    }
+    if (!ok) continue;
+    addIsle('pointe', cx, cy, rx, ry, 'pins', {});
+    const f = (glob.story.fogs || []).find(f => f.key === 'pointe'); if (f){ f.thick = 0; f.rx = rx + 2.5; f.ry = ry + 2.5; f.cx = cx + dx * 1.5; f.cy = cy + dy * 1.5; }
+    saveGlob(); save(); forceDraw = true; return;
+  }
+}
+/* le sentier qui file vers la pointe, dans la brume */
+function pinTrail(){
+  const cab = glob.story.pinsCabin, I = glob.story.isles || {}; if (cab == null) return;
+  const tg = I.pointe ? I.pointe : I.pins ? {cx:I.pins.cx + (I.pins.cx - cab % N), cy:I.pins.cy + (I.pins.cy - ((cab / N)|0))} : null; if (!tg) return;
+  let x = cab % N, y = (cab / N)|0; let fogN = 0;
+  for (let k = 0; k < 40 && fogN < 2; k++){
+    const ddx = tg.cx - x, ddy = tg.cy - y; if (Math.abs(ddx) < 1 && Math.abs(ddy) < 1) break;
+    if (Math.abs(ddx) >= Math.abs(ddy)) x += Math.sign(ddx); else y += Math.sign(ddy);
+    const i = y*N + x; if (G[i] === 'w') break;
+    if (!O[i] && G[i] !== 'c') G[i] = 'c';
+    if (fogAt(x, y)) fogN++;
+  }
+  groundDirty = true; save(); forceDraw = true;
+}
+try { if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && !/claude|anthropic/.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch(e){}
+
+/* ---------- le mode libre : des prénoms sur les maisons, le café, le courrier, les défis ---------- */
+const FREE_NAMES = V_NAMES.filter(n => !NAMES.includes(n));
+const tHash = () => { let h = 7; for (const c of String(terrains.cur)) h = (h * 31 + c.charCodeAt(0)) % 9973; return h; };
+function houseName(i){ return FREE_NAMES[(hs(i % N, (i / N)|0, 313 + tHash()) * FREE_NAMES.length)|0]; }
+const freeHouses = () => { const a = []; for (let i = 0; i < N*N; i++) if (O[i] === 'h') a.push(i); return a; };
+function freeMail(){ const all = glob.fmail || (glob.fmail = {}); return all[terrains.cur] || (all[terrains.cur] = {day:null, bag:[], log:[]}); }
+function freeAct(i){
+  if (isStory()) return null;
+  if (O[i] === '2') return 'Entrer';
+  if (O[i] === 'è') return 'Entrer';
+  if (O[i] === 'h' && freeMail().bag.some(m => m.fi === i)) return 'Donner la lettre';
+  return null;
+}
+function freeTap(i){
+  if (O[i] === '2') return freeCafe(i);
+  if (O[i] === 'è') return freePoste(i);
+  if (O[i] === 'h'){ const st = freeMail(), k = st.bag.findIndex(m => m.fi === i); if (k < 0) return false;
+    const m = st.bag[k], [what, said] = mailLetter(m), nm = houseName(i);
+    return bldShow(i, [B('carnet', `Une lettre pour **${nm}** : ${what}.`)], '✉️ Donner la lettre', () => {
+      st.bag.splice(k, 1); st.log.push({n:nm, t:what}); if (st.log.length > 60) st.log.shift();
+      const rw = [{b:2}, {p:2}, {b:1, p:1}][(Math.random() * 3)|0], r = resv(); for (const [kk, v] of Object.entries(rw)) r[kk] = (r[kk] || 0) + v;
+      saveGlob(); renderRes(true); renderBag(); queueSave();
+      bldShow(i, [B('carnet', `**${nm}** ouvre l’enveloppe. ${said}`), B('carnet', `Merci pour le courrier ! · ${resTxt(rw)}`)], 'Fermer');
+    }, 'Plus tard'); }
+  return false;
+}
+function freeCafe(i){
+  const hs2 = freeHouses(), names = [...new Set(hs2.map(houseName))], today0 = today(), cf = glob.fcafe || (glob.fcafe = {}), done = cf[terrains.cur] === today0;
+  const night = bNight();
+  let line;
+  if (night) line = 'Le café est fermé. Les chaises dorment sur les tables.';
+  else if (names.length < 2) line = 'Le café est calme. Une tasse fume, toute seule, sur le comptoir.';
+  else { const a = names[(Math.random() * names.length)|0]; let b; do { b = names[(Math.random() * names.length)|0]; } while (b === a);
+    line = bldPick('cafeL', [`**${a}** et **${b}** refont le monde autour d’un café.`, `**${a}** raconte une histoire à **${b}**, qui rit aux éclats.`, `**${a}** et **${b}** regardent passer les bateaux, une tasse à la main.`]); }
+  const lines = [B('carnet', line)]; if (done) lines.push(B('carnet', 'Tu as déjà offert un café aujourd’hui.'));
+  if (night || done || !names.length) return bldShow(i, lines, 'Fermer');
+  return bldShow(i, lines, '☕ Offrir un café', () => {
+    bldShow(i, [B('carnet', 'Un café pour qui ?')], 'Plus tard');
+    const box = document.createElement('div'); box.className = 'cafe-list';
+    for (const nm of names.slice(0, 12)){
+      const b = document.createElement('button'); b.type = 'button';
+      const cv = document.createElement('canvas'); cv.width = 16; cv.height = 16; try { drawPortrait(cv, residentLook(nm)); } catch(e){}
+      const sp = document.createElement('span'); sp.textContent = nm; b.append(cv, sp);
+      b.onclick = e => { e.stopPropagation(); cf[terrains.cur] = today0; const r = resv(); r.b = (r.b || 0) + 2; r.p = (r.p || 0) + 1; saveGlob(); renderRes(true);
+        bldShow(i, [B('carnet', `**${nm}** : ${bldPick('cafev', CAFE_THX_V)}`), B('carnet', `Pour te remercier, ${nm} t’aide à porter des matériaux · 2 🪵 + 1 🪨`)], 'Fermer'); };
+      box.append(b);
+    }
+    storyBody.append(box); requestAnimationFrame(() => { try { placeBulle(); } catch(e){} });
+  }, 'Fermer');
+}
+function freePoste(i){
+  const st = freeMail(), today0 = today(), hs2 = freeHouses().filter(h => !st.bag.some(m => m.fi === h));
+  if (bNight()) return bldShow(i, [B('carnet', 'La poste est fermée. Un vélo dort contre le mur.')], 'Fermer');
+  if (st.day !== today0 && st.bag.length < 3 && hs2.length){
+    return bldShow(i, [B('carnet', 'Le sac du facteur déborde : il y a du **courrier** pour tes habitants.')], '✉️ Prendre le courrier', () => {
+      const n = Math.min(Math.random() < 0.5 ? 1 : 2, 3 - st.bag.length, hs2.length);
+      for (let k = 0; k < n; k++){ const h = hs2.splice((Math.random() * hs2.length)|0, 1)[0]; st.bag.push({fi:h, k:(Math.random() * LETTERS_P.length)|0}); }
+      st.day = today0; saveGlob(); renderBag();
+      hintT(`✉️ ${n > 1 ? n + ' lettres' : 'Une lettre'} dans ton sac 🎒 : pour ${st.bag.slice(-n).map(m => houseName(m.fi)).join(' et ')}. Ouvre le sac pour voir où aller.`);
+    }, 'Plus tard');
+  }
+  const lines = [B('carnet', st.day === today0 ? 'Tout le courrier du jour est parti. Il y en aura d’autre demain.' : 'Pas de courrier pour l’instant.')];
+  if (st.bag.length) lines.push(B('carnet', `Il te reste **${st.bag.length} lettre${st.bag.length > 1 ? 's' : ''}** à porter, dans ton sac 🎒.`));
+  return bldShow(i, lines, 'Fermer');
+}
+/* les défis du mode libre : de petits objectifs, qu'on peut passer */
+const DF_TREES = () => cnt('t') + cnt('P') + cnt('À');
+const DEFIS = [
+  {id:'place', t:'Une place de village', need:['Q', 'b', 'l'], st:[['Une fontaine sur des pavés', b => cntOn('Q', 'p'), 1], ['4 bancs de plus', b => cnt('b') - b.b, 4], ['2 lampadaires de plus', b => cnt('l') - b.l, 2]]},
+  {id:'port', t:'Le petit port', need:['B', 'J'], st:[['3 cases de quai', b => cntG('q') - b.q, 3], ['2 barques', b => cnt('B') - b.B, 2], ['1 bouée', b => cnt('J') - b.J, 1]]},
+  {id:'fleuri', t:'Un quartier fleuri', need:[], st:[['6 massifs de fleurs', b => cnt('f') + cnt('H') - b.f - b.H, 6], ['3 arbres', b => DF_TREES() - b.tr, 3]]},
+  {id:'rue', t:'La grande rue', need:['l'], st:[['8 cases de route', b => cntG('R') - b.R, 8], ['3 lampadaires', b => cnt('l') - b.l, 3]]},
+  {id:'ferme', t:'Une petite ferme', need:['Ç', 'v'], st:[['6 cases de blé', b => cntG('k') - b.k, 6], ['Une grange', b => cnt('Ç') - b['Ç'], 1], ['2 vaches', b => cnt('v') - b.v, 2]]},
+  {id:'verger', t:'Le grand verger', need:[], st:[['10 arbres', b => DF_TREES() - b.tr, 10]]},
+  {id:'plage', t:'Un après-midi à la plage', need:['U', 'Y'], st:[['2 parasols', b => cnt('U') - b.U, 2], ['Une cabine de plage', b => cnt('Y') - b.Y, 1]]},
+  {id:'voisins', t:'De nouveaux voisins', need:['h'], st:[['3 maisons', b => cnt('h') - b.h, 3], ['6 cases de chemin', b => cntG('c') - b.c, 6]]},
+  {id:'marche', t:'Jour de marché', need:['9'], st:[['Un marché', b => cnt('9') - b['9'], 1], ['3 massifs de fleurs', b => cnt('f') + cnt('H') - b.f - b.H, 3]]},
+  {id:'ecole', t:'Le chemin de l’école', need:['E', 'ô'], st:[['Une école', b => cnt('E') - b.E, 1], ['Des vélos', b => cnt('ô') - b['ô'], 1]]},
+  {id:'pont', t:'Un pont sur l’eau', need:[], st:[['Un pont', b => cntG('n') - b.n, 1], ['4 cases de chemin', b => cntG('c') - b.c, 4]]},
+  {id:'potagers', t:'Les potagers', need:['V'], st:[['3 potagers', b => cnt('V') - b.V, 3]]},
+  {id:'lumieres', t:'Les lumières du soir', need:['l'], st:[['6 lumières (lampadaires, torches, lanternes)', b => cnt('l') + cnt('ŧ') + cnt('æ') - b.lu, 6]]},
+  {id:'grandir', t:'Le village grandit', need:[], st:[['12 habitants de plus', b => crowdCount() - b.pop, 12]]},
+  {id:'jardin', t:'Un jardin public', need:['Q', 'H', 'b'], st:[['Une fontaine', b => cnt('Q') - b.Q, 1], ['4 hortensias', b => cnt('H') - b.H, 4], ['2 bancs', b => cnt('b') - b.b, 2]]}
+];
+function dfBase(){ const b = {}; for (const id of ['b', 'l', 'B', 'J', 'f', 'H', 'Ç', 'v', 'U', 'Y', 'h', '9', 'E', 'ô', 'V', 'Q']) b[id] = cnt(id); for (const g of ['q', 'R', 'k', 'c', 'n']) b[g] = cntG(g); b.tr = DF_TREES(); b.lu = cnt('l') + cnt('ŧ') + cnt('æ'); b.pop = crowdCount(); return b; }
+function dfState(){ const all = glob.fdefi || (glob.fdefi = {}); return all[terrains.cur] || null; }
+function dfNew(skip){
+  const all = glob.fdefi || (glob.fdefi = {}), cur = all[terrains.cur], done = (cur && cur.done) || [];
+  let pool = DEFIS.filter(d => d.need.every(id => unlocked(id)) && d.id !== (cur && cur.id) && !done.includes(d.id));
+  if (!pool.length) pool = DEFIS.filter(d => d.need.every(id => unlocked(id)) && d.id !== (cur && cur.id));
+  const d = pool[(Math.random() * pool.length)|0]; if (!d) return;
+  all[terrains.cur] = {id:d.id, base:dfBase(), ok:[], done}; saveGlob(); renderRes();
+}
+function dfCur(){ const s0 = dfState(); return s0 && DEFIS.find(d => d.id === s0.id); }
+function dfCheck(){
+  if (isStory()) return; let s0 = dfState(); if (!s0){ dfNew(); s0 = dfState(); if (!s0) return; }
+  const d = dfCur(); if (!d) return;
+  let changed = false;
+  d.st.forEach(([lab, f, n], k) => { const v = Math.max(0, f(s0.base)); if (v >= n && !s0.ok.includes(k)){ s0.ok.push(k); changed = true; if (s0.ok.length < d.st.length) toast(`🎯 ✓ ${lab}`, 2200); } });
+  if (changed){
+    saveGlob(); renderRes(true);
+    if (s0.ok.length >= d.st.length){
+      const rw = {b:8, p:6}, r = resv(); for (const [k, v] of Object.entries(rw)) r[k] = (r[k] || 0) + v;
+      s0.done = [...(s0.done || []), d.id]; saveGlob(); renderRes(true);
+      const show = () => { if (!storyBox.hidden){ setTimeout(show, 1500); return; } freeBubble([B('carnet', `🎯 Défi réussi : **${d.t}** !`), B('carnet', `Ta ville te remercie · ${resTxt(rw)}`)], 'Un autre défi', () => dfNew()); };
+      show();
+    }
+  }
+}
+function dfLines(){
+  const d = dfCur(), s0 = dfState(); if (!d || !s0) return [];
+  return [B('carnet', `🎯 Défi : **${d.t}**`), ...d.st.map(([lab, f, n], k) => B('carnet', (s0.ok.includes(k) ? '✓ ' : '· ') + lab + (s0.ok.includes(k) ? '' : ` (${Math.min(n, Math.max(0, f(s0.base)))}/${n})`)))];
 }
 function homeKind(i){
   if (glob.story && glob.story.ville && glob.story.v === 2 && O[i] === 'L') return 'char';
@@ -8308,7 +8569,8 @@ function maybeInvite(){
   if (glob.story.asked || glob.story.started || !giftBox.hidden || !storyBox.hidden) return;
   if (true){ openStoryModal({mode:'invite', who:'carnet', kicker:'Nouvelle histoire', title:'La ville des îles',
     paras:['Une petite île déserte, ta barque et quelques outils. Ramasse, construis, et fais grandir ta ville d’île en île, chapitre après chapitre.', 'Ton village actuel ne change pas : l’île de l’histoire est un terrain à part, que tu retrouves dans la ⚙.'],
-    go:'Commencer l’histoire', alt:'Plus tard'}); return; }
+    short:[B('carnet', 'Une petite île déserte, ta barque et quelques outils. Ramasse, construis, et fais grandir ta ville **d’île en île**.'), B('carnet', 'Ton village actuel ne change pas : l’île de l’histoire est un terrain à part, que tu retrouves dans les réglages ⚙.')],
+    go:'Commencer l’histoire', alt:'Plus tard'}); document.querySelectorAll('.sb-read').forEach(x => x.hidden = true); return; }
   if (false){ openStoryModal({mode:'invite', who:'carnet', kicker:'Nouvelle histoire', title:'Le carnet',
     paras:['Une île déserte, perdue dans la brume. Un phare éteint, et un carnet aux pages blanches qui t’attend.', 'Rallume la lumière, accueille les rares voyageurs qui la verront, et découvre ce que cache la brume. Chaque chapitre te fait gagner de nouveaux objets, aussi disponibles dans tes autres terrains.', 'Ton village actuel ne change pas : l’île est un terrain à part, que tu retrouves dans la ⚙.'],
     go:'Commencer l’histoire', alt:'Plus tard'}); return; }
@@ -8602,6 +8864,7 @@ function checkStory(){
       addIsle('pins', pl.cx, pl.cy, pl.rx, pl.ry, 'pins', {});
       (glob.story.announced || (glob.story.announced = {})).pins = 1; saveGlob(); save(); forceDraw = true; }
     const pf = (glob.story.fogs || []).find(f => f.key === 'pins'); if (pl && pf && !pf.thick){ pf.thick = 1; pf.rx = pl.rx + 5; pf.ry = pl.ry + 4.5; saveGlob(); forceDraw = true; } } catch(e){}
+  try { if (glob.story.v === 2 && isStory() && (glob.story.isles || {}).pins) pointeMake(); } catch(e){}
   try { palomaHomeCheck(); } catch(e){}
   try { if (glob.story.ville && glob.story.v === 2 && (glob.story.chapter > S3I('Ce que la mer rapporte') || (glob.story.bottle2 || 0) >= 3) && !(glob.story.rl || []).includes('chaussette')){ glob.story.rl = ['chaussette', ...(glob.story.rl || [])]; saveGlob(); } } catch(e){}
   { const pb = document.getElementById('pipBtn'); if (pb) pb.hidden = false; try { syncPip(); } catch(e){} }
@@ -9017,7 +9280,7 @@ storyGo.onclick = () => {
   if (storyPages && storyPages.k < storyPages.texts.length - 1){ storyPages.k++; showStoryPage(); return; }
   if (storyMode === 'outro'){
     const done = glob.story.pendingOutro ?? glob.story.chapter;
-    glob.story.chapter = done + 1; glob.story.pendingOutro = null; try { if (glob.story.v === 2) chapterCrate(done); } catch(e){} saveGlob();
+    glob.story.chapter = done + 1; glob.story.pendingOutro = null; try { if (glob.story.v === 2) chapterCrate(done); } catch(e){} try { if (CHAPTERS[done] && CHAPTERS[done].title === 'La traversée') buoyClean(); } catch(e){} saveGlob();
     storyBox.hidden = true;
     storyHold = Date.now() + 2700;
     const grew = glob.story.v === 2 ? runAfter(done) : applyGrowth(done);
