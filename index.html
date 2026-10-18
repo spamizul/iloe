@@ -7293,6 +7293,7 @@ function s4Album(pg){
 /* la pêche à pied et le reste, sur l'île du vieux phare */
 function s4Tick(){
   if (!isStory() || glob.story.v !== 2) return;
+  try { if (s3Ch() === 'La forêt d’Elias' && !phase2(CHAPTERS[glob.story.chapter]) && (glob.story.isles || {}).pins) forestSeed(); } catch(e){}
   /* une grotte posée sur un quai (ancienne version) : on la remet sur la roche */
   if (!glob.story.caveFix){ glob.story.caveFix = 1; saveGlob(); try { const c = vpCave(); if (c >= 0 && !CAVE_SOL.includes(G[c])) caveMake(); } catch(e){} }
   /* la nuit noire : tant que le bateau n'est pas rentré, il fait nuit */
@@ -7477,6 +7478,29 @@ function crabTap(x, y){
   if (!c) return false;
   c.pause = 0; c.tx = c.x + (Math.random() < 0.5 ? -14 : 14); c.ty = c.y;
   hintT(['🦀 Clic-clac !', '🦀 Le crabe file de côté, vexé.', '🦀 Il lève ses pinces, très sérieux.'][(Math.random() * 3)|0]); return true;
+}
+
+/* la forêt d'Elias : s'il n'y a ni ronces ni pins morts (tout était sous la brume au début du chapitre), on en remet, et on ouvre la brume autour */
+function forestSeed(){
+  const ch = glob.story.chapter, key = 'ñ_' + ch, sp = glob.story.spawn || (glob.story.spawn = {}), fd = glob.story.found || {};
+  const free = i => pinsLand(i) && !O[i] && (G[i] === 'g' || G[i] === 's');
+  const clear = i => !fogAt(i % N, (i / N)|0);
+  const near = i => glob.story.pinsCabin != null && dist2(i, glob.story.pinsCabin) < 2;
+  const placed = []; let dirty = false;
+  if (!(sp[key] > 0) && !(fd[key] > 0) && !cnt('ñ')){
+    const c = shuffleArr([...Array(N*N).keys()].filter(i => free(i) && !near(i)));
+    const pick = c.filter(clear).concat(c.filter(i => !clear(i))).slice(0, 8);
+    for (const i of pick){ O[i] = 'ñ'; placed.push(i); } sp[key] = pick.length; dirty = pick.length > 0;
+  }
+  if (!(glob.story.dead0 > 0) && !cnt('Č')){
+    const ps = shuffleArr([...Array(N*N).keys()].filter(i => pinsLand(i) && O[i] === 'P' && !near(i)));
+    const fr = shuffleArr([...Array(N*N).keys()].filter(i => free(i) && G[i] === 'g' && !near(i)));
+    const pick = ps.filter(clear).concat(fr.filter(clear), ps.filter(i => !clear(i)), fr.filter(i => !clear(i))).slice(0, 5);
+    for (const i of pick){ O[i] = 'Č'; placed.push(i); } glob.story.dead0 = cnt('Č'); dirty = pick.length > 0;
+  }
+  if (!dirty) return;
+  for (const i of placed) if (!clear(i)) try { pinOpen(i, 2.4); } catch(e){}
+  saveGlob(); save(); forceDraw = true; try { renderStoryCard(); } catch(e){}
 }
 function setupIlot(){
   const g = (glob.story.isles || {}).ilot; if (!g || glob.story.ilotSet) return;
