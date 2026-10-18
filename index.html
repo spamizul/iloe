@@ -6503,7 +6503,7 @@ const CHAPTERS_V2 = [
    reward:[]},
   {season:3, title:'La forêt d’Elias', who:'elias', give:[],
    onIntro:() => {
-     if ((glob.story.isles || {}).pins && !glob.story.pinsOpen) glob.story.pinsOpen = 1;
+     if ((glob.story.isles || {}).pins && (!glob.story.pinsOpen || glob.story.pinsCabin == null)) openPins();
      if (glob.story.pinsCabin != null && !(glob.story.pinOpen || []).some(([j]) => j === glob.story.pinsCabin)) pinOpen(glob.story.pinsCabin, 4.5);
      const vis = i => !fogAt(i % N, (i / N)|0), edge = i => { let b = 1e9; for (const [j, r] of pinHoles()){ const d = dist2(i, j) - r; if (d < b) b = d; } return b; };
      const free = i => pinsLand(i) && !O[i] && (G[i] === 'g' || G[i] === 's') && vis(i);
@@ -7293,7 +7293,15 @@ function s4Album(pg){
 /* la pêche à pied et le reste, sur l'île du vieux phare */
 function s4Tick(){
   if (!isStory() || glob.story.v !== 2) return;
-  try { if (s3Ch() === 'La forêt d’Elias' && !phase2(CHAPTERS[glob.story.chapter]) && (glob.story.isles || {}).pins) forestSeed(); } catch(e){}
+  try { if (s3Ch() === 'La forêt d’Elias' && (glob.story.isles || {}).pins){
+    /* la cabane d'Elias et la source doivent toujours se voir */
+    const fx = glob.story.forestFix || (glob.story.forestFix = {});
+    if (glob.story.pinsCabin == null && !fx.cab){ fx.cab = 1; openPins(); }
+    const cab = glob.story.pinsCabin, src = glob.story.srcAt;
+    if (cab != null && fx.hole !== cab && fogAt(cab % N, (cab / N)|0)){ fx.hole = cab; pinOpen(cab, 4.5); }
+    if (src != null && fx.src !== src && fogAt(src % N, (src / N)|0)){ fx.src = src; pinOpen(src, 2.8); }
+    if (!phase2(CHAPTERS[glob.story.chapter])) forestSeed();
+  } } catch(e){}
   /* une grotte posée sur un quai (ancienne version) : on la remet sur la roche */
   if (!glob.story.caveFix){ glob.story.caveFix = 1; saveGlob(); try { const c = vpCave(); if (c >= 0 && !CAVE_SOL.includes(G[c])) caveMake(); } catch(e){} }
   /* la nuit noire : tant que le bateau n'est pas rentré, il fait nuit */
