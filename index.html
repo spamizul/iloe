@@ -6596,23 +6596,23 @@ const CHAPTERS_V2 = [
    outro:[{who:'toi', t:'Trois morceaux sur quatre. Du côté abrité de l’île, de grands palmiers se balancent, plantés par l’ancien gardien.'}, '« Il disait que les courants chauds passaient par ici. Personne ne le croyait. » Job glisse quelques graines dans sa poche.'],
    reward:['À']},
   {season:4, title:'La chapelle des marins', who:'tomas', give:['a'],
-   onIntro:() => { glob.story.vigil = 0; glob.story.candles = {}; glob.story.vigilAt = 0; saveGlob(); },
+   onIntro:() => { glob.story.vigil = 0; glob.story.bougies = {}; glob.story.vigilAt = 0; saveGlob(); },
    intro:['« Pendant la grande tempête, beaucoup de bateaux ne sont pas rentrés. On n’a jamais rien mis là-bas pour eux. »', {who:'philippe', t:'« Et pour que tout le monde puisse venir, il faudra un quai, là-bas. Pas toujours en barque, à mon âge ! »'}, {who:'margaux', t:'« Une petite chapelle, face à la mer. Toute simple. Je la dessine ce soir. »'}],
    goals1:[['Un quai sur l’île du vieux phare', () => { for (let i = 0; i < N*N; i++) if (G[i] === 'q' && near8(i, j => inIsle(j, 'vieuxphare') && G[j] !== 'w' && G[j] !== 'q')) return 1; return 0; }, 1, '« Un quai sur l’île du vieux phare, je ne vais pas toujours sauter de la barque, à mon âge ! »', 'Pose un quai collé au rivage de l’île du vieux phare.'],
      ['La chapelle', () => O.some((o, i) => o === 'a' && inIsle(i, 'vieuxphare')) ? 1 : 0, 1, '« Une petite chapelle face à la mer, toute simple. »', 'La chapelle est dans l’onglet Services des Objets. Pose-la sur l’île du vieux phare.'],
      ['Un chemin jusqu’à elle', () => linkedFrom(i => O[i] === 'a' && inIsle(i, 'vieuxphare'), i => G[i] === 'q') ? 1 : 0, 1, '« Un chemin du quai jusqu’à la chapelle, que tout le monde puisse venir ! »', 'Trace un chemin du quai jusqu’à la chapelle.']],
    mid:[{who:'toi', t:'Chacun apporte quelque chose : Lina du pain pour les bâtisseurs, Philippe sa charrette, Morgane les noms retrouvés dans les vieux registres.'}, {who:'lina', t:'« Le soir de l’inauguration, on mettra une bougie à chaque fenêtre. »'}, {who:'morgane', t:'Morgane referme un vieux registre. « Les noms des marins de la grande tempête… et ceux des gardiens du vieux phare. Le dernier apprenti, son nom est effacé par l’eau. »'}],
-   onMid:() => { glob.story.candles = {}; saveGlob(); },
+   onMid:() => { glob.story.bougies = {}; saveGlob(); },
    goals2:[['Une bougie à chaque fenêtre', () => { const n = candleCount(), need = candleNeed(); if (n >= need && !glob.story.vigilAt){ glob.story.vigilAt = Date.now(); saveGlob(); toast('🕯️ Toutes les fenêtres brillent. Tout le monde descend au quai…', 3200); try { const q = (() => { const g = (glob.story.isles || {}).vieuxphare, land = mainLand(); let b = -1, bd = 1e9; for (let i = 0; i < N*N; i++) if (land[i] && G[i] !== 'w' && g){ const d = Math.hypot(i % N - g.cx, ((i / N)|0) - g.cy); if (d < bd){ bd = d; b = i; } } return b; })(); s4Procession(q); } catch(e){} setTimeout(() => { glob.story.vigil = 1; glob.story.candleNight = glob.story.isleDays || 1; saveGlob(); forceDraw = true; try { checkStory(); } catch(e){} renderStoryCard(); }, window.__instant ? 0 : 7000); } if (window.__instant && glob.story.vigilAt){ glob.story.vigil = 1; glob.story.candleNight = glob.story.isleDays || 1; } return Math.min(n, need); }, () => candleNeed(), '« Ce soir, à la nuit tombée, une bougie à chaque fenêtre. »', () => candleDark() ? 'Le soir est là : touche les maisons habitées avec la main ✋ pour poser une bougie à chaque fenêtre.' : 'La veillée commence à la tombée de la nuit (18 h). Touche ta maison pour te reposer jusqu’au soir.'],
      ['La veillée', () => glob.story.vigil ? 1 : 0, 1, '« Ce soir, à la nuit tombée, on se retrouve à la chapelle. »', 'Quand toutes les fenêtres brillent, tout le monde descend au quai.']],
    get goals(){ return phase2(this) ? this.goals2 : this.goals1; },
-   wants:i => O[i] === 'h' && phase2(CHAPTERS[glob.story.chapter]) && (candleDark() || window.__instant) && !(glob.story.candles || {})[i] && candleCount() < candleNeed(),
+   wants:i => O[i] === 'h' && phase2(CHAPTERS[glob.story.chapter]) && (candleDark() || window.__instant) && !(glob.story.bougies || {})[i] && candleCount() < candleNeed(),
    actLabel:() => 'Poser une bougie',
    tap:i => {
-     if (O[i] !== 'h' || !phase2(CHAPTERS[glob.story.chapter]) || (glob.story.candles || {})[i] || candleCount() >= candleNeed()) return false;
+     if (O[i] !== 'h' || !phase2(CHAPTERS[glob.story.chapter]) || (glob.story.bougies || {})[i] || candleCount() >= candleNeed()) return false;
      if (!candleDark() && !window.__instant){ const own = ['toi', 'toi_c'].includes((glob.story.homes || {})[i]); if (own) return false; hintT('🕯️ Les bougies, ce sera à la tombée de la nuit (à partir de 18 h). Touche ta maison pour te reposer jusqu’au soir.'); return true; }
      if (!candleHouses().includes(i)){ hintT('🕯️ Personne n’habite ici… Pose plutôt la bougie chez quelqu’un.'); return true; }
-     (glob.story.candles || (glob.story.candles = {}))[i] = 1; saveGlob(); forceDraw = true; renderStoryCard();
+     (glob.story.bougies || (glob.story.bougies = {}))[i] = 1; saveGlob(); forceDraw = true; renderStoryCard();
      toast(`🕯️ Une bougie à la fenêtre · ${candleCount()} sur ${candleNeed()}`, 2000); return true; },
    outro:[{who:'toi', t:'La nuit tombe. Une bougie brille à chaque fenêtre. Puis tout le monde descend au quai, et les bougies s’allument autour de la chapelle. Personne ne parle.'}, {who:'toi', t:'Quand tout le monde repart en barque, Job reste un moment, seul, devant la chapelle. Puis il rentre, lui aussi.'}],
    reward:[]},
@@ -7182,9 +7182,9 @@ function shardBag(force){ const b = bag(); if (!force && bagCount() >= bagCap())
 /* chapitre 8 : une bougie à chaque fenêtre */
 function candleHouses(){ const land = mainLand(), H = glob.story.homes || {}, out = []; for (let i = 0; i < N*N; i++) if (O[i] === 'h' && land[i] && (H[i] || villagers().some(v => v.home === i))) out.push(i); return out; }
 function candleNeed(){ return Math.max(1, Math.min(10, candleHouses().length)); }
-function candleCount(){ const c = glob.story.candles || {}; return Object.keys(c).filter(k => O[k] === 'h').length; }
+function candleCount(){ const c = glob.story.bougies || {}; return Object.keys(c).filter(k => O[k] === 'h').length; }
 const candleDark = () => { const h = tday * 24; return h >= 18 || h < 6; };
-function candleShow(){ return !!glob.story.candles && (s3Ch() === 'La chapelle des marins' || glob.story.candleNight === (glob.story.isleDays || 1)) && candleDark(); }
+function candleShow(){ return !!glob.story.bougies && (s3Ch() === 'La chapelle des marins' || glob.story.candleNight === (glob.story.isleDays || 1)) && candleDark(); }
 /* une procession : tout le monde marche avec sa lanterne */
 function s4Procession(dest){
   if (dest == null || dest < 0) return; syncWalkers();
@@ -7193,7 +7193,7 @@ function s4Procession(dest){
 /* ce qu'on dessine en plus : bougies, nageurs */
 function s4Over(o, i, ox, oy){
   if (o === 'Œ' && inIsle(i, 'vieuxphare') && tideOn() && !tideLow()){ const w = reduce ? 0 : Math.round(Math.sin(now/500 + i) * 0.8); R(ox+1, oy+9 + w, 14, 6 - w, 'rgba(58,122,176,.85)'); R(ox+2, oy+9 + w, 4, 1, 'rgba(255,255,255,.55)'); R(ox+9, oy+10 + w, 4, 1, 'rgba(255,255,255,.45)'); }
-  if (o === 'h' && glob.story.candles && glob.story.candles[i] && candleShow()){
+  if (o === 'h' && glob.story.bougies && glob.story.bougies[i] && candleShow()){
     const fl = reduce ? 0 : (Math.sin(now/120 + i) > 0.3 ? 1 : 0);
     R(ox+4, oy+10, 1, 1, '#f4efe4'); R(ox+4, oy+9 - fl, 1, 1, '#ffd36b'); lights.push({x:ox+4.5, y:oy+9, r:18, kind:'win'});
   }
