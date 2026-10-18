@@ -7675,7 +7675,19 @@ function villagerTrickle(){
   try { if (!glob.story.buoyClean && S3I('La traversée') >= 0 && glob.story.chapter > S3I('La traversée')) buoyClean(); } catch(e){}
   if (!glob.story.ville || glob.story.v !== 2 || glob.story.chapter <= 4) return;
   const empty = emptyHouses().slice(waitingV().length), now = Date.now();
-  if (!empty.length){ if (glob.story.nextArr){ glob.story.nextArr = 0; saveGlob(); } return; }
+  if (!empty.length){
+    if (glob.story.nextArr){ glob.story.nextArr = 0; saveGlob(); }
+    /* personne n'attend déjà ? de temps en temps, quelqu'un arrive quand même, avec sa tente */
+    if (!waitingV().length && V_NAMES.some(x => !villagers().some(v => v.name === x)) && !document.querySelector('.story-modal:not([hidden])') && storyBox.hidden){
+      if (!glob.story.tentAt){ glob.story.tentAt = now + 6*60000 + Math.random()*6*60000; saveGlob(); }
+      else if (now >= glob.story.tentAt){
+        glob.story.tentAt = 0; const n0 = villagers().length; arriveVillagers(1, false);
+        const v = villagers()[n0]; if (v && v.tent != null) setTimeout(() => toast(`⛺ ${v.name} débarque et plante sa tente près du port : il lui faudrait une maison !`, 5000), 3800);
+        else if (v){ v.direct = true; }
+      }
+    }
+    return;
+  }
   if (!V_NAMES.some(x => !villagers().some(v => v.name === x))) return;
   if (!glob.story.nextArr){ glob.story.nextArr = now + 90000; saveGlob(); return; }
   if (now < glob.story.nextArr) return;
@@ -7843,7 +7855,7 @@ const sayLater = (t, who, ms) => setTimeout(() => scSayBubble(t, who, 6500), ms)
 const treesMain = () => { const land = mainLand(); let n = 0; for (let i = 0; i < N*N; i++) if (land[i] && (TREES.has(O[i]) || GROWN[O[i]])) n++; return n; };
 const cabinsMain = () => { const land = mainLand(); let n = 0; for (let i = 0; i < N*N; i++) if (land[i] && O[i] === 'Ĉ') n++; return n; };
 /* les invitations à la fête : on toque à chaque porte */
-function inviteDoors(){ const land = mainLand(), out = []; for (let i = 0; i < N*N; i++) if (land[i] && (O[i] === 'h' || O[i] === 'Ĉ' || O[i] === 'L')) out.push(i); return out; }
+function inviteDoors(){ const land = mainLand(), out = []; for (let i = 0; i < N*N; i++) if (land[i] && (O[i] === 'h' || O[i] === 'Ĉ' || O[i] === 'L') && !['toi', 'toi_c'].includes((glob.story.homes || {})[i])) out.push(i); return out; }
 const invitedCount = () => { const inv = glob.story.invited || []; return inviteDoors().filter(i => inv.includes(i)).length; };
 const INVITE_LINES = ['« Une fête ? J’apporte mon accordéon ! »', '« J’en serai ! Je ferai ma tarte aux pommes. »', '« Enfin une fête ! Je vais ressortir ma belle chemise. »', '« On dansera jusqu’au matin ! »', '« Merci ! Les enfants vont être fous de joie. »', '« Une fête, ici ? Ça faisait si longtemps… »'];
 function inviting(){ const ch = CHAPTERS[glob.story.chapter]; return glob.story.ville && ch && ch.title === 'La fête de l’été' && phase2(ch) && !phase3(ch); }
@@ -8288,7 +8300,7 @@ function setSpeaker(who){
   storyWho.hidden = !p; storyWho.textContent = p ? `${p.name}, ${p.role}` : '';
 }
 const STORY_TIMES = {"La nuit noire": {"intro": {"0": 17.5}, "mid": {"0": 21}, "outro": {"0": 22}}, "La chapelle des marins": {"outro": {"0": 21.5}}, "La lumière revient": {"intro": {"0": 18}, "outro": {"0": 21.5}}, "La place vide": {"intro": {"0": 7}, "outro": {"0": 19, "1": 20.5}}, "La plongeuse": {"intro": {"0": 10}, "outro": {"0": 18, "2": 19.5}}, "Le poulailler": {"outro": {"0": 18}}, "Le marché du port": {"outro": {"0": 12}}, "La longère": {"outro": {"0": 18, "1": 22}}, "La brume qui tourne": {"intro": {"0": 8}, "outro": {"0": 19}}, "La boîte en fer": {"intro": {"0": 8}, "outro": {"0": 17, "3": 21}}, "La traversée": {"intro": {"0": 7}, "outro": {"0": 11, "7": 21, "9": 23}}, "La forêt d’Elias": {"intro": {"0": 9}, "mid": {"0": 12}, "outro": {"0": 16, "3": 19}}, "La fête des lumières": {"intro": {"0": 10}, "mid": {"0": 19.5}, "mid2": {"0": 20, "3": 22}, "outro": {"0": 23}}, "La boussole de Tomas": {"outro": {"3": 19.5}}, "Les abeilles": {"outro": {"0": 19}}, "Le goûter": {"outro": {"0": 8}}, "Le belvédère": {"outro": {"0": 17, "2": 20.5}}, "La moisson": {"intro": {"0": 4, "1": 6.5, "2": 7.5}, "outro": {"0": 19.5, "4": 21, "7": 23.5}}, "La ferme": {"outro": {"0": 6.5, "1": 19.5}}, "La grande plaine": {"intro": {"0": 8}, "outro": {"0": 19.5}}, "L’arrivée": {"mid": {"0": 18.5}, "outro": {"0": 21}, "dawn": {"0": 7}}, "Le gardien du phare": {"outro": {"0": 20}}, "Le petit port": {"outro": {"0": 19}}, "L’ermite": {"outro": {"0": 19.5, "2": 23}}, "L’architecte": {"outro": {"0": 20}}, "La fête de l’été": {"intro": {"0": 9}, "outro": {"0": 20.5, "3": 0, "4": 0.4, "6": 2.5, "7": 6}}, "Après la tempête": {"intro": {"0": 6.5}, "outro": {"0": 19}}, "Ce que la mer rapporte": {"intro": {"0": 8}, "mid": {"0": 11.5}, "mid2": {"0": 17}, "outro": {"0": 19}}};
-Object.assign(STORY_TIMES, {"Le gardien du phare": {"outro": {"0": 16}}, "Le petit port": {"outro": {"0": 16}}, "L’architecte": {"outro": {"0": 16}}, "La place vide": {"outro": {"0": 20.5}}, "La plongeuse": {}, "Le poulailler": {}, "Le marché du port": {}, "La longère": {"outro": {"1": 22}}, "La brume qui tourne": {"outro": {"0": 19}}, "La boîte en fer": {"outro": {"3": 21}}, "La traversée": {"intro": {"0": 7}, "outro": {"7": 21}}, "La forêt d’Elias": {}, "La fête des lumières": {"mid": {"0": 19.5}, "outro": {"0": 23}}});
+Object.assign(STORY_TIMES, {"La fête de l’été": {"intro": {"0": 9}, "outro": {"0": 20.5, "2": 23.5, "3": 0.3, "4": 6}}, "Le gardien du phare": {"outro": {"0": 16}}, "Le petit port": {"outro": {"0": 16}}, "L’architecte": {"outro": {"0": 16}}, "La place vide": {"outro": {"0": 20.5}}, "La plongeuse": {}, "Le poulailler": {}, "Le marché du port": {}, "La longère": {"outro": {"1": 22}}, "La brume qui tourne": {"outro": {"0": 19}}, "La boîte en fer": {"outro": {"3": 21}}, "La traversée": {"intro": {"0": 7}, "outro": {"7": 21}}, "La forêt d’Elias": {}, "La fête des lumières": {"mid": {"0": 19.5}, "outro": {"0": 23}}});
 const storyTimes = (ch, part) => ch && (STORY_TIMES[ch.title] || {})[part] || null;
 /* l'heure glisse doucement vers celle du récit */
 let tTarget = null;
@@ -8334,7 +8346,7 @@ function stormDamage(){
 }
 /* ---------- les versions courtes : ce que disent les bulles (le texte long reste dans le carnet) ---------- */
 /* {w: qui parle ('carnet' = le récit), p: petit bout de récit en italique avant la réplique, t: la réplique ; **mot** = en couleur} */
-const B = (w, t, p) => ({w, t, p});
+const B = (w, t, p, fx) => ({w, t, p, fx});
 const SHORT = {
   // ---------------- Saison 1 ----------------
   'L’arrivée': {
@@ -8414,8 +8426,8 @@ const SHORT = {
     outro:[B('carnet', 'Le soir, toute l’île est réunie sur la place. Les **lampions** se balancent, les tables croulent sous les tartes de Lina.'),
       B('carnet', 'Tomas raconte pour la dixième fois sa glissade sur un galet. Même Job est descendu de son phare. Elias, un peu à l’écart, sourit.'),
       B('elias', '« Le vent tourne. »', 'Vers minuit, Elias se redresse d’un coup.'),
-      B('job', '« Tout le monde à l’abri ! »', 'Une rafale souffle les lampions. Au loin, le ciel devient noir.'),
-      B('carnet', 'Toute la nuit, la **tempête** hurle sur l’île. Et puis, au petit matin… le silence.')],
+      B('job', '« Tout le monde à l’abri ! »', 'Une rafale souffle les lampions. Au loin, le ciel devient noir.', 'storm'),
+      B('carnet', 'Toute la nuit, la **tempête** hurle sur l’île. Et puis, au petit matin… le silence.', null, 'dawn')],
     intro:[B('lina', '« Tout ce qu’on a construit ! Mais il manque un cœur, à ce village ! »', 'Lina déboule, les joues pleines de farine.'),
       B('tomas', '« Une vraie **place** ! Une **fontaine** au milieu, un **marché**… et des bancs, des fleurs, que ce soit **joli**, hein ! »')],
     mid:[B('lina', '« C’est magnifique ! Il faut fêter ça : un grand **banquet** pour toute l’île ! »'),
@@ -9326,7 +9338,7 @@ function bulleTimes(times, nLong, nShort){
 }
 function bulleFill(short, mode, ch){
   for (const s of short){
-    const p = document.createElement('p'); p.dataset.who = s.w;
+    const p = document.createElement('p'); p.dataset.who = s.w; if (s.fx) p.dataset.fx = s.fx;
     p.innerHTML = (s.p ? `<i>${bEsc(fmtTxt(s.p))}</i> ` : '') + bMark(bEsc(fmtTxt(s.t)));
     storyBody.append(p);
   }
