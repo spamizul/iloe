@@ -7401,7 +7401,7 @@ function arrLine(i){
   if (glob.story.rPend) return glob.story.rPend.day != null && (glob.story.isleDays || 1) <= glob.story.rPend.day ? '🌙 Demain matin, la mer rapportera peut-être quelque chose…' : (glob.story.rPend.k === 'phare' ? '🍾 Ce petit bruit de verre, en bas, sur la plage… Touche-le avec la main ✋' : '🍾 Une bouteille t’attend sur la plage. Touche-la avec la main ✋');
   const a = arrState(i); if (!a || (glob.story.arrOk || {})[i]) return '';
   if (a.kind === 'boat') return a.off ? '📣 Gaspard t’appelle depuis son voilier : il lui faut un quai pour accoster !' : '⛵ Le voilier de Gaspard est au port. Touche-le avec la main ✋';
-  if (a.kind === 'elias') return (glob.story.isleDays || 1) <= a.day ? '🌙 Repose-toi… Demain matin, il se passera quelque chose.' : (glob.story.rPend.k === 'phare' ? '🍾 Ce petit bruit de verre, en bas, sur la plage… Touche-le avec la main ✋' : '🍾 Une bouteille t’attend sur la plage. Touche-la avec la main ✋');
+  if (a.kind === 'elias') return (glob.story.isleDays || 1) <= a.day ? '🌙 Repose-toi… Demain matin, il se passera quelque chose.' : '🍾 Une bouteille t’attend sur la plage. Touche-la avec la main ✋';
   return '';
 }
 /* toucher le voilier ou la bouteille */
