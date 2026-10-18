@@ -8352,18 +8352,18 @@ const SHORT = {
   },
   'Le premier voisin': {
     intro:[B('carnet', 'Un homme en ciré saute de sa barque, glisse sur un galet… et se rattrape de justesse.'),
-      B('tomas', '« Pardon ! **Tomas**, j’habite sur le petit îlot, là-bas. Hier soir, il y avait plein de lumières chez toi, alors je suis venu voir, hein ! »'),
+      B('tomas', '« Pardon ! **Tomas**, j’habite sur le petit îlot, là-bas. Tout à l’heure, j’ai vu tes torches s’allumer, alors je suis venu voir, hein ! »'),
       B('tomas', '« Ta cabane, au premier coup de vent… Tu as vu ces **vieilles pierres** dans l’herbe ? De quoi faire une vraie **maison** ! Et tiens, mes graines, pour un **potager**. »')],
     mid:[B('tomas', '« Elle est belle, ta maison… Dis, mon puits s’est effondré pendant la dernière tempête. Je n’ai plus d’eau douce. »'),
       B('tomas', '« Et puis je me sens bien, ici. Si je construisais ma **maison** à côté de la tienne ? Un **chemin** entre les deux, et un **puits** pour nous deux ! »')],
     outro:[B('carnet', 'Tomas remonte le premier seau, boit une grande gorgée… et s’en renverse la moitié sur le ciré.'),
-      B('tomas', '« De l’eau douce ! Et avec le puits tout près, ton potager poussera deux fois plus vite. Demain, je t’emmène sur mon îlot ! »')]
+      B('tomas', '« De l’eau douce ! Et avec le puits tout près, ton potager poussera deux fois plus vite. Viens, je t’emmène sur mon îlot ! »')]
   },
   'Le petit port': {
     intro:[B('carnet', 'La brume se lève sur l’îlot : une petite maison, un potager, un quai minuscule.'),
       B('tomas', '« Voilà chez moi ! C’est petit, hein. Mais pour pêcher pour nous trois, avec Job, il me faut un **quai** plus grand et des **casiers**… »')],
     mid:[B('tomas', '« Avec tout ce poisson, il te faut un vrai **port** chez toi : un **quai**, et une **barque** pour faire l’aller-retour ! »')],
-    outro:[B('carnet', 'Le soir, deux voiles approchent. Des voyageurs fatigués plantent leurs **tentes** près du port.'),
+    outro:[B('carnet', 'En fin de journée, deux voiles approchent. Des voyageurs fatigués plantent leurs **tentes** près du port.'),
       B('voyageurs', '« On vient du continent. Là-bas, c’est le bruit, la foule… On cherchait un endroit tranquille. »'),
       B('carnet', 'Parmi eux, **Kofi**, charpentier, les mains pleines de sciure, regarde déjà les falaises rouges {vers:carriere}.')]
   },
@@ -9382,17 +9382,14 @@ function nightRun(then){
   const end = nightEnd();
   if (nightOn) return true;
   if (Date.now() - (window._nightDone || 0) < 20000) return false;
-  if (window.__instant || matchMedia('(prefers-reduced-motion: reduce)').matches){ tday = end/24; tTarget = null; forceDraw = true; try { updateClock(); } catch(e){} if (isStory() && glob.story){ glob.story.isleDays = (glob.story.isleDays || 1) + 1; saveGlob(); } toast('☀️ Le lendemain matin…'); return false; }
+  if (window.__instant || matchMedia('(prefers-reduced-motion: reduce)').matches){ tday = end/24; tTarget = null; forceDraw = true; try { updateClock(); } catch(e){} if (isStory() && glob.story){ glob.story.isleDays = (glob.story.isleDays || 1) + 1; saveGlob(); } return false; }
   nightOn = true; tTarget = null;
-  const cap = document.createElement('div'); cap.className = 'night-cap'; cap.innerHTML = '<span>🌙 La nuit tombe sur l’île…</span>'; document.body.append(cap);
-  const sp = cap.firstChild, h0 = tday * 24 < 12 ? tday * 24 + 24 : tday * 24, h1 = 24 + end, t0 = performance.now(); let dur = 5200, morning = false;
-  cap.onclick = () => { dur = Math.min(dur, performance.now() - t0 + 500); };
+  const h0 = tday * 24 < 12 ? tday * 24 + 24 : tday * 24, h1 = 24 + end, t0 = performance.now(); let dur = Math.max(900, Math.min(2200, (h1 - h0) * 180));
   const step = now => {
     const k = Math.min(1, (now - t0) / dur), e = k < 0.5 ? 2*k*k : 1 - (-2*k + 2)**2 / 2, h = h0 + (h1 - h0) * e;
     tday = (h % 24) / 24; forceDraw = true; try { updateClock(); } catch(err){}
-    if (!morning && h >= h1 - 2.5){ morning = true; sp.style.opacity = 0; setTimeout(() => { sp.textContent = '☀️ Le lendemain matin'; sp.style.opacity = 1; }, 450); }
     if (k < 1) requestAnimationFrame(step);
-    else setTimeout(() => { cap.remove(); nightOn = false; window._nightDone = Date.now(); tday = end/24; forceDraw = true; if (isStory() && glob.story){ glob.story.isleDays = (glob.story.isleDays || 1) + 1; saveGlob(); } then(); }, 700);
+    else setTimeout(() => { nightOn = false; window._nightDone = Date.now(); tday = end/24; forceDraw = true; if (isStory() && glob.story){ glob.story.isleDays = (glob.story.isleDays || 1) + 1; saveGlob(); } then(); }, 250);
   };
   requestAnimationFrame(step);
   return true;
