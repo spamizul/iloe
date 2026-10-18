@@ -2789,13 +2789,15 @@ function drawObject(o, ox, oy, x, y, withLights){
     if (withLights) lights.push({x:ox+3, y:oy+9, w:3, h:3, kind:'pane'});
     break; }
   case 'à': { // bibliothèque
-    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.15)');
-    R(ox+1, oy+5, 14, 9, '#d6cfbf');
-    R(ox, oy+4, 16, 1, '#bdb4a2'); R(ox+2, oy+3, 12, 1, '#d6cfbf'); R(ox+4, oy+2, 8, 1, '#d6cfbf'); R(ox+6, oy+1, 4, 1, '#d6cfbf');
-    if (season === 'hiver'){ R(ox+4, oy+2, 8, 1, '#fff'); R(ox+6, oy+1, 4, 1, '#fff'); }
-    for (const cx of [2, 5, 10, 13]) R(ox+cx, oy+5, 1, 8, '#efe9dc');
-    R(ox+6, oy+7, 4, 6, '#6b4a2e'); for (let k = 0; k < 4; k++) R(ox+6+k, oy+8, 1, 2, ['#cf453a','#2e6fa8','#f2b134','#3f8f5a'][k]);
-    R(ox, oy+13, 16, 1, '#bdb4a2'); R(ox+1, oy+14, 14, 1, '#cfc8b8');
+    R(ox, oy+14, 16, 2, 'rgba(0,0,0,.28)');
+    R(ox+1, oy+5, 14, 9, '#ead9b0'); R(ox+1, oy+5, 1, 9, '#b9a274'); R(ox+14, oy+5, 1, 9, '#b9a274');
+    R(ox, oy+4, 16, 1, '#3d4a5e'); R(ox+1, oy+3, 14, 1, '#56657d'); R(ox+3, oy+2, 10, 1, '#56657d'); R(ox+5, oy+1, 6, 1, '#56657d'); R(ox+7, oy, 2, 1, '#3d4a5e');
+    if (season === 'hiver'){ R(ox+1, oy+3, 14, 1, '#fff'); R(ox+5, oy+1, 6, 1, '#fff'); }
+    R(ox+7, oy+2, 2, 1, '#f2b134');
+    for (const cx of [2, 4, 11, 13]) R(ox+cx, oy+5, 1, 8, '#fbf6ea');
+    R(ox+6, oy+6, 4, 7, '#5a3a22');
+    for (let k = 0; k < 4; k++){ R(ox+6+k, oy+8, 1, 2, ['#cf453a','#2e6fa8','#f2b134','#3f8f5a'][k]); R(ox+6+k, oy+11, 1, 2, ['#3f8f5a','#cf453a','#2e6fa8','#f2b134'][k]); }
+    R(ox, oy+13, 16, 1, '#8f8470'); R(ox+1, oy+14, 14, 1, '#a99d86');
     if (withLights) lights.push({x:ox+6, y:oy+7, w:4, h:3, kind:'pane'});
     break; }
   case 'ù': { // cinéma
@@ -4456,7 +4458,7 @@ function merchantTide(){
   m.n = (m.n || 0) + 1;
   if (m.met && m.n < 3) { saveGlob(); return; }
   const spot = merchantSpot(); if (spot == null){ saveGlob(); return; }
-  O[spot] = 'Ȝ'; m.at = spot; m.stay = 2; m.n = 0; try { m.ask = pickAsk(); } catch(e){ m.ask = null; } saveGlob(); save();
+  O[spot] = 'Ȝ'; m.at = spot; m.stay = 2; m.n = 0; m.vis = (m.vis || 0) + 1; try { m.ask = pickAsk(); } catch(e){ m.ask = null; } saveGlob(); save();
   setTimeout(() => toast(m.met ? '⛵ Le voilier de Gaspard est à quai ! Touche-le avec la main ✋' : '⛵ Une voile rayée approche de ton port…', 4500), 2600);
 }
 const GASPARD_HELLO = ['« Ho ho ! Un quai, ici, de nouveau ! Ça alors… Je m’appelle Gaspard. Ça fait trente ans que je fais la navette entre les îles et le continent. »', '« Avant la grande tempête, il y avait un vrai port sur cette île, avec des barques partout. La tempête a tout emporté… Depuis, je ne m’arrêtais plus ici. »', '« Et le vieux Job, il tient toujours son phare ? Il va bien ? Tu lui diras que Gaspard le salue ! »', '« Bon, parlons affaires : sur le continent, les coquillages nacrés de vos plages valent de l’or. Apporte-m’en, et je t’échange ce que j’ai dans ma cale. Je repasserai de temps en temps ! »'];
@@ -4549,9 +4551,9 @@ bagBtn.onclick = e => { e.stopPropagation(); { const r = bagBtn.getBoundingClien
 document.addEventListener('pointerdown', e => { if (!e.target.closest || !e.target.closest('#bagBtn, #bagPop')) bagPop.hidden = true; }, true);
 function gaspardStock(){
   const m = glob.story.merchant || (glob.story.merchant = {n:0});
-  if (!glob.story.stock || glob.story.stock.v !== m.n){
+  if (!glob.story.stock || glob.story.stock.v !== 'v' + (m.vis || 0)){
     const pool = GASPARD_RARE.slice(); for (let k = pool.length - 1; k > 0; k--){ const j = (Math.random()*(k+1))|0; [pool[k], pool[j]] = [pool[j], pool[k]]; }
-    glob.story.stock = {v:m.n, items:pool.slice(0, 2), pick:Math.random()}; saveGlob();
+    glob.story.stock = {v:'v' + (m.vis || 0), items:pool.slice(0, 2), pick:Math.random()}; saveGlob();
   }
   return glob.story.stock.items;
 }
@@ -4610,7 +4612,7 @@ function bonusPick(id, i){
         const qs = []; for (let j = 0; j < N*N; j++) if (G[j] === 'q' && !O[j] && !inIsle(j, 'ilot')) qs.push(j);
         const ends = qs.filter(j => [1, -1, N, -N].filter(d => G[j + d] === 'q').length <= 1), at = (ends.length ? ends : qs)[0];
         let at2 = at; if (at2 == null){ const land = mainLand(); for (let j = 0; j < N*N && at2 == null; j++) if (!O[j] && land[j] && (G[j] === 'g' || G[j] === 's') && near8(j, m => G[m] === 'q' && !inIsle(m, 'ilot'))) at2 = j; }
-        { const bb = bag(); bb['ā'] = (bb['ā'] || 0) + 1; saveGlob(); renderBag(); setTimeout(() => toast('🔔 La cloche est dans ton sac. Elle attendra le jour où le port revivra.', 3500), 1200); }
+        { if (bagCount() < bagCap() || at2 == null){ const bb = bag(); bb['ā'] = (bb['ā'] || 0) + 1; saveGlob(); renderBag(); setTimeout(() => toast('🔔 La cloche est dans ton sac. Elle attendra le jour où le port revivra.', 3500), 1200); } else { O[at2] = 'ā'; save(); forceDraw = true; setTimeout(() => toast('🔔 Ton sac est plein : la cloche t’attend au bout du quai.', 4000), 1200); } }
         openStoryModal({mode:'letter', who:'yuna', kicker:'La plongeuse', title:'Quelque chose de gros', paras:['Yuna remonte, tout essoufflée. « Il y a quelque chose de gros, là-dessous… Il me faut de l’aide ! »', {who:'toi', t:'Tout le monde tire sur la corde, et la vieille cloche du port sort de l’eau, couverte d’algues.'}], go:'Continuer'});
       }
       saveGlob(); renderStoryCard(); return true; }
@@ -6415,7 +6417,7 @@ const CHAPTERS_V2 = [
    goals1:[['Des étals sur le quai', () => O.reduce((n, o, i) => n + (o === 'Ą' && near8(i, j => G[j] === 'q') ? 1 : 0), 0), 4, '« Comme autrefois, tout le long du quai ! »', 'L’étal est dans l’onglet Eau et port des Objets. Pose-les au bord du quai.'],
      ['Un chemin jusqu’au marché', () => linkedFrom(i => O[i] === 'Ą', i => O[i] === 'h') ? 1 : 0, 1, '« Il faut que tout le monde puisse venir ! »', 'Trace un chemin du village jusqu’aux étals.'],
      ['Garnis les étals', () => Object.entries(glob.story.stalls || {}).filter(([k, p]) => O[+k] === 'Ą' && MARKET[p]).length, 4, '« Chaque étal vend une chose : à toi de choisir ! »', 'Touche un étal avec la main ✋ et choisis ce qu’il vend : œufs, pain, lait, miel, légumes…'],
-     ['La cloche du port', () => O.some((o, i) => o === 'ā' && O.some((p, j) => p === 'Ą' && dist2(i, j) <= 4.5)) ? 1 : 0, 1, '« Et la cloche, tout près des étals, pour annoncer l’ouverture ! »', 'La cloche est dans ton sac 🎒 : pose-la juste à côté des étals, à 4 cases au plus. Déjà posée trop loin ? Range-la dans ton sac et repose-la.']],
+     ['La cloche du port', () => O.some((o, i) => o === 'ā' && O.some((p, j) => p === 'Ą' && dist2(i, j) <= 4.5)) ? 1 : 0, 1, '« Et la cloche, tout près des étals, pour annoncer l’ouverture ! »', () => cnt('ā') ? 'La cloche est déjà posée : construis les étals autour d’elle, à 4 cases au plus. Ou range-la dans ton sac (appui long ✋) et repose-la près des étals.' : 'La cloche est dans ton sac 🎒 : pose-la juste à côté des étals, à 4 cases au plus.']],
    mid:['« Tout est prêt ! Demain matin, on sonne la cloche et on ouvre. »'],
    onMid:() => { glob.story.mkDay = glob.story.isleDays || 1; saveGlob(); },
    goals2:[['Le premier marché', () => glob.story.marketOn ? 1 : 0, 1, () => glob.story.mkDay != null && (glob.story.isleDays || 1) <= glob.story.mkDay ? '« Demain matin, on ouvre ! »' : 'Le jour se lève sur le port…', () => glob.story.mkDay != null && (glob.story.isleDays || 1) <= glob.story.mkDay ? 'Va dormir 🌙 : touche ta maison avec la main. Au matin, sonne la cloche du port ✋.' : 'Touche la cloche du port avec la main ✋ pour ouvrir le marché. Pas de cloche ? Touche un étal.']],
@@ -6527,7 +6529,7 @@ const CHAPTERS_V2 = [
    reward:[]},
   {season:3, title:'La fête des lumières', who:'lina', give:['ɮ'],
    onIntro:() => { glob.story.lamp0 = cnt('ɮ'); glob.story.canoe = null; glob.story.canoeIn = 0; glob.story.groupPhoto = 0; saveGlob(); },
-   intro:[{who:'toi', t:'Quelques jours plus tard, une bouteille s’échoue sur la plage. Pas de R. cette fois : une écorce de pin gravée au couteau. « Samedi soir. — E. »'}, 'Lina en lâche sa farine. « Il vient ! Elias vient ! Il faut une fête, une vraie, avec des lumières partout ! »'],
+   intro:[{who:'toi', t:'Un matin, une écorce de pin s’échoue sur la plage, gravée au couteau : « Samedi soir. — E. »'}, 'Lina en lâche sa farine. « Il vient ! Elias vient ! Il faut une fête, une vraie, avec des lumières partout ! »'],
    goals1:[['Des lampions partout', () => Math.max(0, cnt('ɮ') - (glob.story.lamp0 || 0)), 8, '« Qu’on voie la fête depuis l’île aux pins ! »', 'Le lampion est dans l’onglet Mobilier des Objets. Pose-les le long des chemins et sur le quai.'],
      ['Le buffet', () => Math.min(2, resv().gateau || 0) + Math.min(4, resv().crepe || 0), 6, '« Deux gâteaux et quatre crêpes ! Et une omelette géante, bien sûr ! »', 'Les gâteaux à la boulangerie, les crêpes à la crêperie. Touche-les avec la main ✋.']],
    mid:[{who:'toi', t:'Le soir tombe. Au loin, sur l’eau, une toute petite lumière quitte l’île aux pins : le canoë d’Elias.'}, '« Le vent se lève… Pourvu que les balises tiennent ! »'],
@@ -8605,7 +8607,11 @@ const SHORT = {
       B('leon', '« On dirait que tu es déjà venu, avant ! »'),
       B('elias', '« Toutes les îles se ressemblent… Et il y a toujours une source, sous les pierres. »', 'Elias détourne les yeux.')],
     outro:[B('elias', '« Pas par là. Pas encore. »', 'Léon s’avance déjà sur un sentier qui file dans la brume. Elias le rattrape doucement par l’épaule.'),
-      B('elias', '« La forêt va guérir, grâce à vous. Je… je viendrai vous voir. Bientôt. Promis. »')]
+      B('elias', '« La forêt va guérir, grâce à vous. Je… je viendrai vous voir. Bientôt. Promis. »'),
+      B('carnet', 'Les aiguilles rousses tombent une à une. Dessous, de petites pousses vertes percent déjà la mousse. Pour la première fois, la forêt sent bon la résine.'),
+      B('elias', '« Pour Job. Dis-lui… que je vais bien. »', 'Il fouille dans sa poche et te tend un petit phare taillé dans du pin.'),
+      B('carnet', 'Tout le monde remonte dans la barque. Sur la plage, Elias reste debout, sa lanterne à la main, jusqu’à ce que la brume l’avale.'),
+      B('tomas', '« Il viendra. Il l’a promis. »')]
   },
   'La fête des lumières': {
     outro:[B('carnet', 'La photo se colle dans le carnet, avec le phare allumé à l’arrière-plan.'),
@@ -8613,7 +8619,7 @@ const SHORT = {
       B('carnet', 'Crac. Le **phare s’éteint**. La musique s’arrête.'),
       B('job', '« Il ne doit pas s’éteindre ! Jamais ! Pas une seule nuit ! »', 'Job court dans l’escalier, une lampe à huile à la main.'),
       B('carnet', 'Au bout du quai, Elias est tout pâle. Il ne regarde pas le phare : il regarde la **brume**, du côté opposé à l’île aux pins.')],
-    intro:[B('carnet', 'Quelques jours plus tard, une bouteille s’échoue sur la plage. Pas de R. cette fois : une écorce de pin gravée au couteau. « Samedi soir. — E. »'),
+    intro:[B('carnet', 'Un matin, une écorce de pin s’échoue sur la plage, gravée au couteau : « Samedi soir. — E. »'),
       B('lina', '« Il vient ! Elias vient ! Il faut une fête, une vraie, avec des **lumières** partout ! »', 'Lina en lâche sa farine.')],
     mid:[B('lina', '« Le vent se lève… Pourvu que les **balises** tiennent ! »', 'Au loin, une toute petite lumière quitte l’île aux pins : le canoë d’Elias.')],
     mid2:[B('carnet', 'Elias pose le pied sur le quai. Rose lui saute dans les bras avec un dessin : un pin, un phare, et un petit bonhomme entre les deux.'),
@@ -9359,7 +9365,7 @@ function bulleFill(short, mode, ch){
   }
   const rd = document.createElement('button'); rd.type = 'button'; rd.className = 'sb-read'; rd.textContent = '📖 Lire toute l’histoire';
   rd.onclick = e => { e.stopPropagation(); storyLong = true; openStoryModal(storyArgs); };
-  storyGo.parentNode.querySelectorAll('.sb-read').forEach(x => x.remove()); storyGo.parentNode.prepend(rd);
+  storyGo.parentNode.querySelectorAll('.sb-read').forEach(x => x.remove());
 }
 function bulleWho(){ if (storyBox.classList.contains('bulle')){ const t = storyWho.textContent.split(',')[0]; storyWho.textContent = t.toUpperCase(); } }
 let sbTip = null;
