@@ -2924,6 +2924,23 @@ const HAIR = ['#3a2a1e','#c79a4f','#1e1e24','#8a3f25','#d9d4cc'];
 let walkers = [];
 /* dans l'histoire, les promeneurs restent sur ton île et les îles reliées par un pont */
 function mainLand(){
+  const m = mainLand0(); let n = 0; for (let i = 0; i < N*N; i++) if (m[i]) n++;
+  if (n >= 40 || n === 0) return m;
+  /* la plus grande terre hors des îles de l'histoire */
+  const isl = Object.keys((glob.story && glob.story.isles) || {}), comp = new Int32Array(N*N).fill(-1); let big = -1, bigN = 0, c = 0;
+  for (let s0 = 0; s0 < N*N; s0++){ if (G[s0] === 'w' || comp[s0] >= 0 || m[s0]) continue; let k = 0; const q = [s0]; comp[s0] = c;
+    while (q.length){ const i = q.pop(); if (!isl.some(key => inIsle(i, key))) k++; for (const d of [1, -1, N, -N]){ const j = i + d; if (j < 0 || j >= N*N || Math.abs((j % N) - (i % N)) > 1 || comp[j] >= 0 || m[j] || G[j] === 'w') continue; comp[j] = c; q.push(j); } }
+    if (k > bigN){ bigN = k; big = c; } c++; }
+  if (big < 0 || bigN < 40) return m;
+  /* un petit passage de sable (3 cases au plus) entre le grain et l'île */
+  const prev = new Int32Array(N*N).fill(-2), q = []; for (let i = 0; i < N*N; i++) if (m[i]){ prev[i] = -1; q.push(i); }
+  let end = -1;
+  for (let a = 0; a < q.length && end < 0; a++){ const i = q[a]; let dep = 0; for (let k = i; prev[k] >= 0; k = prev[k]) dep++; if (dep > 3) continue;
+    for (const d of [1, -1, N, -N]){ const j = i + d; if (j < 0 || j >= N*N || Math.abs((j % N) - (i % N)) > 1 || prev[j] !== -2) continue; prev[j] = i; if (comp[j] === big){ end = j; break; } if (G[j] === 'w' && !O[j]) q.push(j); } }
+  if (end >= 0){ for (let k = prev[end]; k >= 0 && !m[k]; k = prev[k]) G[k] = 's'; groundDirty = true; forceDraw = true; setTimeout(() => { try { save(); } catch(e){} }, 0); return mainLand0(); }
+  const out = new Uint8Array(N*N); for (let i = 0; i < N*N; i++) if (comp[i] === big || m[i]) out[i] = 1; return out;
+}
+function mainLand0(){
   let seed = O.indexOf('L'); if (seed < 0) seed = ((N/2)|0)*N + ((N/2)|0);
   if (G[seed] === 'w'){ let best = -1, bd = 1e9; for (let i = 0; i < N*N; i++) if (G[i] !== 'w'){ const d = Math.abs(i % N - N/2) + Math.abs(((i / N)|0) - N/2); if (d < bd){ bd = d; best = i; } } seed = best; }
   const seen = new Uint8Array(N*N); if (seed < 0) return seen;
