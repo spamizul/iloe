@@ -7036,10 +7036,13 @@ function vpOpenIsle(){
   glob.story.vpOpen = 1; revealIsle('vieuxphare'); saveGlob();
 }
 /* la grotte, au pied de la falaise de l'île du vieux phare */
+const CAVE_SOL = ['s', 'g', '!'];
 function caveMake(){
-  if (vpCave() >= 0 || !(glob.story.isles || {}).vieuxphare) return;
+  if (!(glob.story.isles || {}).vieuxphare) return;
+  const c0 = vpCave();
+  if (c0 >= 0){ if (CAVE_SOL.includes(G[c0])) return; O[c0] = null; }
   const g = glob.story.isles.vieuxphare; let best = -1, bd = 1e9;
-  for (let i = 0; i < N*N; i++){ if (!inIsle(i, 'vieuxphare') || G[i] === 'w' || O[i]) continue; if (!near8(i, j => G[j] === 'w')) continue; const d = ((i / N)|0) - g.cy; if (d < bd){ bd = d; best = i; } }
+  for (let i = 0; i < N*N; i++){ if (!inIsle(i, 'vieuxphare') || !CAVE_SOL.includes(G[i]) || O[i]) continue; if (!near8(i, j => G[j] === 'w')) continue; const d = ((i / N)|0) - g.cy; if (d < bd){ bd = d; best = i; } }
   if (best >= 0){ O[best] = 'Œ'; save(); forceDraw = true; }
 }
 /* ---------- saison 4, deuxième passe ---------- */
@@ -7271,6 +7274,8 @@ function s4Album(pg){
 /* la pêche à pied et le reste, sur l'île du vieux phare */
 function s4Tick(){
   if (!isStory() || glob.story.v !== 2) return;
+  /* une grotte posée sur un quai (ancienne version) : on la remet sur la roche */
+  if (!glob.story.caveFix){ glob.story.caveFix = 1; saveGlob(); try { const c = vpCave(); if (c >= 0 && !CAVE_SOL.includes(G[c])) caveMake(); } catch(e){} }
   /* la nuit noire : tant que le bateau n'est pas rentré, il fait nuit */
   if (s3Ch() === 'La nuit noire' && glob.story.fb && !glob.story.fbIn && !nightOn){ const hh = tday * 24; if (hh >= 3.5 && hh < 20.5){ tday = 21/24; tTarget = null; forceDraw = true; try { updateClock(); } catch(e){} } }
   /* l'île du vieux phare : les éclats brillent une fois les débris déblayés */
