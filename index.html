@@ -6702,7 +6702,7 @@ const CHAPTERS_V2 = [
      ['La procession', () => { if (!glob.story.procAt && (bNight() || window.__instant) && lanternPath() >= 6){ glob.story.procAt = Date.now(); saveGlob(); try { s4Procession(O.indexOf('L')); } catch(e){} toast('🏮 Tout le monde monte au phare, une lanterne à la main…', 3200); setTimeout(() => { try { checkStory(); } catch(e){} renderStoryCard(); }, 8200); } if (glob.story.procAt && (window.__instant || Date.now() - glob.story.procAt > 8000)) glob.story.n10 = 1; return glob.story.n10 ? 1 : 0; }, 1, '« Il ne manque plus que la nuit. »', () => glob.story.procAt ? 'Tout le monde monte au phare…' : 'Touche ta maison avec la main ✋ pour te reposer jusqu’au soir.']],
    onDone:() => { glob.story.lit = true; glob.story.phareOff = 0; saveGlob(); forceDraw = true; },
    outro:[{who:'toi', t:'La nuit tombe. Les habitants montent au phare en file, chacun sa lanterne. Job monte, tout seul, et allume.'}, {who:'toi', t:'La lumière tourne à nouveau sur la mer. Sur l’île, tout le monde applaudit.'}, 'Job redescend, les yeux brillants. « Elle n’a jamais aussi bien tourné. »', '« J’avais seize ans. J’étais l’apprenti du vieux phare. La nuit de la tempête, le gardien m’a dit : “Mets la lentille de secours à l’abri, petit.” »', '« Je l’ai serrée contre moi et j’ai couru. Et puis la tour est tombée. Toute ma vie, je me suis demandé si elle avait tenu. »', 'Il lève les yeux vers la lumière. « Elle a tenu. Grâce à vous. »', {who:'toi', t:'Au loin, de l’autre côté de la brume, un petit feu s’allume. Une fois. Deux fois. Puis plus rien.'}],
-   after:() => rBottle('phare', '🍾 Une bouteille à la mer', ['Le lendemain matin, une bouteille s’est échouée sur la plage. Dedans, une lettre.'], [], 'Ranger la lettre', true),
+   after:() => rBottle('phare', '🍾 Une bouteille à la mer', ['Coincée entre deux rochers, une bouteille. Dedans, une lettre.'], [], 'Ranger la lettre', false),
    reward:[]},
 ];
 let CHAPTERS = CHAPTERS_V1;
@@ -6766,7 +6766,7 @@ const R_LETTERS = {
   chaussette:{hand:'rita', t:'À qui trouvera cette bouteille : j’ai perdu ma chaussette gauche. Elle est rayée bleu et jaune. Si vous la voyez, gardez-la au chaud. Merci.\n— R.'},
   bonnet:{hand:'rita', t:'À qui la trouvera : si vous voyez passer un bonnet rouge, il est à moi. Le vent n’a aucune manière.\n— R.'},
   brume:{hand:'old', t:'La brume n’est pas méchante. Elle garde ce qu’on lui confie, et elle le rend quand c’est le moment.\n— R.'},
-  phare:{hand:'rita', t:'J’ai vu votre phare se rallumer, cette nuit. De chez moi, on aurait dit une étoile qui revenait. Je crois qu’il est temps que je vienne vous voir. Gardez-moi une place sur le quai.\n— R.'}};
+  phare:{hand:'rita', t:'Je savais que vous le rallumeriez. J’ai jeté cette bouteille à la mer le soir où il s’est éteint. La mer a attendu avec moi. Gardez-moi une place sur le quai.\n— R.'}};
 function keepRLetter(k){ const L = glob.story.rl || (glob.story.rl = []); if (!L.includes(k)){ L.push(k); saveGlob(); } }
 function openRLetter(k, kicker, intro, after, go){
   keepRLetter(k); const L = R_LETTERS[k];
@@ -7351,7 +7351,7 @@ function s4Bottles(){
   if (r.day != null && (glob.story.isleDays || 1) <= r.day) return;
   if (r.at != null && O[r.at] === 'ʚ') return;
   const j = beachSpot(); if (j < 0) return; O[j] = 'ʚ'; r.at = j; saveGlob(); save(); forceDraw = true;
-  setTimeout(() => toast('🍾 Une bouteille s’est échouée sur la plage… Touche-la avec la main ✋', 4000), 1200);
+  setTimeout(() => { toast(r.k === 'phare' ? '🍾 Quelque chose tinte contre les rochers… Touche-le avec la main ✋' : '🍾 Une bouteille s’est échouée sur la plage… Touche-la avec la main ✋', 4000); if (r.k === 'phare') try { arrShow(); } catch(e){} }, 1200);
 }
 function arrState(i){ const a = glob.story.arr; return a && a.i === i ? a : null; }
 /* true : le chapitre attend quelque chose avant de commencer */
@@ -7377,10 +7377,10 @@ function arrGate(i){
   return false;
 }
 function arrLine(i){
-  if (glob.story.rPend) return glob.story.rPend.day != null && (glob.story.isleDays || 1) <= glob.story.rPend.day ? '🌙 Demain matin, la mer rapportera peut-être quelque chose…' : '🍾 Une bouteille t’attend sur la plage. Touche-la avec la main ✋';
+  if (glob.story.rPend) return glob.story.rPend.day != null && (glob.story.isleDays || 1) <= glob.story.rPend.day ? '🌙 Demain matin, la mer rapportera peut-être quelque chose…' : (glob.story.rPend.k === 'phare' ? '🍾 Ce petit bruit de verre, en bas, sur la plage… Touche-le avec la main ✋' : '🍾 Une bouteille t’attend sur la plage. Touche-la avec la main ✋');
   const a = arrState(i); if (!a || (glob.story.arrOk || {})[i]) return '';
   if (a.kind === 'boat') return a.off ? '📣 Gaspard t’appelle depuis son voilier : il lui faut un quai pour accoster !' : '⛵ Le voilier de Gaspard est au port. Touche-le avec la main ✋';
-  if (a.kind === 'elias') return (glob.story.isleDays || 1) <= a.day ? '🌙 Repose-toi… Demain matin, il se passera quelque chose.' : '🍾 Une bouteille t’attend sur la plage. Touche-la avec la main ✋';
+  if (a.kind === 'elias') return (glob.story.isleDays || 1) <= a.day ? '🌙 Repose-toi… Demain matin, il se passera quelque chose.' : (glob.story.rPend.k === 'phare' ? '🍾 Ce petit bruit de verre, en bas, sur la plage… Touche-le avec la main ✋' : '🍾 Une bouteille t’attend sur la plage. Touche-la avec la main ✋');
   return '';
 }
 /* toucher le voilier ou la bouteille */
@@ -8726,7 +8726,8 @@ const SHORT = {
       B('job', '« J’avais seize ans. J’étais l’apprenti du vieux phare. La nuit de la tempête, le gardien m’a dit : “Mets la lentille de secours à l’abri, petit.” »'),
       B('job', '« Je l’ai serrée contre moi et j’ai couru. Et puis la tour est tombée. Toute ma vie, je me suis demandé si elle avait tenu. »'),
       B('job', '« Elle a tenu. Grâce à vous. »', 'Il lève les yeux vers la lumière.'),
-      B('carnet', 'Au loin, de l’autre côté de la brume, un petit feu s’allume. Une fois. Deux fois. Puis plus rien.')]
+      B('carnet', 'Au loin, de l’autre côté de la brume, un petit feu s’allume. Une fois. Deux fois. Puis plus rien.'),
+      B('carnet', 'Tout le monde redescend du phare, sans un mot. Et puis, tout en bas, un petit son clair monte des rochers : tink… Comme du verre qui heurte la pierre, poussé par les vagues.')]
   }
 };
 
