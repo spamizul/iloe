@@ -214,6 +214,7 @@ button.fold{flex:none;width:32px;height:30px;border:1px solid var(--line);backgr
 #storyBox.bulle .rw-label{flex-basis:auto;text-align:left;font-size:11px;margin:0}
 #storyBox.bulle .rw{flex-direction:row;gap:5px;font-size:13px}
 #storyBox.bulle .rw canvas{width:18px;height:22px}
+#storyBox.bulle .story-card{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 #storyBox.bulle .row.center{position:sticky;bottom:0;background:var(--surface);padding:6px 0 10px;margin:0;gap:10px}
 #storyBox.bulle .sb-read{margin-right:auto;padding:0;font-size:12.5px}
 @keyframes sbIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
@@ -249,6 +250,8 @@ button.fold{flex:none;width:32px;height:30px;border:1px solid var(--line);backgr
 #storyBox.panneau.lettre .row.center{display:flex;justify-content:center;margin-top:8px}
 #storyBox.panneau .letter-paper{margin:10px 0 6px -56px;max-width:none}
 #storyBox.panneau.lettre .story-body p[data-who]{margin-top:6px}
+#storyBox.panneau .story-card{max-height:66vh;max-height:66dvh;overscroll-behavior:contain}
+#storyBox.bulle .story-card{max-height:calc(100dvh - 24px)}
 @keyframes pnIn{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion: reduce){#storyBox.panneau .story-card{animation:none}}
 
@@ -4848,10 +4851,11 @@ mqDesk.addEventListener('change', () => { renderDesk(); try { if (ohSide()) ohLa
 /* ---------- annuler ---------- */
 let history = [];
 const undoBtn = document.getElementById('undoBtn');
-function snapshot(){ history.push({g:G.join(''), o:O.map(c => c || '.').join(''), r:isStory() ? (glob.story.res ? {...glob.story.res} : null) : {...freeSt().res}, fr:!isStory(), b:{...bag()}}); if (history.length > 60) history.shift(); undoBtn.disabled = false; }
+function snapshot(){ history.push({vi:isStory() && glob.story ? JSON.stringify({v:glob.story.villagers || [], t:glob.story.takenHomes || [], h:glob.story.homes || {}}) : null, g:G.join(''), o:O.map(c => c || '.').join(''), r:isStory() ? (glob.story.res ? {...glob.story.res} : null) : {...freeSt().res}, fr:!isStory(), b:{...bag()}}); if (history.length > 60) history.shift(); undoBtn.disabled = false; }
 undoBtn.onclick = () => {
   const s = history.pop(); if (!s) return;
   G = s.g.split(''); O = s.o.split('').map(c => c === '.' ? null : c);
+  if (s.vi && isStory()){ try { const d = JSON.parse(s.vi); glob.story.villagers = d.v; glob.story.takenHomes = d.t; glob.story.homes = d.h; saveGlob(); } catch(e){} }
   if (s.r){ if (s.fr) freeSt().res = s.r; else glob.story.res = s.r; saveGlob(); renderRes(); }
   if (s.b){ if (s.fr) (glob.bagsT || (glob.bagsT = {}))[terrains.cur] = s.b; else glob.story.bag = s.b; saveGlob(); if (typeof renderBag === 'function') renderBag(); }
   undoBtn.disabled = !history.length;
@@ -5188,14 +5192,14 @@ function drawDish(cv, k){
   else if (k === 'k'){ R(2, 15, 12, 3, 'rgba(0,0,0,0)'); c.clearRect(0, 14, 16, 6); R(4, 9, 8, 7, '#f4e6d8'); R(5, 8, 6, 1, '#f4e6d8'); R(5, 10, 1, 5, '#e3b8a0'); R(7, 9, 1, 6, '#e3b8a0'); R(9, 9, 1, 6, '#e3b8a0'); R(11, 10, 1, 5, '#e3b8a0'); R(6, 16, 4, 2, '#e8cfc0'); }
   else { R(3, 12, 10, 3, '#e8b86a'); R(4, 11, 8, 1, '#f0c87a'); R(5, 12, 2, 1, '#c98a4a'); R(9, 13, 2, 1, '#c98a4a'); }
 }
-function bagAdd(id){ if (bagCount() >= bagCap()) return false; const b = bag(); b[id] = (b[id] || 0) + 1; saveGlob(); renderBag(); return true; }
+function bagAdd(id, mine){ if ((mine || id === 'ǰ') && bagCount() >= bagCap()) return false; const b = bag(); b[id] = (b[id] || 0) + 1; saveGlob(); renderBag(); return true; }
 function bagStore(x, y){
   let i = y*N + x;
   if (!O[i]){ const below = [[y+1, TALL1], [y+2, TALL2]].find(([yy, set]) => yy < N && set.has(O[yy*N + x])); if (below){ i = below[0]*N + x; y = below[0]; } }
   if (!ecoOn() || !O[i] || NO_BAG.has(O[i]) || COLLECT[O[i]] || GROWN[O[i]] || (resOn() && brokenAt(i)) || fogAt(x, y) || isleBlocked(i)) return false;
   if (resOn() && villagers().some(v => v.home === i || (v.home == null && v.tent === i))){ hintT('🏡 Quelqu’un habite ici'); return true; }
   if (bagCount() >= bagCap()){ hintT(`🎒 Ton sac est plein (${bagCount()}/${bagCap()})`); return true; }
-  const id = O[i]; O[i] = null; bagAdd(id); save(); syncWalkers(); forceDraw = true; groundDirty = true;
+  const id = O[i]; O[i] = null; bagAdd(id, true); save(); syncWalkers(); forceDraw = true; groundDirty = true;
   toast(`🎒 ${(TOOLS.find(t => t.id === id) || {}).name} rangé dans ton sac`, 2000); return true;
 }
 function bagUse(id){ const b = bag(); if (!b[id]) return; b[id]--; if (!b[id]) delete b[id]; saveGlob(); if (!b[id] && bagTool === id){ bagTool = null; selectTool(prevTool && prevTool !== id ? prevTool : 'h', true); } renderBag(); }
@@ -7001,7 +7005,7 @@ const CHAPTERS_V2 = [
    reward:[]},
   {season:2, title:'Les abeilles', who:'ondine', give:['u'], homeFor:'ondine',
    onIntro:() => { glob.story.h5 = cnt('h'); saveGlob(); },
-   intro:[{who:'toi', t:"Une petite barque chargée de caisses en bois qui bourdonnent accoste au port. Une jeune femme en descend, un voile de tulle sur son chapeau… et une piqûre sur le nez."}, "« Bonjour… Ondine, apicultrice. Pardon pour le bruit, elles sont un peu énervées par le voyage. »", "« Gaspard m’a parlé de vos champs et de vos fleurs. Mes abeilles adoreraient vivre ici… si vous voulez bien de nous. »"],
+   intro:[{who:'toi', t:"Le voilier de Gaspard accoste. Une jeune femme en descend avec des caisses en bois qui bourdonnent, un voile de tulle sur son chapeau… et une piqûre sur le nez."}, "« Bonjour… Ondine, apicultrice. Pardon pour le bruit, elles sont un peu énervées par le voyage. »", "« Gaspard m’a parlé de vos champs et de vos fleurs. Mes abeilles adoreraient vivre ici… si vous voulez bien de nous. »"],
    goals1:[['Une maison pour Ondine', () => Math.max(0, cnt('h') - (glob.story.h5 ?? cnt('h'))), 1, 'Ondine n’a pas encore de toit…', 'Construis une maison pour Ondine.'],
      ['Des ruches près des fleurs', () => O.reduce((n, o, i) => n + (o === 'u' && near8(i, j => O[j] === 'f' || O[j] === 'H' || O[j] === 'î' || G[j] === 'k') ? 1 : 0), 0), 3, 'Les abeilles aiment vivre près des fleurs…', 'Pose des ruches tout près des fleurs ou des champs de blé.'],
      ['Un pré fleuri', () => cnt('f') + cnt('H'), 8, 'Il faudrait plus de fleurs pour les abeilles…', 'Plante des fleurs un peu partout sur l’île.']],
@@ -8278,7 +8282,7 @@ function s4Tick(){
   }
 }
 /* ---------- les arrivées : le voilier de Gaspard, les bouteilles à ramasser ---------- */
-const ARRIVE = {'Basile et Moussaillon':'boat', 'Le pain':'boat', 'La verrière':'boat', 'L’architecte':'boat', 'La factrice':'boat', 'Le poulailler':'boat', 'La longère':'boat', 'La bibliothécaire':'boat', 'La fête des lumières':'elias'};
+const ARRIVE = {'Les abeilles':'boat', 'Basile et Moussaillon':'boat', 'Le pain':'boat', 'La verrière':'boat', 'L’architecte':'boat', 'La factrice':'boat', 'Le poulailler':'boat', 'La longère':'boat', 'La bibliothécaire':'boat', 'La fête des lumières':'elias'};
 function beachSpot(){ const land = mainLand(), a = []; for (let i = 0; i < N*N; i++) if (land[i] && !O[i] && G[i] === 's' && near8(i, j => G[j] === 'w') && !fogAt(i % N, (i / N)|0) && !inIsle(i, 'ilot')) a.push(i);
   if (!a.length) for (let i = 0; i < N*N; i++) if (land[i] && !O[i] && (G[i] === 's' || G[i] === 'g') && !fogAt(i % N, (i / N)|0)) a.push(i);
   return a.length ? a[(Math.random() * a.length)|0] : -1; }
@@ -8654,9 +8658,11 @@ function s5Tick(){
   try { staleFix(); } catch(e){ console.warn(e); }
   try { vil9Tick(); } catch(e){ console.warn(e); }
   try { s5SeenFix(); } catch(e){ console.warn(e); }
+  try { tentFix(); } catch(e){ console.warn(e); }
+  try { nameFix(); } catch(e){ console.warn(e); }
   try { gg10Tick(); } catch(e){ console.warn(e); }
   if (s5Past('Le village des forges') && !glob.story.etalOn){ try { etalPlace(); save(); } catch(e){} }
-  if (verOn()){ try { verBloom(); } catch(e){} if (!glob.story.seedSpots && (glob.story.introSeen ?? -1) >= glob.story.chapter) seedSpawn(); }
+  if (verOn()){ try { verBloom(); } catch(e){} if ((glob.story.introSeen ?? -1) >= glob.story.chapter && seedsGot() + O.reduce((n, o) => n + (o === '˟' ? 1 : 0), 0) < SEEDS_N && Date.now() - (window._seedT || 0) > 4000){ window._seedT = Date.now(); seedSpawn(); } }
   { const u = glob.story.bkUnder; if (u && O[u.c] !== 'ˏ'){ if (!O[u.c]) O[u.c] = u.o; glob.story.bkUnder = null; saveGlob(); save(); forceDraw = true; } }
   { const k7 = s5I('La nuit de Paloma'); if (k7 >= 0 && (glob.story.introSeen ?? -1) >= k7 && !(glob.story.unlocked2 || []).includes('˝')){ try { unlockItem('˝'); saveGlob(); buildTools(); renderRecent(); } catch(e){} } }
   if (Date.now() - (window._rlFixT || 0) > 5000){ window._rlFixT = Date.now(); try { rLettersFix(); } catch(e){} }
@@ -8814,9 +8820,17 @@ const SEEDS_N = 5;
 const seedsGot = () => glob.story.seedsGot || 0;
 function seedSpawn(){
   const V = O.indexOf('ʫ'); if (V < 0) return 0;
-  const cand = []; for (let j = 0; j < N*N; j++){ const d = dist2(j, V); if (d >= 1.5 && d <= 5 && !O[j] && G[j] !== 'w' && G[j] !== 'q' && G[j] !== 'n' && G[j] !== 'c' && !s5Rail(G[j]) && !fogAt(j % N, (j / N)|0)) cand.push(j); }
-  shuffleArr(cand); const out = []; for (const j of cand){ if (out.length >= SEEDS_N - seedsGot()) break; if (out.some(k => dist2(j, k) < 1.5)) continue; out.push(j); }
-  for (const j of out) O[j] = '˟'; glob.story.seedSpots = out; saveGlob(); save(); forceDraw = true; return out.length;
+  const need = SEEDS_N - seedsGot() - O.reduce((n, o) => n + (o === '˟' ? 1 : 0), 0); if (need <= 0) return 0;
+  const land = mainLand(), ok = j => !O[j] && G[j] !== 'w' && G[j] !== 'q' && G[j] !== 'n' && G[j] !== 'c' && !s5Rail(G[j]) && !fogAt(j % N, (j / N)|0);
+  const out = [];
+  /* d'abord tout près de la verrière, puis un peu plus loin, puis n'importe où sur l'île */
+  for (const [r0, r1] of [[1.5, 5], [1.5, 8], [1.5, 99]]){
+    const cand = []; for (let j = 0; j < N*N; j++){ const d = dist2(j, V); if (d >= r0 && d <= r1 && ok(j) && (r1 < 99 || land[j])) cand.push(j); }
+    shuffleArr(cand);
+    for (const j of cand){ if (out.length >= need) break; if (out.includes(j) || out.some(k => dist2(j, k) < 1.5) || O.some((o, k) => o === '˟' && dist2(j, k) < 1.5)) continue; out.push(j); }
+    if (out.length >= need) break;
+  }
+  for (const j of out) O[j] = '˟'; glob.story.seedSpots = (glob.story.seedSpots || []).concat(out); saveGlob(); save(); forceDraw = true; return out.length;
 }
 function seedTap(i){
   if (O[i] !== '˟' || !verOn()) return false;
@@ -10275,6 +10289,23 @@ function ggMorning(){
   toast('🌅 Le lendemain matin, 8 h 12…', 2200);
   setTimeout(ggRide, 1800);
 }
+/* rattrapage : un habitant dont la maison a disparu (annulée) redevient « en attente » et retrouve la tente orpheline */
+function tentFix(){
+  if (Date.now() - (window._tentFixT || 0) < 5000) return; window._tentFixT = Date.now();
+  const V = glob.story.villagers || []; let dirty = false;
+  for (const v of V) if (v.home != null && O[v.home] !== 'h'){ v.home = null; dirty = true; }
+  const used = new Set(V.map(v => v.tent).filter(t => t != null)); if (glob.story.palomaTent != null) used.add(glob.story.palomaTent);
+  const orphan = []; for (let i = 0; i < N*N; i++) if (O[i] === 'ï' && !used.has(i)) orphan.push(i);
+  for (const v of V) if (v.home == null && (v.tent == null || O[v.tent] !== 'ï') && orphan.length){ v.tent = orphan.shift(); dirty = true; }
+  if (dirty){ saveGlob(); try { settleVillagers(); syncWalkers(); renderStoryCard(); } catch(e){} }
+}
+/* un habitant venu du continent qui s'appelait Basile ou Clara change de prénom (ce sont des personnages de l'histoire) */
+function nameFix(){
+  if (glob.story.nameFix) return; glob.story.nameFix = 1;
+  const V = glob.story.villagers || [], used = new Set(V.map(v => v.name));
+  for (const v of V) if (v.name === 'Basile' || v.name === 'Clara'){ const fem = v.name === 'Clara', pick = (fem ? ['Inaya', 'Léa', 'Mila', 'Zoé'] : ['Théo', 'Hugo', 'Oscar', 'Samuel']).find(n => !used.has(n)); if (pick){ used.add(pick); v.name = pick; } }
+  saveGlob();
+}
 function setupIlot(){
   const g = (glob.story.isles || {}).ilot; if (!g || glob.story.ilotSet) return;
   glob.story.ilotSet = 1;
@@ -10434,21 +10465,39 @@ function quartiers(){
   if (qCache && Date.now() - qAt < 800) return qCache;
   const land = mainLand(), homes = [];
   for (let i = 0; i < N*N; i++) if (land[i] && (O[i] === 'h' || O[i] === 'Ĉ')) homes.push(i);
-  const par = homes.map((_, k) => k), find = k => par[k] === k ? k : (par[k] = find(par[k]));
-  for (let a = 0; a < homes.length; a++) for (let b = a + 1; b < homes.length; b++){
-    const ia = homes[a], ib = homes[b];
-    if (Math.max(Math.abs(ia % N - ib % N), Math.abs(((ia / N)|0) - ((ib / N)|0))) <= 3) par[find(a)] = find(b);
-  }
+  const cheb = (a, b) => Math.max(Math.abs(a % N - b % N), Math.abs(((a / N)|0) - ((b / N)|0)));
+  /* des quartiers à taille humaine : des maisons vraiment voisines, 6 au plus */
+  const par = homes.map((_, k) => k), size = homes.map(() => 1), find = k => par[k] === k ? k : (par[k] = find(par[k]));
+  const pairs = []; for (let a = 0; a < homes.length; a++) for (let b = a + 1; b < homes.length; b++){ const d = cheb(homes[a], homes[b]); if (d <= 2) pairs.push([d, a, b]); }
+  pairs.sort((p, q) => p[0] - q[0]);
+  for (const [, a, b] of pairs){ const ra = find(a), rb = find(b); if (ra === rb || size[ra] + size[rb] > 6) continue; par[ra] = rb; size[rb] += size[ra]; }
   const groups = {}; homes.forEach((h, k) => (groups[find(k)] || (groups[find(k)] = [])).push(h));
-  let mx = 0, my = 0, mn = 0; for (let i = 0; i < N*N; i++) if (land[i]){ mx += i % N; my += (i / N)|0; mn++; }
-  mx /= mn || 1; my /= mn || 1;
-  qCache = Object.values(groups).map(hs => {
-    const near = new Set(); for (const h of hs){ const x = h % N, y = (h / N)|0; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++){ const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < N && yy < N) near.add(yy*N + xx); } }
-    let deco = 0, light = 0; for (const j of near){ if (DECO.has(O[j])) deco++; if (LIGHTS.has(O[j])) light++; }
+  let mx = 0, my = 0; for (const h of homes){ mx += h % N; my += (h / N)|0; } mx /= homes.length || 1; my /= homes.length || 1;
+  const near = (hs, test, r) => hs.some(h => { const x = h % N, y = (h / N)|0; for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++){ if (!dx && !dy) continue; const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < N && yy < N && test(yy*N + xx)) return true; } return false; });
+  const count = (hs, test, r) => { const s = new Set(); for (const h of hs){ const x = h % N, y = (h / N)|0; for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++){ const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < N && yy < N && test(yy*N + xx)) s.add(yy*N + xx); } } return s.size; };
+  const SPOTS = [
+    ['autour de la place', 'sur l’autre côté de la place', hs => near(hs, j => G[j] === 'p' || O[j] === 'Q', 1)],
+    ['autour de la boulangerie', 'derrière la boulangerie', hs => near(hs, j => O[j] === '1', 3)],
+    ['dans la rue du café', 'au bout de la rue du café', hs => near(hs, j => O[j] === '2' || O[j] === 'K', 3)],
+    ['au pied du phare', 'sur le chemin du phare', hs => near(hs, j => O[j] === 'L', 4)],
+    ['près du port', 'sur les hauts du port', hs => near(hs, j => G[j] === 'q', 3)],
+    ['près du puits', 'dans la petite rue derrière le puits', hs => near(hs, j => O[j] === 'W', 2)],
+    ['dans la rue des potagers', 'derrière les potagers', hs => near(hs, j => O[j] === 'V', 2)],
+    ['près du moulin', 'sur le chemin du moulin', hs => near(hs, j => O[j] === 'm', 3)],
+    ['à l’orée du bois', 'sous les grands arbres', hs => count(hs, j => TREES.has(O[j]), 2) >= 2],
+    ['au bord des champs', 'au bout des champs', hs => near(hs, j => G[j] === 'k', 3)],
+    ['côté plage', 'tout au bord de la plage', hs => near(hs, j => G[j] === 's', 2)]];
+  const used = new Set(), list = Object.values(groups).sort((a, b) => b.length - a.length);
+  qCache = list.map(hs => {
     const cx = hs.reduce((a, h) => a + h % N, 0) / hs.length, cy = hs.reduce((a, h) => a + ((h / N)|0), 0) / hs.length;
-    const close = (test, r) => { for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++){ const xx = Math.round(cx) + dx, yy = Math.round(cy) + dy; if (xx >= 0 && yy >= 0 && xx < N && yy < N && test(yy*N + xx)) return true; } return false; };
-    const name = close(j => O[j] === '1', 5) ? 'autour de la boulangerie' : close(j => O[j] === 'L', 5) ? 'au pied du phare' : close(j => O[j] === 'Q' || G[j] === 'p', 4) ? 'autour de la place' : close(j => O[j] === '2' || O[j] === 'K', 4) ? 'dans la rue du café' : close(j => G[j] === 'q', 5) ? 'près du port' : close(j => O[j] === 'm', 5) ? 'près du moulin' : close(j => G[j] === 's', 3) ? 'au bord de la plage'
-      : (Math.abs(cx - mx) > Math.abs(cy - my) ? (cx > mx ? 'à l’est de l’île' : 'à l’ouest de l’île') : (cy > my ? 'au sud de l’île' : 'au nord de l’île'));
+    const dir = Math.abs(cx - mx) < 2 && Math.abs(cy - my) < 2 ? 'au cœur du village' : Math.abs(cx - mx) > Math.abs(cy - my) ? (cx > mx ? 'à l’est du village' : 'à l’ouest du village') : (cy > my ? 'au sud du village' : 'au nord du village');
+    let name = null; const fit = SPOTS.filter(s => s[2](hs));
+    for (const [a] of fit) if (!used.has(a)){ name = a; break; }
+    if (!name) for (const [, b] of fit) if (!used.has(b)){ name = b; break; }
+    if (!name) name = !used.has(dir) ? dir : !used.has('un peu plus ' + dir) ? 'un peu plus ' + dir : dir;
+    used.add(name);
+    const nb = new Set(); for (const h of hs){ const x = h % N, y = (h / N)|0; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++){ const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < N && yy < N) nb.add(yy*N + xx); } }
+    let deco = 0, light = 0; for (const j of nb){ if (DECO.has(O[j])) deco++; if (LIGHTS.has(O[j])) light++; }
     const needDeco = Math.ceil(hs.length / 2);
     return {hs, n:hs.length, deco, light, needDeco, name, happy:deco >= needDeco && light >= 1, who:NAMES[hs[0] % NAMES.length]};
   }).filter(q => q.n >= 2 || q.hs.some(h => O[h] === 'h'));
@@ -10457,8 +10506,8 @@ function quartiers(){
 const happyCount = () => { try { return glob.story.ville && glob.story.chapter >= 2 ? quartiers().filter(q => q.happy).length : 0; } catch(e){ return 0; } };
 /* ---------- les villageois : des nouveaux venus sans grande histoire ---------- */
 const V_JOBS = [['couturier', 'couturière'], ['peintre', 'peintre'], ['pêcheur', 'pêcheuse'], ['maître d’école', 'maîtresse d’école'], ['potier', 'potière'], ['musicien', 'musicienne'], ['jardinier', 'jardinière'], ['cordonnier', 'cordonnière'], ['libraire', 'libraire'], ['apiculteur', 'apicultrice'], ['menuisier', 'menuisière'], ['conteur', 'conteuse']];
-const V_FEM = new Set(['Maëlle', 'Gwenaëlle', 'Soizic', 'Nolwenn', 'Rozenn', 'Anaïg', 'Katell', 'Alma', 'Léa', 'Amara', 'Sofia', 'Lou', 'Hana', 'Lucía', 'Mila', 'Zoé', 'Aïcha', 'Yuki', 'Clara']);
-const V_NAMES = NAMES.concat(['Alma', 'Samuel', 'Léa', 'Basile', 'Amara', 'Hugo', 'Sofia', 'Nassim', 'Lou', 'Mateo', 'Hana', 'Oscar', 'Lucía', 'Kenji', 'Mila', 'Adam', 'Zoé', 'Jonas', 'Aïcha', 'Elio', 'Yuki', 'Rafael', 'Clara', 'Malik']);
+const V_FEM = new Set(['Maëlle', 'Gwenaëlle', 'Soizic', 'Nolwenn', 'Rozenn', 'Anaïg', 'Katell', 'Alma', 'Léa', 'Amara', 'Sofia', 'Lou', 'Hana', 'Lucía', 'Mila', 'Zoé', 'Aïcha', 'Yuki', 'Inaya']);
+const V_NAMES = NAMES.concat(['Alma', 'Samuel', 'Léa', 'Amara', 'Hugo', 'Sofia', 'Nassim', 'Lou', 'Mateo', 'Hana', 'Oscar', 'Lucía', 'Kenji', 'Mila', 'Adam', 'Zoé', 'Jonas', 'Aïcha', 'Elio', 'Yuki', 'Rafael', 'Malik', 'Inaya', 'Théo']);
 const V_TRAITS = ['chante en étendant son linge', 'connaît le nom de toutes les étoiles', 'ne sort jamais sans son chapeau', 'collectionne les galets ronds', 'rit très fort, et très souvent', 'se lève avant le soleil', 'parle à ses plantes', 'a toujours un bonbon dans la poche', 'siffle faux, mais avec cœur', 'écrit de longues lettres, jamais envoyées'];
 const villagers = () => glob.story.villagers || (glob.story.villagers = []);
 const waitingV = () => villagers().filter(v => v.home == null);
@@ -10510,10 +10559,11 @@ function arriveVillagers(n, direct){
 }
 /* une nouvelle maison ? le premier qui attend s'y installe */
 function settleVillagers(){
+  try { assignHomes(); } catch(e){}
   { let dirty = false; for (const v of villagers()) if (v.home != null && v.tent != null){ if (O[v.tent] === 'ï') O[v.tent] = null; v.tent = null; dirty = true; } if (dirty){ saveGlob(); save(); forceDraw = true; } }
   const wait = waitingV(); if (!wait.length) return;
   let houses = emptyHouses();
-  { const ch = CHAPTERS[glob.story.chapter]; if (ch && ch.homeFor && !glob.story[ch.homeFor + 'Home']) houses = houses.slice(1); }
+  { const ch = CHAPTERS[glob.story.chapter]; if (ch && ch.homeFor && !glob.story[ch.homeFor + 'Home'] && !Object.values(glob.story.homes || {}).includes(ch.homeFor)) houses = houses.slice(1); }
   const taken = glob.story.takenHomes || (glob.story.takenHomes = []);
   for (const i of houses){
     if (!wait.length) break;
@@ -11306,7 +11356,7 @@ const SHORT = {
       B('tomas', '« Tiens, ma vieille **besace** de marin. Pour te remercier. Elle a fait le tour des îles, elle aussi. »')]
   },
   'Les abeilles': {
-    intro:[B('carnet', 'Une petite barque chargée de caisses qui bourdonnent accoste au port.'),
+    intro:[B('carnet', 'Le voilier de Gaspard accoste. Une jeune femme en descend avec des caisses qui bourdonnent.'),
       B('ondine', '« Bonjour… **Ondine**, apicultrice. Pardon pour le bruit, elles sont un peu énervées par le voyage. »', 'Un voile de tulle sur son chapeau… et une piqûre sur le nez.'),
       B('ondine', '« Mes abeilles adoreraient vivre ici. Il nous faudrait une **maison**, des **ruches** près des fleurs… et un **pré fleuri** ! »')],
     mid:[B('carnet', 'Dans l’après-midi, un coup de vent renverse une ruche !'),
@@ -12417,7 +12467,9 @@ function placeBulle(){
   const left = fr ? Math.round(Math.max(12, Math.min(innerWidth - w - 12, fr.left + fr.width/2 - 34))) : Math.round((innerWidth - w) / 2);
   card.style.left = left + 'px';
   sbTip.hidden = !fr;
-  if (fr && fr.top < innerHeight / 2){
+  const roomB = fr ? innerHeight - fr.bottom - 24 : 0, roomA = fr ? fr.top - 24 : 0;
+  if (fr && Math.max(roomA, roomB) < Math.min(380, innerHeight * 0.55)){ sbTip.hidden = true; card.style.top = '84px'; card.style.bottom = 'auto'; card.style.maxHeight = (innerHeight - 96) + 'px'; }
+  else if (fr && roomB >= roomA){
     const top = Math.round(fr.bottom + 12); card.style.top = top + 'px'; card.style.bottom = 'auto'; card.style.maxHeight = (innerHeight - top - 12) + 'px';
     sbTip.style.top = (top - 7) + 'px';
   } else if (fr){
