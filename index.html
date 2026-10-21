@@ -7330,7 +7330,7 @@ const CHAPTERS_V2 = [
    get goals1(){ const g = this.goalsA; return glob.story.vpShards ? g : [g[0]]; },
    goalsA:[['Déblaie les ruines', () => found('Ó'), () => spawned('Ó', 6), '« Les débris d’abord, doucement… tout tient à peine debout. »', 'Touche les débris de l’île du vieux phare avec la main ✋.'],
      ['Les morceaux de lentille', () => found('ʎ'), () => spawned('ʎ', 2), '« Des éclats de verre brillent dans les gravats ! »', 'Des éclats de verre brillent près de la tour en ruine. Touche-les avec la main ✋ : ils vont dans ton sac 🎒.']],
-   mid:[{who:'toi', t:'Dans les gravats, un éclat de verre brille au soleil. Puis un deuxième.'}, {who:'yuna', t:'« Il y en a un au fond de l’eau, juste sous la falaise ! J’y vais. »'}, {who:'toi', t:'Sous une poutre, une vieille photo toute gondolée : deux jeunes gardiens devant la tour, qui rient.'}, {who:'morgane', t:'« Il y avait des noms, derrière… Effacés par l’eau. »'}, {who:'job', t:'Job regarde la photo, puis la mer. « Range-la bien, tu veux ? »'}],
+   mid:[{who:'toi', t:'Dans les gravats, un éclat de verre brille au soleil. Puis un deuxième.'}, {who:'yuna', t:'« Un éclat de la lentille de secours, pour le phare ! Il y en a un autre au fond de l’eau, juste sous la falaise. J’y vais. »'}, {who:'toi', t:'Sous une poutre, une vieille photo toute gondolée : deux jeunes gardiens devant la tour, qui rient.'}, {who:'morgane', t:'« Il y avait des noms, derrière… Effacés par l’eau. »'}, {who:'job', t:'Job regarde la photo, puis la mer. « Range-la bien, tu veux ? »'}],
    onMid:() => { const sh = []; for (let i = 0; i < N*N; i++) if (G[i] === 'w' && !O[i] && near8(i, j => inIsle(j, 'vieuxphare') && G[j] !== 'w')) sh.push(i); spawnBubble(sh.length ? sh : portCells(), 4); (glob.story.spawn || (glob.story.spawn = {}))['ý_' + glob.story.chapter] = 1; saveGlob(); },
    goals2:[['L’éclat sous la falaise', () => found('ý'), 1, '« Là où ça fait des bulles, je plonge chercher l’éclat ! »', 'Des bulles remontent au pied de l’île. Touche-les avec la main ✋, et Yuna plonge.']],
    get goals(){ return phase2(this) ? this.goals2 : this.goals1; },
@@ -7359,18 +7359,18 @@ const CHAPTERS_V2 = [
    reward:[]},
   {season:4, title:'La grotte', who:'yuna', give:[],
    onIntro:() => { try { caveMake(); } catch(e){} glob.story.caveIn = 0; saveGlob(); save(); },
-   intro:['« Le dernier morceau a glissé sous la falaise. Il y a une grotte, là-dessous. On n’y entre qu’à marée basse. »', {who:'tomas', t:'« Prends une lanterne. Et ne traîne pas : la mer remonte vite, par ici. »'}],
-   goals1:[['Une lanterne à l’entrée', () => { const c = vpCave(); return c >= 0 && O.some((o, i) => (o === 'ɮ' || o === 'ŧ' || o === 'æ') && dist2(i, c) <= 2.5) ? 1 : 0; }, 1, '« Une lanterne à l’entrée de la grotte, et on y voit clair ! »', 'Pose un lampion ou une torche tout près de la grotte, sur l’île du vieux phare.'],
+   intro:['« Le dernier morceau de la lentille de secours a glissé sous la falaise. Sans lui, le phare de Job restera éteint ! Il y a une grotte, là-dessous. On n’y entre qu’à marée basse. »', {who:'tomas', t:'« Pose une torche à l’entrée. Et ne traîne pas : la mer remonte vite, par ici. »'}],
+   goals1:[['Une torche à l’entrée', () => { const c = vpCave(); return c >= 0 && O.some((o, i) => (o === 'ɮ' || o === 'ŧ' || o === 'æ') && dist2(i, c) <= 2.5) ? 1 : 0; }, 1, '« Une torche à l’entrée de la grotte, et on y voit clair ! »', 'Pose une torche (ou un lampion) tout près de la grotte, sur l’île du vieux phare.'],
      ['Entrer dans la grotte', () => glob.story.caveIn ? 1 : 0, 1, '« À marée basse, l’entrée de la grotte est libre ! »', () => tideLow() ? 'La mer est basse : c’est le moment ! Touche la grotte avec la main ✋.' : 'La mer est haute et couvre l’entrée. Attends un peu qu’elle redescende, puis touche la grotte ✋.']],
    wants:i => O[i] === 'Œ' && inIsle(i, 'vieuxphare') && !glob.story.caveIn,
    actLabel:() => 'Entrer',
    tap:i => {
      if (phase2(CHAPTERS[glob.story.chapter]) && (O[i] === 'ɍ' || O[i] === 'ʎ') && inIsle(i, 'vieuxphare') && !tideLow() && !window.__instant){ hintT('🌊 La mer est remontée et couvre l’entrée de la grotte… Reviens à marée basse, rien ne bouge d’ici là.'); return true; }
      if (O[i] !== 'Œ' || !inIsle(i, 'vieuxphare') || glob.story.caveIn) return false;
-     const c = vpCave(); if (!(c >= 0 && O.some((o, j) => (o === 'ɮ' || o === 'ŧ' || o === 'æ') && dist2(j, c) <= 2.5))){ hintT('🕯️ Il fait tout noir là-dedans. Pose d’abord une lanterne à l’entrée.'); return true; }
+     const c = vpCave(); if (!(c >= 0 && O.some((o, j) => (o === 'ɮ' || o === 'ŧ' || o === 'æ') && dist2(j, c) <= 2.5))){ hintT('🔥 Il fait tout noir là-dedans. Pose d’abord une torche à l’entrée.'); return true; }
      if (!tideLow()){ hintT('🌊 La mer couvre l’entrée de la grotte. Attends la marée basse, elle revient bientôt.'); return true; }
-     glob.story.caveIn = 1; saveGlob(); renderStoryCard(); toast('🕯️ Tu entres dans la grotte, la lanterne à la main… Fais vite, la mer remonte !', 3000); return true; },
-   mid:[{who:'toi', t:'Dans la grotte, la lanterne fait briller les parois. Des veines sombres courent dans la pierre.'}, '« Du minerai ! Kofi va être content. Vite, avant que la mer remonte ! »'],
+     glob.story.caveIn = 1; saveGlob(); renderStoryCard(); toast('🔥 Tu entres dans la grotte, la torche à la main… Fais vite, la mer remonte !', 3000); return true; },
+   mid:[{who:'toi', t:'Dans la grotte, la torche fait briller les parois. Des veines sombres courent dans la pierre.'}, '« Du minerai ! Kofi va être content. Vite, avant que la mer remonte ! »'],
    onMid:() => { const c = vpCave(); spawnSmart('ɍ', 4, i => inIsle(i, 'vieuxphare') && G[i] !== 'w' && !O[i] && (c < 0 || dist2(i, c) <= 4)); spawnSmart('ʎ', 1, i => inIsle(i, 'vieuxphare') && G[i] !== 'w' && !O[i] && (c < 0 || dist2(i, c) <= 2)); saveGlob(); },
    goals2:[['Le minerai', () => found('ɍ'), () => spawned('ɍ', 4), '« Ramasse le minerai dans la grotte, plein les poches ! »', () => tideLow() ? 'Touche les pépites de minerai près de la grotte avec la main ✋. Vite, la mer remonte !' : 'La mer est remontée. Attends la marée basse pour ramasser la suite.'],
      ['Le dernier morceau', () => found('ʎ'), () => spawned('ʎ', 1), '« Le dernier éclat doit être tout au fond de la grotte… »', 'Un éclat brille près de la grotte. Touche-le avec la main ✋ : il va dans ton sac 🎒.']],
@@ -8660,6 +8660,7 @@ function s5Tick(){
   try { s5SeenFix(); } catch(e){ console.warn(e); }
   try { tentFix(); } catch(e){ console.warn(e); }
   try { nameFix(); } catch(e){ console.warn(e); }
+  try { breadFix(); } catch(e){ console.warn(e); }
   try { gg10Tick(); } catch(e){ console.warn(e); }
   if (s5Past('Le village des forges') && !glob.story.etalOn){ try { etalPlace(); save(); } catch(e){} }
   if (verOn()){ try { verBloom(); } catch(e){} if ((glob.story.introSeen ?? -1) >= glob.story.chapter && seedsGot() + O.reduce((n, o) => n + (o === '˟' ? 1 : 0), 0) < SEEDS_N && Date.now() - (window._seedT || 0) > 4000){ window._seedT = Date.now(); seedSpawn(); } }
@@ -10109,13 +10110,12 @@ function ggTap(i){
   if (s === 1){ if ((g.got || 0) < 3){ hintT(!g.sent ? '🔩 Le fer attend sur la petite île de la grotte : charge le wagonnet !' : `🔩 Décharge les caisses de fer (${g.got || 0}/3)`); return true; }
     g.s = 2; saveGlob(); forceDraw = true; renderStoryCard(); toast('🔩 La charpente en fer se dresse !', 2400); return true; }
   if (s === 3){
-    const now12 = () => Math.round(tday * 24 * 60) % 720, ok = () => { const d = Math.abs(((g.clk || 0) % 720) - now12()); return Math.min(d, 720 - d) <= 8; };
-    if (g.clk == null || g.clk === 456) g.clk = (now12() + (Math.random() < 0.5 ? 75 : -60) + 720) % 720 || 720;
-    const turn = d => { g.clk = ((g.clk || 0) + d + 720) % 720 || 720; saveGlob(); forceDraw = true;
-      if (ok()){ g.s = 4; saveGlob(); renderStoryCard(); toast('🕰️ Ding ! L’horloge est à l’heure !', 2600); return; }
+    /* une heure fixe à rattraper : l'heure du jeu au moment où l'on commence, arrondie au quart d'heure */
+    if (g.tgt == null){ g.tgt = Math.round(tday * 24 * 4) * 15 % 1440; g.clk = (g.tgt + (Math.random() < 0.5 ? 75 : -60) + 1440) % 1440; saveGlob(); }
+    const turn = d => { g.clk = ((g.clk || 0) + d + 1440) % 1440; saveGlob(); forceDraw = true;
+      if (g.clk === g.tgt){ g.s = 4; g.tgt = null; saveGlob(); renderStoryCard(); toast('🕰️ Ding ! L’horloge est à l’heure !', 2600); return; }
       setTimeout(() => ggTap(i), 60); };
-    const nowTxt = clkTxt(Math.round(tday * 24 * 60) % 1440);
-    return bldShow(i, [B('margaux', `L’horloge indique **${clkTxt((g.clk || 0) % 720 || 720)}**… Il est **${nowTxt}** ! Mets-la à l’heure.`)], '⏩ Avancer', () => turn(15), '⏪ Reculer', () => turn(-15));
+    return bldShow(i, [B('margaux', `L’horloge indique **${clkTxt(g.clk)}**… Il est **${clkTxt(g.tgt)}** ! Mets-la à l’heure.`)], '⏩ Avancer', () => turn(15), '⏪ Reculer', () => turn(-15));
   }
   if (s >= 4 && phase3(ch)){
     if (g.ride) { hintT('🚂 Le train est parti !'); return true; }
@@ -10305,6 +10305,15 @@ function nameFix(){
   const V = glob.story.villagers || [], used = new Set(V.map(v => v.name));
   for (const v of V) if (v.name === 'Basile' || v.name === 'Clara'){ const fem = v.name === 'Clara', pick = (fem ? ['Inaya', 'Léa', 'Mila', 'Zoé'] : ['Théo', 'Hugo', 'Oscar', 'Samuel']).find(n => !used.has(n)); if (pick){ used.add(pick); v.name = pick; } }
   saveGlob();
+}
+/* la boulangerie : dès qu'il y a de nouveau assez de blé, Lina se sert (sans attendre le lendemain) */
+function breadFix(){
+  if (glob.story.fed !== false || !cnt('1') || glob.story.chapter <= 5) return;
+  if (Date.now() - (window._breadT || 0) < 3000) return; window._breadT = Date.now();
+  const r = resv(), need = cnt('1') + Math.floor(inhabitants() / 5);
+  if ((r.w || 0) < need) return;
+  r.w -= need; glob.story.fed = true; saveGlob(); renderRes(true);
+  toast(`🍞 Lina : « Merci pour le blé ! Le pain est au four. » · −${need} 🌾`, 3000);
 }
 function setupIlot(){
   const g = (glob.story.isles || {}).ilot; if (!g || glob.story.ilotSet) return;
@@ -10588,7 +10597,7 @@ function islandNews(){
   { const v = waitingV()[0]; if (v){ const r = say(v, `Bonjour${NB}! Je viens d’arriver, ${v.job}… On m’a dit qu’on vivait bien, ici. Il y aurait une petite maison pour moi${NB}?`); r.k = 'arrive'; return r; } }
   if (glob.story.fedV === false){ const r = say(newsVoice(1, ['tomas']), `Les potagers n’ont pas donné assez de carottes pour tout le monde, cette fois… Un potager de plus, peut-être${NB}?`); if (r){ r.k = 'faim'; return r; } }
   if (glob.story.candles === false && cnt('l')){ const r = say(newsVoice(2, ['ondine']), `Plus de miel pour mes bougies… Les lampadaires vont manquer de cire${NB}!`); if (r){ r.k = 'cire'; return r; } }
-  if (glob.story.chapter > 5 && cnt('1') && glob.story.fed === false){ const r = say('lina', `Je n’avais plus de blé pour le pain, ce matin… Si tu en as un peu, je suis preneuse${NB}!`); if (r){ r.k = 'pain'; return r; } }
+  if (glob.story.chapter > 5 && cnt('1') && glob.story.fed === false && (resv().w || 0) < cnt('1') + Math.floor(inhabitants() / 5)){ const r = say('lina', `Je n’avais plus de blé pour le pain, ce matin… Si tu en as un peu, je suis preneuse${NB}!`); if (r){ r.k = 'pain'; return r; } }
   { const c = curReq(); if (c){ const need = c.rq.n || 1, p = c.rq.give ? null : reqProg(c.rq, c.home); const r = say(c.v, c.rq.t); r.k = 'req'; r.req = c; r.prog = c.rq.give ? null : `${p} sur ${need}`; return r; } }
   const w = WISHES.find(x => x.id === (glob.story.wish || {}).id);
   if (w) return {k:'envie', who:w.who, text:w.text, wish:w};
@@ -11549,7 +11558,7 @@ const SHORT = {
       B('tomas', '« Les familles des gardiens vivaient là. Après la tempête, plus personne n’y est retourné. »'),
       B('job', '« Les gardiens avaient toujours une **lentille de secours**. Si elle est encore là-bas… »')],
     mid:[B('carnet', 'Dans les gravats, un éclat de verre brille au soleil. Puis un deuxième.'),
-      B('yuna', '« Il y en a un au fond de l’eau, juste sous la falaise ! J’y vais. »'),
+      B('yuna', '« Un éclat de la **lentille de secours**, pour le phare ! Il y en a un autre au fond de l’eau, juste sous la falaise. J’y vais. »'),
       B('carnet', 'Sous une poutre, une **vieille photo** toute gondolée : deux jeunes gardiens devant la tour, qui rient.'),
       B('morgane', '« Il y avait des noms, derrière… Effacés par l’eau. »'),
       B('job', '« Range-la bien, tu veux ? »', 'Il regarde la photo, puis la mer.')],
@@ -11557,9 +11566,9 @@ const SHORT = {
       B('job', '« Il disait que les courants chauds passaient par ici. Personne ne le croyait. »', 'Il glisse quelques graines dans sa poche.')]
   },
   'La grotte': {
-    intro:[B('yuna', '« Le dernier morceau a glissé sous la falaise. Il y a une **grotte**, là-dessous. On n’y entre qu’à **marée basse**. »'),
-      B('tomas', '« Prends une **lanterne**. Et ne traîne pas : la mer remonte vite, par ici. »')],
-    mid:[B('carnet', 'Dans la grotte, la lanterne fait briller les parois. Des veines sombres courent dans la pierre.'),
+    intro:[B('yuna', '« Le dernier morceau de la **lentille de secours** a glissé sous la falaise. Sans lui, le phare de Job restera éteint ! Il y a une **grotte**, là-dessous. On n’y entre qu’à **marée basse**. »'),
+      B('tomas', '« Pose une **torche** à l’entrée. Et ne traîne pas : la mer remonte vite, par ici. »')],
+    mid:[B('carnet', 'Dans la grotte, la torche fait briller les parois. Des veines sombres courent dans la pierre.'),
       B('yuna', '« Du **minerai** ! Kofi va être content. Vite, avant que la mer remonte ! »')],
     outro:[B('carnet', 'Tout au fond, coincé entre deux rochers, le **quatrième morceau** de verre.'),
       B('yuna', '« Je l’ai ! La lentille est complète ! »'),
