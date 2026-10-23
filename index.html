@@ -3175,7 +3175,7 @@ function drawObject(o, ox, oy, x, y, withLights){
     break; }
   case 'Ƈ': { // l'escalier en pierre, taillé dans la roche noire
     R(ox+2, oy+14, 12, 1, 'rgba(0,0,0,.18)');
-    for (let k = 0; k < 4; k++){ R(ox+2 + k, oy+4 + k*3, 12 - k*2, 3, k % 2 ? '#7a7068' : '#8a8078'); R(ox+2 + k, oy+4 + k*3, 12 - k*2, 1, '#a49a90'); }
+    for (let k = 0; k < 4; k++){ const yy = oy+4 + (3 - k)*3; R(ox+2 + k, yy, 12 - k*2, 3, k % 2 ? '#7a7068' : '#8a8078'); R(ox+2 + k, yy, 12 - k*2, 1, '#a49a90'); } // la plus grande marche en bas
     break; }
   case 'Ɖ': { // la vieille tente du dernier marin, déchirée, et un foyer éteint
     R(ox+1, oy+14, 14, 1, 'rgba(0,0,0,.16)');
@@ -8146,7 +8146,7 @@ const CHAPTERS_V2 = [
    onIntro:() => { r61Start(); },
    intro:[{who:'toi', t:'Un matin, la brume se lève d’un coup. Derrière l’île aux pins apparaît une grande île, avec un volcan qui fume tout doucement.'}, {who:'toi', t:'Un canoë en sort. Elias pagaie. À l’arrière, une femme aux cheveux gris, un bonnet rouge sur la tête.'}, {who:'elias', t:'« Il faudrait un ponton, pour qu’elle puisse descendre ! »'}],
    goals1:[['Un ponton de 3 planches au port', () => Math.min(3, portChain().length), 3, {t:'« Il faudrait un ponton, pour qu’elle puisse descendre ! »', who:'elias'}, 'Pose 3 pontons en bois à la suite (Objets › Port, 2 🪵 chacun), sur l’eau, contre la côte de ton île.'],
-     ['Une lanterne au bout', () => r61Lamp() ? 1 : 0, 1, {t:'« Une lanterne au bout, pour qu’elle voie où accoster. »', who:'job'}, 'Pose une lanterne en verre (Objets › Port) tout près du ponton.'],
+     ['Une lanterne près du ponton', () => r61Lamp() ? 1 : 0, 1, {t:'« Une lanterne près du ponton, pour l’accueillir. »', who:'job'}, 'Pose une lanterne en verre (Objets › Port) tout près du ponton.'],
      ['Le canoë accoste', () => r61().met ? 1 : 0, 1, '« … »', () => r61().canoe ? 'Le canoë arrive…' : 'Quand le ponton et la lanterne sont prêts, le canoë accoste.']],
    mid:[{who:'toi', t:'Le canoë touche le ponton. Job est là, essoufflé, il a descendu tout le chemin du phare.'}, {who:'job', t:'« Rita… »'}, '« Salut, Job. Ça fait longtemps. »', {who:'job', t:'« Les bouteilles signées R.… c’étaient bien tes lettres ? On les a toutes gardées. Elles sont épinglées au café. »'}, '« Oui, c’était moi. Elles sont arrivées jusqu’ici ? Il faut que je voie ça ! Et tout le reste… Quand je suis partie, il n’y avait que toi et le phare. Montrez-moi le village ! »'],
    onMid:() => { r61Clean(); },
@@ -9404,6 +9404,7 @@ function s5Tick(){
   try { r69Tick(); } catch(e){ console.warn(e); }
   try { r70Tick(); } catch(e){ console.warn(e); }
   try { r71Tick(); } catch(e){ console.warn(e); }
+  try { ritaGuard(); } catch(e){ console.warn(e); }
   try { s6Migrate(); } catch(e){ console.warn(e); }
   try { pontUnlock(); } catch(e){ console.warn(e); }
   if (s5Past('Le village des forges') && !glob.story.etalOn){ try { etalPlace(); save(); } catch(e){} }
@@ -9528,9 +9529,10 @@ function glassPick(i){
 function fonderieTap(i){
   const d = glob.story.isleDays || 1;
   if (O.some((o, j) => o === 'ʺ' && dist2(j, i) <= 2.5)){ hintT('🫧 Le verre t’attend à côté'); return true; }
-  if (Date.now() - ((glob.story.glassTs || {})[i] || 0) < 30000){ hintT('🔥 Le four se repose… reviens dans un instant'); return true; }
+  const gr = (glob.story.glassRun || (glob.story.glassRun = {}))[i] || (glob.story.glassRun[i] = {n:0, t:0});
+  if (gr.n >= 3){ if (Date.now() - gr.t < 30000){ hintT('🔥 Le four se repose… reviens dans un instant'); return true; } gr.n = 0; }
   const r = resv(); if ((r.b || 0) < 2){ hintT('🪵 Il faut 2 🪵'); return true; }
-  r.b -= 2; glob.story.glassT = Date.now(); (glob.story.glassTs || (glob.story.glassTs = {}))[i] = Date.now(); saveGlob(); renderRes(true);
+  r.b -= 2; glob.story.glassT = Date.now(); (glob.story.glassTs || (glob.story.glassTs = {}))[i] = Date.now(); gr.n++; gr.t = Date.now(); saveGlob(); renderRes(true);
   const j = glassSpot(i); if (j != null){ O[j] = 'ʺ'; save(); } else { r.vr = (r.vr || 0) + 2; saveGlob(); renderRes(true); }
   forceDraw = true; toast('🔥 Une bulle de verre !', 2000); return true;
 }
@@ -10955,6 +10957,7 @@ function gg10Tick(){
     if (phase3(ch) && !g.ride) paxSpawn();
     if (g.ride === 1){ const t = trains.find(t => t.route); if (t){ lookAt(t.px / T - 0.5, t.py / T - 0.5); forceDraw = true; if (!t.route.length && t.cy*N + t.cx === t.goal) ggArrive(); } else if (Date.now() - (g.rideT || 0) > 3000) ggArrive(); if (Date.now() - (g.rideT || 0) > 90000) ggArrive(); }
   }
+  if (g.done && !ggOn() && tday * 24 >= 8.2 && tday * 24 < 20 && O.includes('˹')){ let n = 0; for (let j = 0; j < N*N; j++) if (O[j] === '˹'){ O[j] = null; n++; } g.pax = {}; g.tk = {}; saveGlob(); save(); forceDraw = true; if (n) toast('🚂 Les voyageurs montent dans le train de 8 h 12. En voiture !', 2600); }
   /* après le chapitre : chaque jour, le train de 8 h 12 dépose une caisse de fer près de la grande gare */
   if (g.done && glob.story.ggDay !== (glob.story.isleDays || 1) && tday * 24 >= 8.2 && !O.includes('˸') && !window._tgo){ glob.story.ggDay = glob.story.isleDays || 1; saveGlob(); const j = crate10Spot(); if (j != null){ O[j] = '˸'; save(); forceDraw = true; } }
 }
@@ -11628,13 +11631,22 @@ const R61_PLACES = [['cafe', ['2'], 'le café de Kofi', '« Un café ! Avec des 
 const r61Places = () => R61_PLACES.filter(p => p[1].some(id => O.includes(id)));
 const r61Seen = () => r61Places().filter(p => (r61().seen || {})[p[0]]).length;
 function r61Start(){ volReveal(); const r = r61(); Object.assign(r, {arr:0, met:0, seen:{}, canoe:null, job:null, jobIn:0, house:null}); saveGlob(); }
+/* en attendant le ponton : le canoë d'Elias et Rita attend au bord de l'île du volcan, bien visible */
+function r61Wait(){
+  const r = r61(); if (r.waitAt != null && O[r.waitAt] === 'Ɓ') return;
+  if (r.waitAt != null && r.waitTried && Date.now() - r.waitTried < 5000) return; r.waitTried = Date.now();
+  const ref = O.indexOf('L') >= 0 ? O.indexOf('L') : (typeof fbQuay === 'function' ? fbQuay() : -1);
+  let st = -1, sd = 1e9; for (let i = 0; i < N*N; i++) if (G[i] === 'w' && !O[i] && !fogAt(i % N, (i / N)|0) && near8(i, j => volLand(j))){ const d = ref >= 0 ? dist2(i, ref) : 0; if (d < sd){ sd = d; st = i; } }
+  if (st < 0) return; O[st] = 'Ɓ'; r.waitAt = st; saveGlob(); save(); forceDraw = true;
+  if (!r.waitSeen){ r.waitSeen = 1; saveGlob(); setTimeout(() => { try { lookAt(st % N, (st / N)|0); forceDraw = true; } catch(e){} }, 500); }
+}
 /* le canoë sort de ce qui reste de brume et vient jusqu'au ponton ; Job descend de son phare */
 function r61Arrive(){
   const r = r61(); if (r.canoe || r.arr) return; const ch = portChain(); if (ch.length < 3) return;
   const end = [...ch].sort((a, b) => b - a).find(c => near8(c, j => G[j] === 'w' && !O[j])) ?? ch[0];
   const dock = (() => { for (const c of ch) for (const j of [c + 1, c - 1, c + N, c - N, c + N + 1, c + N - 1, c - N + 1, c - N - 1]) if (j >= 0 && j < N*N && G[j] === 'w' && !O[j] && !fogAt(j % N, (j / N)|0)) return j; return -1; })();
   if (dock < 0){ r.arr = 1; r.jobIn = 1; saveGlob(); return; }
-  let st = -1, sd = 1e9; for (let i = 0; i < N*N; i++) if (G[i] === 'w' && !O[i] && !fogAt(i % N, (i / N)|0) && near8(i, j => volLand(j))){ const d = dist2(i, dock); if (d < sd){ sd = d; st = i; } }
+  let st = -1, sd = 1e9; if (r.waitAt != null && O[r.waitAt] === 'Ɓ'){ O[r.waitAt] = null; st = r.waitAt; } else for (let i = 0; i < N*N; i++) if (G[i] === 'w' && !O[i] && !fogAt(i % N, (i / N)|0) && near8(i, j => volLand(j))){ const d = dist2(i, dock); if (d < sd){ sd = d; st = i; } }
   let p = st >= 0 ? s5Route([st], j => j === dock, j => G[j] === 'w' && (!O[j] || j === st) && !fogAt(j % N, (j / N)|0)) : null;
   if (!p) p = hbPath(dock, j => dist2(j, dock) >= 6) ? hbPath(dock, j => dist2(j, dock) >= 6).reverse() : [dock];
   if (p.length > 30) p = p.slice(p.length - 30);
@@ -11649,11 +11661,20 @@ function r61Arrive(){
   saveGlob(); save(); forceDraw = true;
   setTimeout(() => { lookAt(p[0] % N, (p[0] / N)|0); forceDraw = true; }, 200);
 }
+/* la maison de Rita lui reste : personne d'autre ne s'y installe */
+function ritaGuard(){
+  if (!glob.story.r61) return; const h = ritaHome(); if (h == null || O[h] !== 'h') return;
+  const H = glob.story.homes || (glob.story.homes = {}); let dirty = false;
+  if (H[h] !== 'rita' && (s3Ch() !== 'Le retour de Rita' || phase3(CHAPTERS[glob.story.chapter]))){ for (const k of Object.keys(H)) if (H[k] === 'rita') delete H[k]; H[h] = 'rita'; dirty = true; }
+  if (H[h] === 'rita') for (const v of (glob.story.villagers || [])) if (v.home === h){ v.home = null; dirty = true; }
+  if (dirty){ saveGlob(); try { settleVillagers(); syncWalkers(); } catch(e){} }
+}
 function r61Tick(){
   if (!r61On() || (glob.story.introSeen ?? -1) < glob.story.chapter || glob.story.pendingOutro != null) return;
   const r = r61(), ch = CHAPTERS[glob.story.chapter];
   if (phase3(ch)){ const h = r61House(), H = glob.story.homes || (glob.story.homes = {}); if (h != null && H[h] !== 'rita'){ for (const k of Object.keys(H)) if (H[k] === 'rita') delete H[k]; H[h] = 'rita'; saveGlob(); try { renderStoryCard(); checkStory(); } catch(e){} } }
   if (!phase2(ch)){
+    if (!r.arr && !r.canoe) r61Wait();
     if (!r.arr && !r.canoe && portChain().length >= 3 && r61Lamp()) r61Arrive();
     if ((r.canoe || r.job) && !window._r61Int) window._r61Int = setInterval(() => { try { r61Step(); } catch(e){ console.warn(e); } }, 150);
   }
@@ -12513,7 +12534,7 @@ const villagers = () => glob.story.villagers || (glob.story.villagers = []);
 const waitingV = () => villagers().filter(v => v.home == null);
 function houseEmpty(i){
   try { if (!glob.story || !glob.story.ville || glob.story.v !== 2 || !isStory() || O[i] !== 'h') return false;
-    if ((glob.story.homes || {})[i] || inIsle(i, 'ilot')) return false;
+    if ((glob.story.homes || {})[i] || inIsle(i, 'ilot') || (glob.story.r61 && glob.story.r61.house === i)) return false;
     return !villagers().some(v => v.home === i); } catch(e){ return false; }
 }
 function emptyHouses(){ const a = []; for (let i = 0; i < N*N; i++) if (O[i] === 'h' && houseEmpty(i) && !fogAt(i % N, (i / N)|0)) a.push(i); return a; }
