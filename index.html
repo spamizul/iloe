@@ -549,6 +549,7 @@ canvas#board{border-radius:12px}
 #viseur .vz-x{background:#d9d2c2;color:#2a2d31}
 #viseur.flash::after{content:'';position:fixed;inset:0;background:#fff;animation:vzFlash .35s ease-out forwards}
 @keyframes vzFlash{from{opacity:.85}to{opacity:0}}
+.photo-card img.mei-pola,#storyBox img.mei-pola{width:auto;height:min(40vh,260px);height:min(40dvh,260px);max-width:66vw;object-fit:contain}
 .mei-pola{display:block;width:min(70vw,220px);margin:6px auto;image-rendering:pixelated;transform:rotate(-2deg);box-shadow:0 6px 16px rgba(0,0,0,.3)}
 #carnet .mei-cell img{image-rendering:pixelated}
 #carnet .mei-sil{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:28px;background:var(--surface2);color:var(--muted);opacity:.7}
@@ -947,6 +948,7 @@ html.oh-l .thumb-in{flex-direction:row-reverse}
           <button type="button" data-m="auto">Au hasard</button>
           <button type="button" data-m="soleil">Soleil</button>
           <button type="button" data-m="brume">Brume</button>
+          <button type="button" data-m="pluie">Pluie</button>
         </div>
         <div class="label">Jouer d’une seule main</div>
         <div class="seg theme-seg" id="handSeg">
@@ -1571,12 +1573,19 @@ function drawGround(t, ox, oy, x, y, nb){
   }
   if (t === 'c'){
     const pc = season === 'hiver' ? '#c9bfae' : '#cdac7c', pd = season === 'hiver' ? '#b3a894' : '#b38f5c';
-    const con = walkable;
-    R(ox+4, oy+4, 8, 8, pc);
-    if (con(nb(x, y-1))) R(ox+4, oy, 8, 4, pc);
-    if (con(nb(x, y+1))) R(ox+4, oy+12, 8, 4, pc);
-    if (con(nb(x-1, y))) R(ox, oy+4, 4, 8, pc);
-    if (con(nb(x+1, y))) R(ox+12, oy+4, 4, 8, pc);
+    const con = walkable, pe = season === 'hiver' ? '#b9ae9a' : '#bf9a68';
+    const u = con(nb(x, y-1)), d = con(nb(x, y+1)), l = con(nb(x-1, y)), r = con(nb(x+1, y));
+    const tl = u && l && con(nb(x-1, y-1)), tr = u && r && con(nb(x+1, y-1)), bl = d && l && con(nb(x-1, y+1)), br = d && r && con(nb(x+1, y+1));
+    R(ox+5, oy+4, 6, 8, pc); R(ox+4, oy+5, 8, 6, pc);
+    if (u || l) R(ox+4, oy+4, 1, 1, pc); if (u || r) R(ox+11, oy+4, 1, 1, pc); if (d || l) R(ox+4, oy+11, 1, 1, pc); if (d || r) R(ox+11, oy+11, 1, 1, pc);
+    if (u) R(ox+4, oy, 8, 4, pc); if (d) R(ox+4, oy+12, 8, 4, pc); if (l) R(ox, oy+4, 4, 8, pc); if (r) R(ox+12, oy+4, 4, 8, pc);
+    if (tl) R(ox, oy, 4, 4, pc); if (tr) R(ox+12, oy, 4, 4, pc); if (bl) R(ox, oy+12, 4, 4, pc); if (br) R(ox+12, oy+12, 4, 4, pc);
+    /* une petite bordure plus foncée, seulement côté herbe */
+    if (!u) R(ox+5, oy+4, 6, 1, pe); if (!d) R(ox+5, oy+11, 6, 1, pe); if (!l) R(ox+4, oy+5, 1, 6, pe); if (!r) R(ox+11, oy+5, 1, 6, pe);
+    if (u){ if (!tl) R(ox+4, oy, 1, 4, pe); if (!tr) R(ox+11, oy, 1, 4, pe); }
+    if (d){ if (!bl) R(ox+4, oy+12, 1, 4, pe); if (!br) R(ox+11, oy+12, 1, 4, pe); }
+    if (l){ if (!tl) R(ox, oy+4, 4, 1, pe); if (!bl) R(ox, oy+11, 4, 1, pe); }
+    if (r){ if (!tr) R(ox+12, oy+4, 4, 1, pe); if (!br) R(ox+12, oy+11, 4, 1, pe); }
     for (let k = 0; k < 3; k++) R(ox+5+(hs(x,y,k+20)*6|0), oy+5+(hs(x,y,k+30)*6|0), 1, 1, pd);
   } else if (t === 'R' || t === '+' || t === '='){
     const as = season === 'hiver' ? '#6f757c' : '#5b6168', edge = '#4b5157', line = '#f2efe0';
@@ -1608,12 +1617,18 @@ function drawGround(t, ox, oy, x, y, nb){
     drawRails(ox, oy, x, y, nb, season === 'hiver' ? '#c4c1b9' : '#9a958c');
   } else if (t === 'p'){
     const a = season === 'hiver' ? '#d2d0cb' : '#bbb6ad', b = season === 'hiver' ? '#bcb9b2' : '#a29c92';
+    const ed = season === 'hiver' ? '#a8a49c' : '#8a8478', hl = season === 'hiver' ? '#e4e2de' : '#cbc6bd';
+    const P = g => g === 'p', n = P(nb(x, y-1)), s = P(nb(x, y+1)), w = P(nb(x-1, y)), e = P(nb(x+1, y));
     R(ox, oy, T, T, a);
     for (let r = 0; r < 4; r++){
       R(ox, oy + r*4, T, 1, b);
       const off = r % 2 ? 2 : 0;
-      for (let c = 0; c < 4; c++) R(ox + c*4 + off, oy + r*4, 1, 4, b);
+      for (let c = 0; c < 4; c++){ R(ox + c*4 + off, oy + r*4, 1, 4, b); R(ox + c*4 + off + 1, oy + r*4 + 1, 2, 1, hl); }
     }
+    if (!n) R(ox, oy, T, 1, ed); if (!s){ R(ox, oy+T-2, T, 1, b); R(ox, oy+T-1, T, 1, ed); } if (!w) R(ox, oy, 1, T, ed); if (!e) R(ox+T-1, oy, 1, T, ed);
+    const bu2 = baseUnder(x, y, nb), under = bu2 === 's' ? S.sand : S.grass[0];
+    const corner = (cx, cy, dx, dy) => { R(cx, cy, 1, 1, under); R(cx + dx, cy, 1, 1, under); R(cx, cy + dy, 1, 1, under); R(cx + 2*dx, cy, 1, 1, ed); R(cx, cy + 2*dy, 1, 1, ed); R(cx + dx, cy + dy, 1, 1, ed); };
+    if (!n && !w) corner(ox, oy, 1, 1); if (!n && !e) corner(ox+T-1, oy, -1, 1); if (!s && !w) corner(ox, oy+T-1, 1, -1); if (!s && !e) corner(ox+T-1, oy+T-1, -1, -1);
   }
 }
 
@@ -4609,7 +4624,7 @@ function buildGround(){
   if (!seaCv){ seaCv = document.createElement('canvas'); seaCv.width = 4*T; seaCv.height = 4*T; }
   C = seaCv.getContext('2d'); for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) drawGround('w', x*T, y*T, 100 + x, 100 + y, () => 'w');
   seaPat = null;
-  staticPass = false; C = prevC; groundDirty = false;
+  staticPass = false; C = prevC; groundDirty = false; window._gVer = (window._gVer || 0) + 1;
 }
 let seaCv = null, seaPat = null;
 function groundAnim(x, y){
@@ -4794,18 +4809,37 @@ function render(full){
   }
   if (weather === 'pluie' && stormT <= 0){
     const dk = curDark;
-    c2.fillStyle = `rgba(40,52,74,${(0.26 + dk*0.08).toFixed(3)})`; c2.fillRect(vx, vy, s, sh);
+    c2.fillStyle = `rgba(60,72,94,${(0.09 + dk*0.04).toFixed(3)})`; c2.fillRect(vx, vy, s, sh);
     if (!reduce){
-      const snow = season === 'hiver', n = Math.min(eco ? 80 : 220, Math.round(s*sh/420));
+      const snow = season === 'hiver', n = Math.min(eco ? 35 : 90, Math.round(s*sh/1400));
+      /* quelques ronds sur l'eau */
+      if (!snow) for (let k = 0; k < 10; k++){ const ph = ((now / 900) + k * 0.37) % 1, rx = vx + ((k * 131 + Math.floor(now / 900 + k * 0.37) * 57) % s), ry = vy + ((k * 89 + Math.floor(now / 900 + k * 0.37) * 31) % sh), gi = Math.floor(ry / T) * N + Math.floor(rx / T);
+        if (G[gi] !== 'w') continue; const rr = 1 + Math.round(ph * 2); c2.strokeStyle = `rgba(230,240,255,${(0.5 * (1 - ph)).toFixed(2)})`; c2.lineWidth = 1; c2.strokeRect(Math.round(rx) - rr + 0.5, Math.round(ry) - rr * 0.5 + 0.5, rr * 2, rr); }
       for (let k = 0; k < n; k++){
         if (snow){ const rx = vx + ((k*97 + now*0.02 + Math.sin(now/900 + k)*6) % s + s) % s, ry = vy + ((k*53 + now*0.05) % sh); R(Math.round(rx), Math.round(ry), 1, 1, 'rgba(255,255,255,.85)'); }
-        else { const rx = vx + ((k*97 + now*0.12) % s), ry = vy + ((k*53 + now*0.75) % sh); R(Math.round(rx), Math.round(ry), 1, 4, 'rgba(210,225,248,.6)'); }
+        else { const rx = vx + ((k*97 + now*0.12) % s), ry = vy + ((k*53 + now*0.6) % sh); R(Math.round(rx), Math.round(ry), 1, 4, 'rgba(220,232,250,.6)'); }
       }
     }
   }
   if (weather === 'brume'){
     const a0 = 0.34 * (1 - curDark*0.45), col = curDark > 0.4 ? '170,180,200' : '230,236,242';
-    c2.fillStyle = `rgba(${col},${(a0*0.75).toFixed(3)})`; c2.fillRect(vx, vy, s, sh);
+    /* un masque : 1 sur la mer, un peu sur les côtes, rien à l'intérieur des terres ; lissé en grand, il fait des bords tout doux */
+    if (!window._mistM || window._mistM.k !== groundVer()){ const mc = document.createElement('canvas'); mc.width = N; mc.height = N; const mx = mc.getContext('2d');
+      for (let i = 0; i < N*N; i++){ const g0 = G[i], wet = g0 === 'w'; let v = 0;
+        if (wet) v = near8(i, j => G[j] !== 'w' && G[j] !== 'n' && G[j] !== 'q') ? 0.65 : 1;
+        else if (near8(i, j => G[j] === 'w')) v = 0.22;
+        if (v){ mx.fillStyle = `rgba(255,255,255,${v})`; mx.fillRect(i % N, (i / N)|0, 1, 1); } }
+      window._mistM = {c:mc, k:groundVer()}; }
+    if (!window._mistF) { const fc = document.createElement('canvas'); fc.width = N; fc.height = N; window._mistF = fc; }
+    { const fc = window._mistF, fx2 = fc.getContext('2d'); fx2.globalCompositeOperation = 'source-over'; fx2.clearRect(0, 0, N, N);
+      fx2.fillStyle = `rgba(${col},0.7)`; fx2.fillRect(0, 0, N, N);
+      for (let k = 0; k < 7; k++){ const r = N*0.22 + (k % 3)*N*0.05, cx = ((k*0.37*N + now*0.004/T*(1 + k % 3)) % (N + 2*r)) - r, cy = (k*0.61*N) % N;
+        const g = fx2.createRadialGradient(cx, cy, 0, cx, cy, r); g.addColorStop(0, `rgba(${col},1)`); g.addColorStop(1, `rgba(${col},0)`); fx2.fillStyle = g; fx2.fillRect(cx - r, cy - r, 2*r, 2*r); }
+      fx2.globalCompositeOperation = 'destination-in'; fx2.drawImage(window._mistM.c, 0, 0);
+      c2.save(); c2.imageSmoothingEnabled = true; c2.globalAlpha = Math.min(1, a0 * 1.8); c2.drawImage(fc, 0, 0, N*T, N*T); c2.restore(); }
+  }
+  if (weather === 'brume-old'){
+    const a0 = 0.34 * (1 - curDark*0.45), col = curDark > 0.4 ? '170,180,200' : '230,236,242';
     for (let k = 0; k < 7; k++){
       const r = W*0.22 + (k % 3)*W*0.05;
       const fx = ((k*0.37*W + now*0.004*(1 + k % 3)) % (W + 2*r)) - r, fy = (k*0.61*W) % W;
@@ -5154,7 +5188,7 @@ function drawIconTo(t, cv){
 }
 function drawIcon(t){ if (iconCanvases[t.id]) drawIconTo(t, iconCanvases[t.id]); }
 let activeGroup = 'Habitations';
-const GROUP_ORDER = ['Habitations', 'Commerces', 'Services', 'Mobilier', 'Loisirs', 'Campagne', 'Nature', 'Eau et port', 'Sols', 'Voies'];
+const GROUP_ORDER = ['Habitations', 'Village', 'Commerces', 'Services', 'Mobilier', 'Loisirs', 'Campagne', 'Nature', 'Eau et port', 'Port', 'Plage', 'Sols', 'Voies'];
 const REGROUP = {
   'Sols':'gpµ¶±£#*~ȷ&%s!', 'Voies':'cR+Xn', 'Eau et port':'wqÎGBJN6ÛÖÝLßĀāĄĊʓʔʕʖʗʘʟʱʲ',
   'Campagne':'kz^voVmÇɃȚŚƑÉueyĂʋʧʫ', 'Habitations':'ĈhITÆïĆ', 'Commerces':'SK129üùË',
@@ -6290,10 +6324,10 @@ document.addEventListener('visibilitychange', () => { if (!actx) return; if (doc
 
 /* ---------- météo ---------- */
 const WEATHERS = {soleil:'Soleil', pluie:'Pluie', brume:'Brume'};
-function weatherMode(){ const m = (glob.ui && glob.ui.meteo) || 'auto'; return m === 'pluie' ? 'soleil' : m; }
-function pickWeather(){ return Math.random() < 0.78 ? 'soleil' : 'brume'; }
+function weatherMode(){ return (glob.ui && glob.ui.meteo) || 'auto'; }
+const groundVer = () => window._gVer || 0;
+function pickWeather(){ const r = Math.random(); return r < 0.7 ? 'soleil' : r < 0.85 ? 'brume' : 'pluie'; }
 function setWeather(w){
-  if (w === 'pluie') w = 'soleil'; // la pluie est retirée : trop gourmande pour les téléphones
   weather = w; forceDraw = true;
   const el = document.getElementById('weatherName');
   if (el) el.textContent = w === 'soleil' ? '' : ' · ' + (w === 'pluie' && season === 'hiver' ? 'Neige' : WEATHERS[w]);
@@ -8071,7 +8105,7 @@ const CHAPTERS_V2 = [
    onMid:() => { glob.story.sprouts = 0; glob.story.sproutsGiven = 0; glob.story.ovensDone = 0; glob.story.ovens = {}; glob.story.ovensNeed = Math.min(2, O.reduce((n, o) => n + (o === 'ʝ' ? 1 : 0), 0)); for (const i of (glob.story.smoke || [])) if (O[i] === 'ʽ') O[i] = null; glob.story.smoke = null; try { smokeMake(); } catch(e){} saveGlob(); },
    goals2:[['Les jeunes plants', () => glob.story.sprouts ? 1 : 0, 1, '« J’ai plein de jeunes plants à la verrière. »', 'Touche la verrière de Céleste avec la main ✋ : elle te donne des jeunes plants.'],
      ['Une haie contre la fumée', () => Math.min(hedgeNeed(), hedgeCount()), () => hedgeNeed(), '« La haie doit être du côté où va la fumée. »', 'Les petits nuages gris montrent où passe la fumée. Prends les jeunes plants dans ton sac 🎒 et pose-les sur ces cases.'],
-     ['Les vieux fours d’Hector', () => glob.story.ovensDone || 0, () => Math.max(1, glob.story.ovensNeed || 0), '« Les vieux fours de mon père, chez moi, loin du village. »', () => 'Sur l’île des forges, touche les vieux fours noyés avec la main ✋ : écope l’eau, puis refais les briques (' + resTxt(OVEN_COST) + ').']],
+     ['Les vieux fours d’Hector', () => ovensLeft() ? (glob.story.ovensDone || 0) : Math.max(1, glob.story.ovensNeed || 0), () => Math.max(1, glob.story.ovensNeed || 0), '« Les vieux fours de mon père, chez moi, loin du village. »', () => 'Sur l’île des forges, touche les vieux fours noyés avec la main ✋ : écope l’eau, puis refais les briques (' + resTxt(OVEN_COST) + ').']],
    mid2:[{who:'toi', t:'Quelques jours plus tard, la fumée monte droit dans le ciel. Un matin, les abeilles d’Ondine ressortent enfin de la ruche.'}, {who:'ondine', t:'« Elles bourdonnent à nouveau ! Le premier miel sera pour Hector. Pour faire la paix. »'}],
    onMid2:() => { glob.story.miel1 = 0; glob.story.mielH = 0; saveGlob(); },
    goals3:[['Le premier miel', () => glob.story.miel1 ? 1 : 0, 1, {t:'« Le premier miel sera pour Hector. »', who:'ondine'}, 'Touche une ruche avec la main ✋ pour récolter le premier pot de miel.'],
@@ -11989,6 +12023,7 @@ function hedgeUnlock(){
 const HONEY_MS = 60000;
 const honeyReady = i => Date.now() - (((glob.story.honeyAt || {})[i]) || 0) >= HONEY_MS;
 function honeyHarvest(i){
+  try { if (O[i] === 'u' && honeyTap(i)) return true; } catch(e){}
   if (O[i] !== 'u' || !isStory() || !glob.story.honey) return false;
   const hives = []; for (let j = 0; j < N*N; j++) if (O[j] === 'u' && dist2(j, i) <= 2.3) hives.push(j);
   const ready = hives.filter(honeyReady); if (!ready.length){ toast('🐝 Les abeilles travaillent… reviens un peu plus tard.', 2200); return true; }
@@ -15539,7 +15574,13 @@ storyAlt.onclick = () => {
   if (storyMode === 'invite'){ glob.story.asked = true; saveGlob(); toast('L’histoire t’attend dans la ⚙'); }
   storyBox.hidden = true;
 };
-storyBox.addEventListener('click', e => { if (e.target === storyBox && storyMode !== 'outro' && storyMode !== 'dawn' && storyMode !== 'name' && storyMode !== 'prologue'){ if (storyMode === 'invite'){ glob.story.asked = true; saveGlob(); } storyBox.hidden = true; } });
+storyBox.addEventListener('click', e => {
+  if (e.target !== storyBox) return;
+  if (!document.getElementById('sbNudgeCss')){ const st = document.createElement('style'); st.id = 'sbNudgeCss'; st.textContent = '@keyframes sbNudge{0%{transform:scale(1)}45%{transform:scale(1.12)}100%{transform:scale(1)}}.sb-nudge{animation:sbNudge .3s ease-out}@media (prefers-reduced-motion: reduce){.sb-nudge{animation:none}}'; document.head.append(st); }
+  const b = [storyGo, storyAlt].find(x => x && !x.hidden && x.offsetParent !== null && x.textContent.trim());
+  if (!b){ if (storyMode !== 'outro' && storyMode !== 'dawn' && storyMode !== 'name' && storyMode !== 'prologue') storyBox.hidden = true; return; } // sans bouton visible : on garde l'ancienne fermeture, pour ne jamais rester coincé
+  b.classList.remove('sb-nudge'); void b.offsetWidth; b.classList.add('sb-nudge');
+});
 giftLater.addEventListener('click', () => setTimeout(maybeInvite, 400));
 giftBox.addEventListener('click', e => { if (e.target === giftBox) setTimeout(maybeInvite, 400); });
 giftOpen.addEventListener('click', () => { if (giftBox.hidden) setTimeout(() => { maybeInvite(); updateStats(); }, 600); });
