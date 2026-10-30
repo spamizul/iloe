@@ -9423,6 +9423,7 @@ function s5Tick(){
   try { tentFix(); } catch(e){ console.warn(e); }
   try { nameFix(); } catch(e){ console.warn(e); }
   try { breadFix(); } catch(e){ console.warn(e); }
+  try { smokeFix(); } catch(e){ console.warn(e); }
   try { gg10Tick(); } catch(e){ console.warn(e); }
   try { ab11Tick(); } catch(e){ console.warn(e); }
   try { r61Tick(); } catch(e){ console.warn(e); }
@@ -10005,7 +10006,7 @@ function smokeMake(){
   if (T < 0){ const h = O.indexOf('L'); T = h >= 0 ? h : ((N/2)|0)*N + ((N/2)|0); }
   const fx = F % N, fy = (F / N)|0, tx = T % N, ty = (T / N)|0, L = Math.hypot(tx - fx, ty - fy) || 1;
   const near = i => { const x = i % N, y = (i / N)|0, t = Math.max(0, Math.min(1, ((x - fx)*(tx - fx) + (y - fy)*(ty - fy)) / (L*L))); return Math.hypot(x - (fx + t*(tx - fx)), y - (fy + t*(ty - fy))); };
-  const cand = []; for (let i = 0; i < N*N; i++) if (land[i] && !O[i] && G[i] !== 'w' && G[i] !== 'q' && G[i] !== 'n' && !s5Rail(G[i]) && !fogAt(i % N, (i / N)|0) && near(i) <= 1.6 && dist2(i, F) >= 2 && dist2(i, T) >= 1.5) cand.push(i);
+  const cand = []; for (let i = 0; i < N*N; i++) if (land[i] && !O[i] && G[i] !== 'w' && G[i] !== 'q' && G[i] !== 'n' && !walkable(G[i]) && !s5Rail(G[i]) && !fogAt(i % N, (i / N)|0) && near(i) <= 1.6 && dist2(i, F) >= 2 && dist2(i, T) >= 1.5) cand.push(i);
   cand.sort((p, q) => dist2(p, F) - dist2(q, F));
   /* pas assez de place le long du chemin de la fumée : on cherche plus large, puis autour des ruches (ou du cœur de l'île) */
   if (cand.length < 4){ const more = []; for (let i = 0; i < N*N; i++) if (!cand.includes(i) && land[i] && !O[i] && G[i] !== 'w' && G[i] !== 'q' && G[i] !== 'n' && G[i] !== 'c' && !s5Rail(G[i]) && !fogAt(i % N, (i / N)|0) && dist2(i, F) >= 2 && dist2(i, T) >= 1) more.push(i);
@@ -10015,11 +10016,22 @@ function smokeMake(){
   if (zone.length) setTimeout(() => { lookAt(zone[0] % N, (zone[0] / N)|0); forceDraw = true; }, 400);
   return zone.length;
 }
+function smokeFix(){
+  const sm = glob.story.smoke; if (!sm || !sm.length || !smokeOn()) return;
+  const land = mainLand(); let ch = false;
+  sm.forEach((i, k) => { if (O[i] !== 'ʽ' || !walkable(G[i])) return;
+    let best = -1, bd = 1e9; for (let j = 0; j < N*N; j++) if (land[j] && !O[j] && G[j] !== 'w' && G[j] !== 'q' && G[j] !== 'n' && !walkable(G[j]) && !s5Rail(G[j]) && !fogAt(j % N, (j / N)|0)){ const d = dist2(i, j); if (d < bd){ bd = d; best = j; } }
+    if (best >= 0){ O[i] = null; O[best] = 'ʽ'; sm[k] = best; ch = true; } });
+  if (ch){ saveGlob(); save(); forceDraw = true; renderStoryCard(); }
+}
 const hedgeCount = () => (glob.story.smoke || []).filter(i => O[i] === 'ʼ').length;
 const hedgeNeed = () => Math.min(4, Math.max(1, (glob.story.smoke || []).length));
 /* les jeunes plants de Céleste */
 function sproutTap(i){
-  if (O[i] !== 'ʫ' || !smokeOn() || !phase2(CHAPTERS[glob.story.chapter]) || glob.story.sprouts) return false;
+  if (O[i] !== 'ʫ' || !smokeOn() || !phase2(CHAPTERS[glob.story.chapter])) return false;
+  const miss = hedgeNeed() - hedgeCount() - (bag()['ʼ'] || 0);   // plants perdus ou posés ailleurs : Céleste en redonne
+  if (glob.story.sprouts && miss > 0) glob.story.sproutsGiven = Math.max(0, hedgeNeed() - miss);
+  else if (glob.story.sprouts) return false;
   const need = Math.max(1, hedgeNeed()), left = need - (glob.story.sproutsGiven || 0);
   let n = 0; for (let k = 0; k < left; k++) if (bagAdd('ʼ')) n++;
   if (!n){ hintT(`🎒 Ton sac est plein (${bagCount()}/${bagCap()})…`); return true; }
