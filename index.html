@@ -4698,10 +4698,10 @@ function drawMist(c2){
   if (changed){ glob.story.fogs = fogs.filter(f => f.to > 0 || f.a > 0); saveGlob(); }
   if (isStory() && (glob.story.balOff || []).length && Date.now() < balHintUntil){ const pu = reduce ? 0.5 : (Math.sin(now/260) + 1)/2; for (const j of glob.story.balOff){ if (O[j] !== 'Ċ') continue; const x = (j % N)*T + 8, y = ((j / N)|0)*T + 8; c2.save(); c2.strokeStyle = `rgba(255,170,60,${(0.55 + pu*0.45).toFixed(2)})`; c2.lineWidth = 1.5; c2.beginPath(); c2.arc(x, y + 2, 9 + pu*4, 0, 6.29); c2.stroke(); c2.fillStyle = '#fffaf0'; c2.fillRect(x - 3, y - 19 - Math.round(pu*2), 7, 9); c2.fillStyle = '#e2574c'; c2.fillRect(x, y - 17 - Math.round(pu*2), 1, 4); c2.fillRect(x, y - 12 - Math.round(pu*2), 1, 1); c2.restore(); } forceDraw = true; }
   if (pinsSmoke && glob.story.smoke && !reduce){ const [cx, cy] = pinsSmoke; for (let k = 0; k < 6; k++){ const ph = ((t / 2600) + k / 6) % 1, x = cx + Math.sin(ph * 6 + k) * 3 + ph * 10, y = cy - 6 - ph * 46, r = 2 + ph * 5;
-      c2.fillStyle = `rgba(${dk > 0.4 ? '120,130,140' : '150,158,166'},${(0.5 * (1 - ph)).toFixed(3)})`; c2.beginPath(); c2.arc(x, y, r, 0, 6.29); c2.fill(); } forceDraw = true; }
+      c2.fillStyle = `rgba(${dk > 0.4 ? '120,130,140' : '150,158,166'},${(0.5 * (1 - ph)).toFixed(3)})`; c2.beginPath(); c2.arc(x, y, r, 0, 6.29); c2.fill(); } }
   { const K = isStory() ? glob.story.volc : null; if (K != null && !reduce){ const cx = (K % N)*T + 8, cy = ((K / N)|0)*T + 8 - 10;
     for (let k = 0; k < 7; k++){ const ph = ((t / 3200) + k / 7) % 1, x = cx + Math.sin(ph * 5 + k) * 3 + ph * 12, y = cy - ph * 56, r = 2.5 + ph * 7;
-      c2.fillStyle = `rgba(${dk > 0.4 ? '110,112,118' : '140,140,146'},${(0.55 * (1 - ph)).toFixed(3)})`; c2.beginPath(); c2.arc(x, y, r, 0, 6.29); c2.fill(); } forceDraw = true; } }
+      c2.fillStyle = `rgba(${dk > 0.4 ? '110,112,118' : '140,140,146'},${(0.55 * (1 - ph)).toFixed(3)})`; c2.beginPath(); c2.arc(x, y, r, 0, 6.29); c2.fill(); } } }
   // lueurs : de petites lumières bleues autour de la brume, et autour du phare une fois rallumé
   if (reduce) return;
   const spots = fogs.filter(f => f.a > 0.3).map(f => f.inv ? [f.cx, f.cy, f.rx*1.15, f.ry*1.1, 5] : [f.cx, f.cy, f.rx*0.7, f.ry*0.6, 4]);
@@ -4719,7 +4719,7 @@ function drawMist(c2){
       c2.fillStyle = `rgba(235,248,255,${a.toFixed(3)})`; c2.fillRect(Math.round(x), Math.round(y), 1, 1);
     }
   });
-  c2.restore(); forceDraw = forceDraw || spots.length > 0;
+  c2.restore();
 }
 function render(full){
   const c2 = full ? ctx : disp;
@@ -4861,12 +4861,14 @@ function render(full){
 
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let last = performance.now(), lastDraw = 0, eco = false, lastStoryCheck = 0;
+let dernierGeste = 0;
+for (const ev of ['pointerdown', 'pointermove', 'wheel', 'keydown', 'touchstart']) addEventListener(ev, () => { dernierGeste = performance.now(); }, {passive: true, capture: true});
 function frame(ts){
   requestAnimationFrame(frame);
   if (document.hidden){ last = ts; return; }
   // 30 images par seconde (15 en mode économie) : largement assez pour du pixel art
   // pendant un zoom ou un déplacement, on redessine tout de suite pour éviter le clignotement
-  if (!forceDraw && ts - lastDraw < (eco ? 64 : 32)) return;
+  if (!forceDraw && ts - lastDraw < (eco || ts - dernierGeste > 5000 ? 64 : 32)) return;
   forceDraw = false; lastDraw = ts;
   const dt = Math.min(0.1, (ts - last)/1000); last = ts;
   now = reduce ? 0 : ts;
